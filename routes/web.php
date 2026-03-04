@@ -2,16 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return Redirect('/Login');
 });
 
 Route::get('/dashboard', function () {
@@ -24,15 +20,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/login', function () {
-    return Inertia::render('Auth/Login');
-});
 
 Route::get('/campo', function () {
     return Inertia::render('Campos/Campo');
-});    
+})->middleware(['auth', 'verified'])->name('campo');
+
 Route::get('/main', function () {
     return Inertia::render('Frames/Main');
-});
+})->middleware(['auth', 'verified'])->name('main');
 
 require __DIR__.'/auth.php';
