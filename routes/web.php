@@ -28,4 +28,8 @@ Route::get('/login', function () {
     return Inertia::render('Auth/Login');
 });
 
+Route::get('/campo', function () {
+    return Inertia::render('Campos/Campo');
+});
+
 require __DIR__.'/auth.php';
