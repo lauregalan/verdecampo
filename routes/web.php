@@ -28,4 +28,8 @@ Route::get('/login', function () {
     return Inertia::render('Auth/Login');
 });
 
+Route::get('/main', function () {
+    return Inertia::render('Frames/Main');
+});
+
 require __DIR__.'/auth.php';
