@@ -30,6 +30,9 @@ Route::get('/login', function () {
 
 Route::get('/campo', function () {
     return Inertia::render('Campos/Campo');
+});    
+Route::get('/main', function () {
+    return Inertia::render('Frames/Main');
 });
 
 require __DIR__.'/auth.php';

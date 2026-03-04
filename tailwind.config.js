@@ -15,6 +15,9 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            backgroundImage: {
+                'fondo-agro': "url('resources/fondo.png')",
+            },
         },
     },
 
