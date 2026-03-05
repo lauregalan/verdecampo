@@ -43,11 +43,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
 
 import { Bell } from "lucide-react"; 
 import { Badge } from "@/components/ui/badge";
+import { usePage as useInertiaPage } from '@inertiajs/react';
 
 
 interface AuthenticatedLayoutProps {
@@ -203,3 +203,7 @@ export default function AuthenticatedLayout({
         
     );
 }
+function usePage() {
+    return useInertiaPage();
+}
+
