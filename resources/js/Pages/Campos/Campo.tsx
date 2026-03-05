@@ -1,6 +1,8 @@
 import Main from "@/Pages/Frames/Main";
 import { Head } from "@inertiajs/react";
-import { Eye, MapPin, Pencil, Plus } from "lucide-react";
+import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import FormularioCampo from "./FormularioCampo";
 
 export type StatusColor = "verde" | "naranja" | "violeta";
 
@@ -13,7 +15,7 @@ export interface Card {
     imageUrl: string;
 }
 
-const campos: Card[] = [
+const camposIniciales: Card[] = [
     {
         name: "La Aurora - Lote 1",
         surface: "80 Ha",
@@ -49,6 +51,10 @@ const statusStyles: Record<StatusColor, string> = {
     violeta: "bg-violet-600 text-white",
 };
 
+interface FieldCardProps extends Card {
+    onDelete: () => void;
+}
+
 const FieldCard = ({
     name,
     surface,
@@ -56,9 +62,10 @@ const FieldCard = ({
     lastCrop,
     imageUrl,
     statusColor,
-}: Card) => {
+    onDelete,
+}: FieldCardProps) => {
     return (
-        <div className="flex h-full flex-col rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm">
+        <div className="flex h-full flex-col rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-shadow hover:shadow-md">
             <h3 className="mb-4 text-xl font-bold text-gray-800">{name}</h3>
 
             <div className="mb-4 h-32 w-full overflow-hidden rounded-xl">
@@ -90,12 +97,32 @@ const FieldCard = ({
                 <button type="button" className="transition-colors hover:text-blue-600">
                     <Eye size={20} />
                 </button>
+                <button
+                    type="button"
+                    onClick={onDelete}
+                    className="transition-colors hover:text-red-600"
+                    title="Eliminar campo"
+                >
+                    <Trash2 size={20} />
+                </button>
             </div>
         </div>
     );
 };
 
 export default function Campo() {
+    const [campos, setCampos] = useState<Card[]>(camposIniciales);
+    const [showFormulario, setShowFormulario] = useState(false);
+
+    const handleAgregar = (nuevoCampo: Card) => {
+        setCampos((prev) => [...prev, nuevoCampo]);
+        setShowFormulario(false);
+    };
+
+    const handleEliminar = (index: number) => {
+        setCampos((prev) => prev.filter((_, i) => i !== index));
+    };
+
     return (
         <Main>
             <Head title="Gestion de Campos" />
@@ -107,6 +134,7 @@ export default function Campo() {
                     </h1>
                     <button
                         type="button"
+                        onClick={() => setShowFormulario(true)}
                         className="flex items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700"
                     >
                         <Plus size={20} />
@@ -115,11 +143,21 @@ export default function Campo() {
                 </div>
 
                 <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {campos.map((campo) => (
-                        <FieldCard key={campo.name} {...campo} />
+                    {campos.map((campo, index) => (
+                        <FieldCard
+                            key={`${campo.name}-${index}`}
+                            {...campo}
+                            onDelete={() => handleEliminar(index)}
+                        />
                     ))}
                 </div>
             </div>
+
+            <FormularioCampo
+                show={showFormulario}
+                onClose={() => setShowFormulario(false)}
+                onSubmit={handleAgregar}
+            />
         </Main>
     );
 }
