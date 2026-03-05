@@ -12,7 +12,6 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { Link } from '@inertiajs/react';
-import UserManagment from "./UserManagment";
 
 export default function(){
     return(
