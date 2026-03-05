@@ -41,4 +41,6 @@ Route::get('/main', function () {
     return Inertia::render('Frames/Main');
 })->middleware(['auth', 'verified'])->name('main');
 
+
+
 require __DIR__.'/auth.php';

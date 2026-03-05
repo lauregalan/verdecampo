@@ -1,4 +1,3 @@
-import Main from "@/Pages/Frames/Main";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Head, router } from "@inertiajs/react";
 import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
@@ -118,7 +117,7 @@ export default function Campo() {
     };
 
     return (
-        <Main>
+        <AutenticatedLayout>
             <Head title="Gestion de Campos" />
 
             <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
@@ -155,6 +154,6 @@ export default function Campo() {
                 onClose={() => setShowFormulario(false)}
                 onSubmit={handleAgregar}
             />
-        </Main>
+        </AutenticatedLayout>
     );
 }

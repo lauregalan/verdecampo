@@ -1,11 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { 
-    LayoutDashboard, 
-    Sprout, 
-    Settings, 
-    LogOut, 
-    User,
-    ChevronUp, // Útil para el menú de usuario
     Search
 } from "lucide-react"; 
 import {
@@ -23,76 +17,63 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { Checkbox } from '@headlessui/react';
+import { Badge } from "@/components/ui/badge"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
-
-
-// ya saco esta cagada
-const invoices = [
-  {
-    status: true,
-    invoice: "INV001",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    status: true,
-    invoice: "INV002",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    status: false,
-    invoice: "INV003",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    status: false,
-    invoice: "INV004",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    status: true,
-    invoice: "INV005",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    status: false,
-    invoice: "INV006",
-    email: "asdasdfasdfasdfklasd;j-fixedtable-fixedtable-fixed;",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    status: true,
-    invoice: "INV007",
-    email: "Laure@mail.dom",
-    lastConnection: "1/2/2026",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-]
+const users = [
+    {
+        id: 1,
+        nombre: "Laureano Galán",
+        email: "laureano@verdecampo.com",
+        rol: "Administrador",
+        ultimoAcceso: "2024-05-20 14:30",
+        estado: "Activo",
+        avatar: "https://github.com/shadcn.png"
+    },
+    {
+        id: 2,
+        nombre: "Martina Zuviría",
+        email: "martina.z@agrotech.com",
+        rol: "Agrónomo",
+        ultimoAcceso: "2024-05-21 09:15",
+        estado: "Activo",
+        avatar: ""
+    },
+    {
+        id: 3,
+        nombre: "Juan Pedro Caseros",
+        email: "jp.caseros@lotes.com",
+        rol: "Operador",
+        ultimoAcceso: "2024-05-18 18:45",
+        estado: "Inactivo",
+        avatar: ""
+    },
+    {
+        id: 4,
+        nombre: "Sofía Montes",
+        email: "s.montes@verdecampo.com",
+        rol: "Agrónomo",
+        ultimoAcceso: "Hace 10 minutos",
+        estado: "Activo",
+        avatar: ""
+    },
+    {
+        id: 5,
+        nombre: "Ricardo Arrieta",
+        email: "r.arrieta@maquinaria.com",
+        rol: "Agrónomo",
+        ultimoAcceso: "2024-04-30 11:20",
+        estado: "Suspendido",
+        avatar: ""
+    }
+    
+];
 
 interface UserManagmentProps {
     header?: ReactNode;
@@ -115,38 +96,68 @@ export default function UserManagment({header}: UserManagmentProps) {
             <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
             </InputGroup>            
             <Table>
-                <TableCaption>A list of your recent invoices.</TableCaption>
                 <TableHeader>
                     <TableRow>
+                    <TableHead className="w-[150px]"></TableHead>
                     <TableHead className="w-[150px]">Nombre y apellido</TableHead>
                     <TableHead>Correo electronico</TableHead>
-                    <TableHead>Rol</TableHead>
+                    <TableHead className="w-[150px]" >Rol</TableHead>
                     <TableHead className="w-10 text-center">Ultimo acceso</TableHead>
                     <TableHead className="w-10 text-center">Estado</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {invoices.map((invoice) => (
-                    <TableRow key={invoice.invoice}>
-                        <TableCell className="truncate table-fixed w-20 font-medium">{invoice.invoice}</TableCell>
-                        <TableCell className='truncate table-fixed w-10'>{invoice.email}</TableCell>
-                        <TableCell className='w-12 table-fixed'>{invoice.paymentMethod}</TableCell>
-                        <TableCell className="w-20 text-center">{invoice.lastConnection}</TableCell>
-                        <TableCell className="w-18 text-center">
-                          {<input type="checkbox"
-                            className="size-4 accent-green-600 cursor-pointer"
-                            checked={invoice.status}>
-                              </input>}</TableCell>
+                    {users.map((user) => (
+                    <TableRow key={user.id}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
+                                    {/* Si el usuario tiene URL de imagen, la muestra */}
+                                    <AvatarImage src={user.avatar} alt={user.nombre} />
+                                    
+                                    <AvatarFallback className="bg-green-100 text-green-700 font-bold text-xs uppercase">
+                                        {user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                    </AvatarFallback>
+                                </Avatar>
+          
+                            </div>
+                        </TableCell>
+                        <TableCell className='truncate table-fixed w-10'>{user.nombre}</TableCell>
+                        <TableCell className='w-12 table-fixed'>{user.email}</TableCell>
+                      <TableCell >
+                            <Badge className={
+                                user.rol === 'Administrador' ? 'bg-blue-500' : 
+                                user.rol === 'Agrónomo' ? 'bg-green-700' : 'bg-orange-500' 
+                                }>
+                                {user.rol}
+                          </Badge>
+                        </TableCell> 
+                        <TableCell >{user.ultimoAcceso}</TableCell>
+                    <TableCell>
+                        <div className="flex items-center justify-center">
+                            <div className="flex items-center space-x-2">
+                                <Switch 
+                                    id={`user-${user.id}`} 
+                                    defaultChecked={user.estado === 'Activo'}
+                                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                                />
+                                <Label 
+                                    htmlFor={`user-${user.id}`} 
+                                    className="text-xs font-medium text-gray-500 min-w-[50px]"
+                                >
+                                    {user.estado}
+                                </Label>
+                            </div>
+                        </div>
+                    </TableCell>
+
                     </TableRow>
                     ))}
                 </TableBody>
                 <TableFooter>
-                    {/*<TableRow>
-                    <TableCell colSpan={3}>Total</TableCell>
-                    <TableCell className="text-right">$2,500.00</TableCell>
-                    </TableRow>*/}
                 </TableFooter>
             </Table>
+            
             {header && (
                 <header className="mb-8 border-b border-black/5 pb-4">
                     <h1 className="text-2xl font-black text-[#0f2e1e] uppercase tracking-tight">
