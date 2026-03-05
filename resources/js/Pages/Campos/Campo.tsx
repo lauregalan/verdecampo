@@ -1,90 +1,43 @@
 import Main from "@/Pages/Frames/Main";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import FormularioCampo from "./FormularioCampo";
+import { camposIniciales, statusStyles } from "./mockCampos";
+import type { CampoCard, CampoDraft } from "./types";
 
-export type StatusColor = "verde" | "naranja" | "violeta";
-
-export interface Card {
-    name: string;
-    surface: string;
-    status: string;
-    lastCrop: string;
-    statusColor: StatusColor;
-    imageUrl: string;
-}
-
-const camposIniciales: Card[] = [
-    {
-        name: "La Aurora - Lote 1",
-        surface: "80 Ha",
-        status: "En Produccion",
-        lastCrop: "Maiz",
-        statusColor: "verde",
-        imageUrl:
-            "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=400",
-    },
-    {
-        name: "Campo Verde - Lote 2",
-        surface: "120 Ha",
-        status: "En Preparacion",
-        lastCrop: "Trigo",
-        statusColor: "naranja",
-        imageUrl:
-            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400",
-    },
-    {
-        name: "El Retiro - Lote 3",
-        surface: "150 Ha",
-        status: "En Barbecho",
-        lastCrop: "Girasol",
-        statusColor: "violeta",
-        imageUrl:
-            "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-        name: "El Retiro - Lote 3",
-        surface: "150 Ha",
-        status: "En Barbecho",
-        lastCrop: "Girasol",
-        statusColor: "violeta",
-        imageUrl:
-            "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-        name: "El Retiro - Lote 3",
-        surface: "150 Ha",
-        status: "En Barbecho",
-        lastCrop: "Girasol",
-        statusColor: "violeta",
-        imageUrl:
-            "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=500",
-    },
-];
-
-const statusStyles: Record<StatusColor, string> = {
-    verde: "bg-green-600 text-white",
-    naranja: "bg-orange-400 text-white",
-    violeta: "bg-violet-600 text-white",
-};
-
-interface FieldCardProps extends Card {
+interface FieldCardProps extends CampoCard {
+    onOpenDetail: () => void;
     onDelete: () => void;
 }
 
 const FieldCard = ({
+    id,
     name,
     surface,
     status,
     lastCrop,
     imageUrl,
     statusColor,
+    onOpenDetail,
     onDelete,
 }: FieldCardProps) => {
     return (
-        <div className="flex h-full flex-col rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-shadow hover:shadow-md">
+        <div
+            role="button"
+            tabIndex={0}
+            onClick={onOpenDetail}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpenDetail();
+                }
+            }}
+            className="flex h-full cursor-pointer flex-col rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            aria-label={`Abrir detalle de ${name}`}
+            data-campo-id={id}
+        >
             <h3 className="mb-4 text-xl font-bold text-gray-800">{name}</h3>
 
             <div className="mb-4 h-32 w-full overflow-hidden rounded-xl">
@@ -107,18 +60,37 @@ const FieldCard = ({
             </div>
 
             <div className="mt-6 flex justify-end gap-4 text-gray-600">
-                <button type="button" className="transition-colors hover:text-blue-600">
+                <button
+                    type="button"
+                    onClick={(event) => event.stopPropagation()}
+                    className="transition-colors hover:text-blue-600"
+                >
                     <Pencil size={20} />
                 </button>
-                <button type="button" className="transition-colors hover:text-blue-600">
+                <button
+                    type="button"
+                    onClick={(event) => event.stopPropagation()}
+                    className="transition-colors hover:text-blue-600"
+                >
                     <MapPin size={20} />
                 </button>
-                <button type="button" className="transition-colors hover:text-blue-600">
+                <button
+                    type="button"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onOpenDetail();
+                    }}
+                    className="transition-colors hover:text-blue-600"
+                    title="Ver detalle"
+                >
                     <Eye size={20} />
                 </button>
                 <button
                     type="button"
-                    onClick={onDelete}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onDelete();
+                    }}
                     className="transition-colors hover:text-red-600"
                     title="Eliminar campo"
                 >
@@ -130,16 +102,19 @@ const FieldCard = ({
 };
 
 export default function Campo() {
-    const [campos, setCampos] = useState<Card[]>(camposIniciales);
+    const [campos, setCampos] = useState<CampoCard[]>(camposIniciales);
     const [showFormulario, setShowFormulario] = useState(false);
 
-    const handleAgregar = (nuevoCampo: Card) => {
-        setCampos((prev) => [...prev, nuevoCampo]);
+    const handleAgregar = (nuevoCampo: CampoDraft) => {
+        setCampos((prev) => {
+            const nextId = prev.length > 0 ? Math.max(...prev.map((campo) => campo.id)) + 1 : 1;
+            return [...prev, { id: nextId, ...nuevoCampo }];
+        });
         setShowFormulario(false);
     };
 
-    const handleEliminar = (index: number) => {
-        setCampos((prev) => prev.filter((_, i) => i !== index));
+    const handleEliminar = (id: number) => {
+        setCampos((prev) => prev.filter((campo) => campo.id !== id));
     };
 
     return (
@@ -163,8 +138,13 @@ export default function Campo() {
 
                 <ScrollArea className="mx-auto h-[60vh] w-full max-w-7xl rounded-xl pr-4 md:h-[68vh]">
                     <div className="grid grid-cols-1 gap-8 pb-4 md:grid-cols-2 lg:grid-cols-3">
-                        {campos.map((campo, index) => (
-                            <FieldCard key={campo.name} {...campo} onDelete={() => handleEliminar(index)} />
+                        {campos.map((campo) => (
+                            <FieldCard
+                                key={campo.id}
+                                {...campo}
+                                onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
+                                onDelete={() => handleEliminar(campo.id)}
+                            />
                         ))}
                     </div>
                 </ScrollArea>
