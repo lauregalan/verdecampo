@@ -1,4 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { 
     Search
 } from "lucide-react"; 
@@ -83,7 +84,7 @@ interface UserManagmentProps {
 export default function UserManagment({header}: UserManagmentProps) {
     return (
  
-        <>
+        <AuthenticatedLayout>
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
               Gestion de usuarios
             </h2>
@@ -165,7 +166,7 @@ export default function UserManagment({header}: UserManagmentProps) {
                     </h1>
                 </header>
             )}
-        </>
+        </AuthenticatedLayout>
 
     )
 }
