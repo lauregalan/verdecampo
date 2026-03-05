@@ -41,6 +41,7 @@
         "dropdown-menu": "^0.1.1",
         "leaflet": "^1.9.4",
         "lucide-react": "^0.577.0",
+        "react-avatar": "^5.0.4",
         "react-leaflet": "^4.2.1",
         "tailwind-merge": "^3.5.0"
     }
