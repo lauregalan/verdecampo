@@ -3,6 +3,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo'; //
 import TabItem from '@/Components/Frames/TabItem';
 
 
+
 interface AuthenticatedLayoutProps {
     header?: ReactNode;
 }
@@ -26,13 +27,13 @@ export default function AuthenticatedLayout({
                 </div>
 
                 <nav className="space-y-2">
-                    <TabItem label="Dashboard" active={false} />
-                    <TabItem label="Mis Lotes" active={false} />
-                    <TabItem label="Gestión de Personal" active={true} />
-                    <TabItem label="Maquinaria" active={false} />
-                    <TabItem label="Informes" active={false} />
-                    <TabItem label="Configuración" active={false} />
-                    <TabItem label="Ayuda" active={false} />
+                    <TabItem label="Dashboard" active={false} icon="📊" />
+                    <TabItem label="Mis Lotes" active={false} icon="📊" />
+                    <TabItem label="Gestión de Personal" active={true} icon="📊" />
+                    <TabItem label="Maquinaria" active={false} icon="📊" />
+                    <TabItem label="Informes" active={false} icon="📊" />
+                    <TabItem label="Configuración" active={false} icon="📊" />
+                    <TabItem label="Ayuda" active={false} icon="📊" />
                 </nav>
             </div>
 
