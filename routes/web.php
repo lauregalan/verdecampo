@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Redirect('/Login');
+    if(Auth::check()){
+        return Redirect('/dashboard');
+    }
+    else{
+        return Redirect('/login');
+    }
 });
 
 Route::get('/dashboard', function () {
