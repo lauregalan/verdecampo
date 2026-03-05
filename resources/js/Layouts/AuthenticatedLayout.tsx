@@ -1,12 +1,11 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar"
 import Sidebar from "@/components/ui/Tabs/Sidebar"; // El componente que armamos antes
 import Header from "@/components/ui/Tabs/Header"; // Donde pusiste los Breadcrumbs y el Avatar
 
 export default function Authenticated({
-    header,
     children,
-}: PropsWithChildren<{ header?: ReactNode }>) {
+}: PropsWithChildren) {
     
     return (
         <SidebarProvider defaultOpen={true}>
