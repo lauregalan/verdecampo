@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Redirect('/Login');
+    if(Auth::check()){
+        return Redirect('/dashboard');
+    }
+    else{
+        return Redirect('/login');
+    }
 });
 
 Route::get('/dashboard', function () {
@@ -31,8 +37,14 @@ Route::get('/campo/{campoId}', function (int $campoId) {
     ]);
 })->middleware(['auth', 'verified'])->whereNumber('campoId')->name('campo.detalle');
 
+Route::get('/usuarios', function () {
+    return Inertia::render('Usuarios/GestionarUsuarios');
+})->middleware(['auth', 'verified'])->name('gestionarUsuarios');
+
 Route::get('/main', function () {
-    return Inertia::render('Frames/Main');
+    return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
+
+
 
 require __DIR__.'/auth.php';

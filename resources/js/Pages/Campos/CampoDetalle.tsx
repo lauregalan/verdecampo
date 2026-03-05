@@ -1,4 +1,4 @@
-import Main from "@/Pages/Frames/Main";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from "@inertiajs/react";
 import { ArrowLeft, CalendarDays, ChartColumnBig, ListTree, NotebookPen } from "lucide-react";
 import { CircleMarker, MapContainer, Polygon, TileLayer } from "react-leaflet";
@@ -23,7 +23,7 @@ export default function CampoDetalle() {
 
     if (!campo) {
         return (
-            <Main>
+            <AuthenticatedLayout>
                 <Head title="Campo no encontrado" />
                 <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
                     <div className="mx-auto max-w-7xl rounded-3xl border border-stone-300 bg-[#fdf8f0] p-8">
@@ -37,7 +37,7 @@ export default function CampoDetalle() {
                         </Link>
                     </div>
                 </div>
-            </Main>
+            </AuthenticatedLayout>
         );
     }
 
@@ -45,7 +45,7 @@ export default function CampoDetalle() {
     const poligonoCampo = campo.polygon as LatLngExpression[];
 
     return (
-        <Main>
+        <AuthenticatedLayout>
             <Head title={`Detalle - ${campo.name}`} />
 
             <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
@@ -105,6 +105,6 @@ export default function CampoDetalle() {
                     </div>
                 </section>
             </div>
-        </Main>
+        </AuthenticatedLayout>
     );
 }
