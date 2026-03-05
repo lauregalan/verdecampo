@@ -1,11 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { 
-    LayoutDashboard, 
-    Sprout, 
-    Settings, 
-    LogOut, 
-    User,
-    ChevronUp, // Útil para el menú de usuario
     Search
 } from "lucide-react"; 
 import {
@@ -78,6 +72,7 @@ const users = [
         estado: "Suspendido",
         avatar: ""
     }
+    
 ];
 
 interface UserManagmentProps {

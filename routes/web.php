@@ -32,4 +32,9 @@ Route::get('/main', function () {
     return Inertia::render('Frames/Main');
 });
 
+Route::get('/campo', function (){
+    return Inertia::render('Campos/Campo');
+});
+
+
 require __DIR__.'/auth.php';
