@@ -3,39 +3,37 @@
 namespace App\Http\Services;
 
 use App\Models\Campo;
-use Illuminate\Http\JsonResponse;
 
 class CampoService
 {
-    public function index(): JsonResponse
+    public function index()
     {
         $campos = Campo::all();
 
-        return response()->json($campos);
+        return $campos;
     }
 
-    public function show(Campo $campo): JsonResponse
+    public function show(Campo $campo)
     {
-        return response()->json($campo);
+        return $campo;
     }
-    public function store(array $data): JsonResponse
+
+    public function store(array $data)
     {
         $campo = Campo::create($data);
 
-        return response()->json($campo, 201);
+        return $campo;
     }
 
-    public function update(array $data, Campo $campo): JsonResponse
+    public function update(Campo $campo, array $data)
     {
         $campo->update($data);
 
-        return response()->json($campo);
+        return $campo;
     }
 
-    public function destroy(Campo $campo): JsonResponse
+    public function destroy(Campo $campo)
     {
         $campo->delete();
-
-        return response()->json(null, 204);
     }
 }

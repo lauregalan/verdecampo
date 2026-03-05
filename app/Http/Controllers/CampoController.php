@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCampoRequest;
-use App\Http\Requests\UpdateCampoRequest;
+use App\Http\Requests\CampoRequest;
 use App\Http\Services\CampoService;
 use App\Models\Campo;
 use Illuminate\Http\JsonResponse;
@@ -14,24 +13,36 @@ class CampoController extends Controller
 
     public function index(): JsonResponse
     {
-        return $this->campoService->index();
+        $campos = $this->campoService->index();
+
+        return response()->json($campos);
     }
 
-    public function store(StoreCampoRequest $request): JsonResponse
+    public function store(CampoRequest $request): JsonResponse
     {
-        return $this->campoService->store($request->validated());
+        $campo = $this->campoService->store($request->validated());
+
+        return response()->json($campo, 201);
     }
 
     public function show(Campo $campo): JsonResponse
     {
-        return $this->campoService->show($campo);
+        $campo = $this->campoService->show($campo);
+
+        return response()->json($campo);
     }
-    public function update(UpdateCampoRequest $request, Campo $campo): JsonResponse
+
+    public function update(CampoRequest $request, Campo $campo): JsonResponse
     {
-        return $this->campoService->update($request->validated(), $campo);
+        $campo = $this->campoService->update($campo, $request->validated());
+
+        return response()->json($campo);
     }
+
     public function destroy(Campo $campo): JsonResponse
     {
-        return $this->campoService->destroy($campo);
+        $this->campoService->destroy($campo);
+
+        return response()->json(null, 204);
     }
 }
