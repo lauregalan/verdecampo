@@ -1,15 +1,15 @@
 import { FormEvent, useCallback, useState } from 'react';
-import Modal from '@/components/Modal';
-import InputLabel from '@/components/InputLabel';
-import TextInput from '@/components/TextInput';
+import Modal from '@/Components/Modal';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 import MapaInteractivo, { Coord } from './MapaInteractivo';
-import type { Card, StatusColor } from './Campo';
+import type { CampoDraft, StatusColor } from './types';
 import { X } from 'lucide-react';
 
 interface FormularioCampoProps {
     show: boolean;
     onClose: () => void;
-    onSubmit: (campo: Card) => void;
+    onSubmit: (campo: CampoDraft) => void;
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
@@ -73,13 +73,16 @@ export default function FormularioCampo({
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        const nuevoCampo: Card = {
+        const nuevoCampo: CampoDraft = {
             name,
             surface: `${surface} Ha`,
             status,
             lastCrop,
             statusColor,
             imageUrl: PLACEHOLDER_IMAGE,
+            latitude,
+            longitude,
+            polygon,
         };
 
         onSubmit(nuevoCampo);
