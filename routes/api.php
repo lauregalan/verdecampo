@@ -7,3 +7,5 @@ Route::get('/test', function () {
 });
 
 Route::get('/roles', [App\Http\Controllers\RolesController::class, 'index']);
+
+Route::apiResource('campos', App\Http\Controllers\CampoController::class);
