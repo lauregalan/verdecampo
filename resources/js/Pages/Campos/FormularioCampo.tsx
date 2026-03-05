@@ -1,7 +1,7 @@
 import { FormEvent, useCallback, useState } from 'react';
-import Modal from '@/Components/Modal';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
+import Modal from '@/components/Modal';
+import InputLabel from '@/components/InputLabel';
+import TextInput from '@/components/TextInput';
 import MapaInteractivo, { Coord } from './MapaInteractivo';
 import type { Card, StatusColor } from './Campo';
 import { X } from 'lucide-react';
