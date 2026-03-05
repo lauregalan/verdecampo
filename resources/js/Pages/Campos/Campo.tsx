@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pencil, MapPin, Eye, Plus } from 'lucide-react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export type StatusColor = 'verde' | 'naranja' | 'violeta';
 
@@ -42,23 +43,26 @@ export default function(){
   ];
 
   return (
-    <div className="min-h-screen bg-[#f9f4ea] p-8 font-sans">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-10 max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Campos</h1>
-        <button className="flex items-center gap-2 bg-[#1d4ed8] text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all shadow-md">
-          <Plus size={20} />
-          Nuevo Campo
-        </button>
-      </div>
+        <AuthenticatedLayout>
+              <div className="min-h-screen bg-[#f9f4ea] p-8 font-sans">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-10 max-w-7xl mx-auto">
+              <h1 className="text-3xl font-bold text-gray-900">Gestión de Campos</h1>
+              <button className="flex items-center gap-2 bg-[#1d4ed8] text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all shadow-md">
+                <Plus size={20} />
+                Nuevo Campo
+              </button>
+            </div>
 
-      {/* Grid de Tarjetas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {Campos.map((campo, index) => (
-          <FieldCard key={index} {...campo} />
-        ))}
-      </div>
-    </div>
+            {/* Grid de Tarjetas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {Campos.map((campo, index) => (
+                <FieldCard key={index} {...campo} />
+              ))}
+            </div>
+          </div>
+        </AuthenticatedLayout>
+
   ); 
 }
 
