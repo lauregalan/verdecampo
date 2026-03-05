@@ -145,7 +145,7 @@ export default function AuthenticatedLayout({
                                     <SidebarMenuItem>
                                         <SidebarMenuButton
                                             asChild
-                                            isActive={currentPath === "/campo"}
+                                            isActive={currentPath.startsWith("/campo")}
                                             className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                         >
                                             <Link href="/campo">
