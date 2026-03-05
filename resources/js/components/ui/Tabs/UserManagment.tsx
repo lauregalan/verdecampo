@@ -23,49 +23,71 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { Checkbox } from '@headlessui/react';
 
 
 
 // ya saco esta cagada
 const invoices = [
   {
+    status: true,
     invoice: "INV001",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Paid",
     totalAmount: "$250.00",
     paymentMethod: "Credit Card",
   },
   {
+    status: true,
     invoice: "INV002",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Pending",
     totalAmount: "$150.00",
     paymentMethod: "PayPal",
   },
   {
+    status: false,
     invoice: "INV003",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Unpaid",
     totalAmount: "$350.00",
     paymentMethod: "Bank Transfer",
   },
   {
+    status: false,
     invoice: "INV004",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Paid",
     totalAmount: "$450.00",
     paymentMethod: "Credit Card",
   },
   {
+    status: true,
     invoice: "INV005",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Paid",
     totalAmount: "$550.00",
     paymentMethod: "PayPal",
   },
   {
+    status: false,
     invoice: "INV006",
+    email: "asdasdfasdfasdfklasd;j-fixedtable-fixedtable-fixed;",
+    lastConnection: "1/2/2026",
     paymentStatus: "Pending",
     totalAmount: "$200.00",
     paymentMethod: "Bank Transfer",
   },
   {
+    status: true,
     invoice: "INV007",
+    email: "Laure@mail.dom",
+    lastConnection: "1/2/2026",
     paymentStatus: "Unpaid",
     totalAmount: "$300.00",
     paymentMethod: "Credit Card",
@@ -92,30 +114,33 @@ export default function UserManagment({header}: UserManagmentProps) {
                 <TableCaption>A list of your recent invoices.</TableCaption>
                 <TableHeader>
                     <TableRow>
-                    <TableHead className="w-[300px]">Nombre y apellido</TableHead>
+                    <TableHead className="w-[150px]">Nombre y apellido</TableHead>
                     <TableHead>Correo electronico</TableHead>
                     <TableHead>Rol</TableHead>
-                    <TableHead className="text-right">Estado</TableHead>
-                    <TableHead className="text-right">Ultimo acceso</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-
+                    <TableHead className="w-10 text-center">Ultimo acceso</TableHead>
+                    <TableHead className="w-10 text-center">Estado</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {invoices.map((invoice) => (
                     <TableRow key={invoice.invoice}>
-                        <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                        <TableCell>{invoice.paymentStatus}</TableCell>
-                        <TableCell>{invoice.paymentMethod}</TableCell>
-                        <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+                        <TableCell className="truncate table-fixed w-20 font-medium">{invoice.invoice}</TableCell>
+                        <TableCell className='truncate table-fixed w-10'>{invoice.email}</TableCell>
+                        <TableCell className='w-12 table-fixed'>{invoice.paymentMethod}</TableCell>
+                        <TableCell className="w-20 text-center">{invoice.lastConnection}</TableCell>
+                        <TableCell className="w-18 text-center">
+                          {<input type="checkbox"
+                            className="size-4 accent-green-600 cursor-pointer"
+                            checked={invoice.status}>
+                              </input>}</TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
                 <TableFooter>
-                    <TableRow>
+                    {/*<TableRow>
                     <TableCell colSpan={3}>Total</TableCell>
                     <TableCell className="text-right">$2,500.00</TableCell>
-                    </TableRow>
+                    </TableRow>*/}
                 </TableFooter>
             </Table>
             {header && (

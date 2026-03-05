@@ -47,7 +47,7 @@ export default function AuthenticatedLayout({
                     
                     {/* SIDEBAR */}
                     <Sidebar 
-                        className="w-80 h-full rounded-xl rounded-tr-none bg-[#0f2e1e] text-white flex flex-col shadow-xl border-none"
+                        className="w-80 h-full rounded-xl rounded-tr-none rounded-br-none bg-[#0f2e1e] text-white flex flex-col shadow-xl border-none"
                         collapsible="none"
                     >
                         {/* HEADER */}
