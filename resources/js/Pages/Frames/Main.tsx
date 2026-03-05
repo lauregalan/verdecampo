@@ -1,4 +1,5 @@
-import { PropsWithChildren, ReactNode} from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
+import UserManagment from '@/components/ui/Tabs/UserManagment';
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +16,9 @@ import {
     LayoutDashboard, 
     Sprout, 
     Settings, 
-    LogOut,
-    ChevronUp // Útil para el menú de usuario
+    LogOut, 
+    User,
+    ChevronUp, 
 } from "lucide-react"; 
 import { 
     DropdownMenu, 
@@ -24,69 +26,28 @@ import {
     DropdownMenuItem, 
     DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
-import { Search } from "lucide-react"
-import { Link, usePage } from '@inertiajs/react';
 
- // despues mover a un componente, datos de prueba
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-]
+
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from '@/components/ui/button';
+import { Link } from '@inertiajs/react';
+
+import { Bell } from "lucide-react"; 
+import { Badge } from "@/components/ui/badge";
 
 
 interface AuthenticatedLayoutProps {
@@ -101,14 +62,15 @@ export default function AuthenticatedLayout({
     const currentPath = url.split("?")[0];
 
     return (
+        
         <SidebarProvider defaultOpen={true}>
             <div className="flex items-center justify-center min-h-screen w-full bg-fondo-agro bg-cover bg-center bg-no-repeat p-4">
                 
-                <div className="m-1 flex w-full max-w-8xl h-[93vh] bg-white/50 p-1.5 rounded-xl shadow-2xl overflow-hidden">
+                <div className="m-1 flex w-full max-w-8xl h-[93vh] bg-white/80 p-1.5 rounded-xl shadow-2xl overflow-hidden">
                     
                     {/* SIDEBAR */}
                     <Sidebar 
-                        className="w-80 h-full rounded-xl rounded-tr-none bg-[#0f2e1e] text-white flex flex-col shadow-xl border-none"
+                        className="w-80 h-full rounded-xl rounded-tr-none rounded-br-none bg-[#0f2e1e] text-white flex flex-col shadow-xl border-none"
                         collapsible="none"
                     >
                         {/* HEADER */}
@@ -190,60 +152,54 @@ export default function AuthenticatedLayout({
                         </SidebarFooter>
          
                     </Sidebar>
-                    
-                    {/* MAIN CONTENT */}
-                    <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                        <InputGroup className="max-w-full mb-6">
-                            <InputGroupInput placeholder="Search..." />
-                            <InputGroupAddon>
-                                <Search />
-                            </InputGroupAddon>
-                            <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
-                        </InputGroup>
-                        <Table>
-                            <TableCaption>A list of your recent invoices.</TableCaption>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[300px]">Nombre y apellido</TableHead>
-                                    <TableHead>Correo electronico</TableHead>
-                                    <TableHead>Rol</TableHead>
-                                    <TableHead className="text-right">Estado</TableHead>
-                                    <TableHead className="text-right">Ultimo acceso</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {invoices.map((invoice) => (
-                                    <TableRow key={invoice.invoice}>
-                                        <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                                        <TableCell>{invoice.paymentStatus}</TableCell>
-                                        <TableCell>{invoice.paymentMethod}</TableCell>
-                                        <TableCell className="text-right">{invoice.totalAmount}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TableCell colSpan={3}>Total</TableCell>
-                                    <TableCell className="text-right">$2,500.00</TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                        {header && (
-                            <header className="mb-8 border-b border-black/5 pb-4">
-                                <h1 className="text-2xl font-black text-[#0f2e1e] uppercase tracking-tight">
-                                    {header}
-                                </h1>
-                            </header>
-                        )}
-                        
-                        <div className="w-full">
-                            {children}
+                    <div className="flex-1 flex flex-col min-w-0 bg-transparent h-full">
+
+                        <div className="mx-1 bg-transparent h-20 w-full flex items-center px-6 rounded-tr-xl justify-between">
+
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                    <BreadcrumbLink asChild>
+                                        <Link href="/">Home</Link>
+                                    </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link href="/">Manteca</Link>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                    <BreadcrumbLink asChild>
+                                        <Link href="/">Anashe</Link>
+                                    </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                    <BreadcrumbPage>Alonso</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+
+                            <div className="flex flex-row gap-5">
+                
+                                <Avatar>
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                            </div>
+
                         </div>
-                    </main>
-                    
+
+                        <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                            <UserManagment/>
+                        </main>
+                        
+                    </div>
                 </div>
+                
             </div>
+            
         </SidebarProvider>
+        
     );
 }
