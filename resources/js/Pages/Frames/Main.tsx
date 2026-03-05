@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode} from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,14 +10,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarMenuAction, // Lo agregué por si quieres usar los tres puntitos luego
 } from "@/components/ui/sidebar"
 import { 
     LayoutDashboard, 
     Sprout, 
     Settings, 
-    LogOut, 
-    User,
+    LogOut,
     ChevronUp // Útil para el menú de usuario
 } from "lucide-react"; 
 import { 
@@ -42,6 +40,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Search } from "lucide-react"
+import { Link, usePage } from '@inertiajs/react';
 
  // despues mover a un componente, datos de prueba
 const invoices = [
@@ -129,25 +128,30 @@ export default function AuthenticatedLayout({
                                     Gestión
                                 </SidebarGroupLabel>
                                 
-                                <SidebarMenu>   
+                                <SidebarMenu>
                                     <SidebarMenuItem>
-                                        <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
-                                            <LayoutDashboard size={18} />
-                                            <span className="font-medium">Dashboard</span>
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={currentPath === "/dashboard"}
+                                            className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                        >
+                                            <Link href="/dashboard">
+                                                <LayoutDashboard size={18} />
+                                                <span className="font-medium">Dashboard</span>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
 
                                     <SidebarMenuItem>
-                                        <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
-                                            <Sprout size={18} />
-                                            <span className="font-medium">Cultivos</span>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
-                                            <Sprout size={18} />
-                                            <span className="font-medium">Cultivos</span>
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={currentPath === "/campo"}
+                                            className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                        >
+                                            <Link href="/campo">
+                                                <Sprout size={18} />
+                                                <span className="font-medium">Mis campos</span>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 </SidebarMenu>
@@ -189,45 +193,39 @@ export default function AuthenticatedLayout({
                     
                     {/* MAIN CONTENT */}
                     <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
-
-                        {/* tambien moverlo a un componente al buscador */}
-
-
-                        <InputGroup className="max-w-full">
-                        <InputGroupInput placeholder="Search..." />
-                        <InputGroupAddon>
-                            <Search />
-                        </InputGroupAddon>
-                        <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
+                        <InputGroup className="max-w-full mb-6">
+                            <InputGroupInput placeholder="Search..." />
+                            <InputGroupAddon>
+                                <Search />
+                            </InputGroupAddon>
+                            <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
                         </InputGroup>
-                        {/* TRANSFORMARLA EN COMPONENTE DESP. ASI QUEDA MAS CLEAN*/}
                         <Table>
                             <TableCaption>A list of your recent invoices.</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[300px]">Nombre y apellido</TableHead>
-                                <TableHead>Correo electronico</TableHead>
-                                <TableHead>Rol</TableHead>
-                                <TableHead className="text-right">Estado</TableHead>
-                                <TableHead className="text-right">Ultimo acceso</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-
+                                    <TableHead className="w-[300px]">Nombre y apellido</TableHead>
+                                    <TableHead>Correo electronico</TableHead>
+                                    <TableHead>Rol</TableHead>
+                                    <TableHead className="text-right">Estado</TableHead>
+                                    <TableHead className="text-right">Ultimo acceso</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {invoices.map((invoice) => (
-                                <TableRow key={invoice.invoice}>
-                                    <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                                    <TableCell>{invoice.paymentStatus}</TableCell>
-                                    <TableCell>{invoice.paymentMethod}</TableCell>
-                                    <TableCell className="text-right">{invoice.totalAmount}</TableCell>
-                                </TableRow>
+                                    <TableRow key={invoice.invoice}>
+                                        <TableCell className="font-medium">{invoice.invoice}</TableCell>
+                                        <TableCell>{invoice.paymentStatus}</TableCell>
+                                        <TableCell>{invoice.paymentMethod}</TableCell>
+                                        <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+                                    </TableRow>
                                 ))}
                             </TableBody>
                             <TableFooter>
                                 <TableRow>
-                                <TableCell colSpan={3}>Total</TableCell>
-                                <TableCell className="text-right">$2,500.00</TableCell>
+                                    <TableCell colSpan={3}>Total</TableCell>
+                                    <TableCell className="text-right">$2,500.00</TableCell>
                                 </TableRow>
                             </TableFooter>
                         </Table>
