@@ -25,6 +25,12 @@ Route::get('/campo', function () {
     return Inertia::render('Campos/Campo');
 })->middleware(['auth', 'verified'])->name('campo');
 
+Route::get('/campo/{campoId}', function (int $campoId) {
+    return Inertia::render('Campos/CampoDetalle', [
+        'campoId' => $campoId,
+    ]);
+})->middleware(['auth', 'verified'])->whereNumber('campoId')->name('campo.detalle');
+
 Route::get('/main', function () {
     return Inertia::render('Frames/Main');
 })->middleware(['auth', 'verified'])->name('main');
