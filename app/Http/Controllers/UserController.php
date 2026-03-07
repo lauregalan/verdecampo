@@ -17,7 +17,21 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $users = User::with('roles:id,name')
+            ->orderBy('id')
+            ->get()
+            ->map(function (User $user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->roles->pluck('name')->values(),
+                    'updated_at' => $user->updated_at?->toDateTimeString(),
+                    'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
+                ];
+            });
+
+        return response()->json($users);
     }
 
     /**
