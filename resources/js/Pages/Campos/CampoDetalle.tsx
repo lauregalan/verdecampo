@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Body from "@/components/ui/Tabs/Body";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { ArrowLeft, CalendarDays, ChartColumnBig, ListTree, NotebookPen } from "lucide-react";
 import { CircleMarker, MapContainer, TileLayer } from "react-leaflet";
@@ -73,20 +73,20 @@ export default function CampoDetalle() {
 
     if (loading) {
         return (
-            <AuthenticatedLayout>
+            <Body>
                 <Head title="Cargando campo" />
                 <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
                     <div className="mx-auto max-w-7xl rounded-3xl border border-stone-300 bg-[#fdf8f0] p-8">
                         <p className="text-xl font-semibold text-gray-800">Cargando detalle del campo...</p>
                     </div>
                 </div>
-            </AuthenticatedLayout>
+            </Body>
         );
     }
 
     if (!campo) {
         return (
-            <AuthenticatedLayout>
+            <Body>
                 <Head title="Campo no encontrado" />
                 <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
                     <div className="mx-auto max-w-7xl rounded-3xl border border-stone-300 bg-[#fdf8f0] p-8">
@@ -100,7 +100,7 @@ export default function CampoDetalle() {
                         </Link>
                     </div>
                 </div>
-            </AuthenticatedLayout>
+            </Body>
         );
     }
 
@@ -115,7 +115,7 @@ export default function CampoDetalle() {
     const centroCampo: LatLngExpression = hasValidCoords ? [latitude, longitude] : [-34.6037, -58.3816];
 
     return (
-        <AuthenticatedLayout>
+        <Body>
             <Head title={`Detalle - ${campo.nombre}`} />
 
             <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
@@ -181,6 +181,6 @@ export default function CampoDetalle() {
                     </div>
                 </section>
             </div>
-        </AuthenticatedLayout>
+        </Body>
     );
 }

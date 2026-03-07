@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import Body from "@/components/ui/Tabs/Body";
 import { Search } from "lucide-react";
 import {
     Table,
@@ -125,7 +125,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
     }, [search, users]);
 
     return (
-        <AuthenticatedLayout>
+        <Body>
             <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col gap-4">
                 {header && (
                     <header className="border-b border-black/5 pb-4">
@@ -247,6 +247,6 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     </Table>
                 </ScrollArea>
             </div>
-        </AuthenticatedLayout>
+        </Body>
     );
 }

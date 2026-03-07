@@ -1,8 +1,8 @@
 import { Head } from "@inertiajs/react";
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Body from "@/components/ui/Tabs/Body";
 export default function Dashboard() {
     return (
-        <AuthenticatedLayout>
+        <Body>
             <Head title="Dashboard" />
             <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
                 <div className="mx-auto mb-10 max-w-7xl">
@@ -17,6 +17,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </Body>
     );
 }

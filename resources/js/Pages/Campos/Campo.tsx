@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { router } from "@inertiajs/react";
 import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
@@ -216,7 +216,7 @@ export default function Campo() {
     };
 
     return (
-        <AuthenticatedLayout>
+        <Body>
             <div className="flex h-full min-h-0 flex-col bg-[#f9f4ea] p-8 font-sans">
                 <div className="mx-auto mb-6 flex w-full max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">
@@ -265,6 +265,6 @@ export default function Campo() {
                 onClose={() => setShowFormulario(false)}
                 onSubmit={handleAgregar}
             />
-        </AuthenticatedLayout>
+        </Body>
     );
 }
