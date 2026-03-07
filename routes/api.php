@@ -12,5 +12,6 @@ Route::get('/test', function () {
 Route::apiResource('campos', App\Http\Controllers\CampoController::class);
 
 Route::get('/roles', [RoleController::class, 'index']);
+Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
 Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);
