@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class RoleRequest extends FormRequest
 {
+    private const ALLOWED_ROLES = ['Productor', 'Ingeniero', 'Empleado'];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,7 +27,17 @@ class RoleRequest extends FormRequest
     {
         return [
             'roles' => 'required|array',
-            'roles.*' => 'string|exists:roles,name',
+            'roles.*' => 'string|in:'.implode(',', self::ALLOWED_ROLES),
         ];
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'message' => 'Rol invalido. Roles permitidos: Productor, Ingeniero, Empleado.',
+                'errors' => $validator->errors(),
+            ], 300)
+        );
     }
 }

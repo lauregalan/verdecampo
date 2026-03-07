@@ -29,6 +29,12 @@ export default function AppSidebar() {
     const { url, props } = usePage();
     const currentPath = url.split("?")[0];
     const user = props.auth?.user;
+    const hasProductorRole = Array.isArray(user?.roles)
+        ? user.roles.some((role) => role.toLowerCase() === "productor")
+        : false;
+    const roleLabel = Array.isArray(user?.roles) && user.roles.length > 0
+        ? user.roles.join(", ")
+        : "Sin rol";
 
     return (
         <Sidebar
@@ -64,18 +70,20 @@ export default function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
 
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={currentPath.startsWith("/usuarios")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                            >
-                                <Link href="/usuarios">
-                                    <GroupIcon size={18} />
-                                    <span className="font-medium">Gestion Usuarios</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {hasProductorRole && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={currentPath.startsWith("/usuarios")}
+                                    className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                >
+                                    <Link href="/usuarios">
+                                        <GroupIcon size={18} />
+                                        <span className="font-medium">Gestion Usuarios</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
 
                         <SidebarMenuItem>
                             <SidebarMenuButton
@@ -104,7 +112,7 @@ export default function AppSidebar() {
                                     </div>
                                     <div className="flex flex-col items-start text-sm">
                                         <span className="font-bold">{user?.name || "Usuario"}</span>
-                                        <span className="text-[10px] opacity-50 text-green-200">{"Rol"}</span>
+                                        <span className="text-[10px] opacity-70 text-green-200">{roleLabel}</span>
                                     </div>
                                     <ChevronUp size={14} className="ml-auto opacity-50" />
                                 </SidebarMenuButton>
