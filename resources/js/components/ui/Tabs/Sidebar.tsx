@@ -26,8 +26,9 @@ import {
 } from "@/components/ui/sidebar";
 
 export default function AppSidebar() {
-    const { url } = usePage();
+    const { url, props } = usePage();
     const currentPath = url.split("?")[0];
+    const user = props.auth?.user;
 
     return (
         <Sidebar
@@ -99,11 +100,11 @@ export default function AppSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton className="h-12 hover:bg-white/10 w-full flex items-center gap-3 p-2 rounded-xl transition">
                                     <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-xs font-bold">
-                                        L
+                                        {user?.name?.[0]?.toUpperCase() || "U"}
                                     </div>
                                     <div className="flex flex-col items-start text-sm">
-                                        <span className="font-bold">Laureano</span>
-                                        <span className="text-[10px] opacity-50 text-green-200">Admin</span>
+                                        <span className="font-bold">{user?.name || "Usuario"}</span>
+                                        <span className="text-[10px] opacity-50 text-green-200">{"Rol"}</span>
                                     </div>
                                     <ChevronUp size={14} className="ml-auto opacity-50" />
                                 </SidebarMenuButton>
@@ -114,11 +115,15 @@ export default function AppSidebar() {
                                 align="center"
                                 className="w-56 bg-[#0f2e1e] border-white/10 text-white rounded-xl shadow-2xl mb-2"
                             >
-                                <DropdownMenuItem className="hover:bg-white/10 cursor-pointer flex gap-2">
-                                    <Settings size={16} /> Configuracion
+                                <DropdownMenuItem className="hover:bg-white/10 cursor-pointer flex gap-2" asChild>
+                                    <Link href="/profile">
+                                        <Settings size={16} /> Configuracion
+                                    </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="hover:bg-red-500/20 text-red-400 cursor-pointer flex gap-2">
-                                    <LogOut size={16} /> Cerrar Sesion
+                                <DropdownMenuItem className="hover:bg-red-500/20 text-red-400 cursor-pointer flex gap-2" asChild>
+                                    <Link href="/logout" method="post">
+                                        <LogOut size={16} /> Cerrar Sesion
+                                    </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
