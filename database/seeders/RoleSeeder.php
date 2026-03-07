@@ -2,12 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
-
 class RoleSeeder extends Seeder
 {
     /**
@@ -15,7 +12,8 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::create(['name' => 'Productor']); // Crea el rol de Productor, quien gestiona todo
-        Role::create(['name' => 'Ingeniero']); //Crea el rol de Ingeniero agronomo, quien solo consulta la informacion
+        Role::firstOrCreate(['name' => 'Productor']); // Crea el rol de Productor, quien gestiona todo
+        Role::firstOrCreate(['name' => 'Ingeniero']); // Crea el rol de Ingeniero agronomo, quien solo consulta la informacion
+        Role::firstOrCreate(['name' => 'Empleado']); // Rol por defecto para nuevos usuarios
     }
 }
