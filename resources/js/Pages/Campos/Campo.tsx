@@ -2,15 +2,39 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { router } from "@inertiajs/react";
 import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
-import { camposIniciales, statusStyles } from "./mockCampos";
+import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
 
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
 }
+
+interface BackendCampo {
+    id: number;
+    nombre: string;
+    latitud: string;
+    longitud: string;
+    hectareas: number;
+}
+
+const PLACEHOLDER_IMAGE =
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
+
+const toCampoCard = (campo: BackendCampo): CampoCard => ({
+    id: campo.id,
+    name: campo.nombre,
+    surface: `${campo.hectareas} Ha`,
+    status: "En Produccion",
+    lastCrop: "Sin dato",
+    statusColor: "verde",
+    imageUrl: PLACEHOLDER_IMAGE,
+    latitude: Number.parseFloat(campo.latitud) || 0,
+    longitude: Number.parseFloat(campo.longitud) || 0,
+    polygon: [],
+});
 
 const FieldCard = ({
     id,
@@ -102,19 +126,93 @@ const FieldCard = ({
 };
 
 export default function Campo() {
-    const [campos, setCampos] = useState<CampoCard[]>(camposIniciales);
+    const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleAgregar = (nuevoCampo: CampoDraft) => {
-        setCampos((prev) => {
-            const nextId = prev.length > 0 ? Math.max(...prev.map((campo) => campo.id)) + 1 : 1;
-            return [...prev, { id: nextId, ...nuevoCampo }];
-        });
-        setShowFormulario(false);
+    const cargarCampos = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("/api/campos", {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener los campos.");
+            }
+
+            const payload = (await response.json()) as BackendCampo[];
+            const list = Array.isArray(payload) ? payload.map(toCampoCard) : [];
+            setCampos(list);
+            setError(null);
+        } catch {
+            setError("Error al cargar campos desde el backend.");
+            setCampos([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void cargarCampos();
+    }, [cargarCampos]);
+
+    const handleAgregar = async (nuevoCampo: CampoDraft): Promise<boolean> => {
+        try {
+            const hectareas = Number.isFinite(Number.parseFloat(nuevoCampo.surface))
+                ? Math.round(Number.parseFloat(nuevoCampo.surface))
+                : 0;
+
+            const response = await fetch("/api/campos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({
+                    nombre: nuevoCampo.name,
+                    latitud: String(nuevoCampo.latitude),
+                    longitud: String(nuevoCampo.longitude),
+                    hectareas,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo crear el campo.");
+            }
+
+            const createdCampo = (await response.json()) as BackendCampo;
+            setCampos((prev) => [toCampoCard(createdCampo), ...prev]);
+            setShowFormulario(false);
+            setError(null);
+            return true;
+        } catch {
+            setError("Error al crear el campo.");
+            return false;
+        }
     };
 
-    const handleEliminar = (id: number) => {
-        setCampos((prev) => prev.filter((campo) => campo.id !== id));
+    const handleEliminar = async (id: number) => {
+        try {
+            const response = await fetch(`/api/campos/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo eliminar el campo.");
+            }
+
+            setCampos((prev) => prev.filter((campo) => campo.id !== id));
+            setError(null);
+        } catch {
+            setError("Error al eliminar el campo.");
+        }
     };
 
     return (
@@ -135,15 +233,29 @@ export default function Campo() {
                 </div>
 
                 <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-7xl rounded-xl pr-4">
+                    {error && (
+                        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {error}
+                        </p>
+                    )}
+
                     <div className="grid grid-cols-1 gap-8 pb-4 md:grid-cols-2 lg:grid-cols-3">
-                        {campos.map((campo) => (
-                            <FieldCard
-                                key={campo.id}
-                                {...campo}
-                                onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
-                                onDelete={() => handleEliminar(campo.id)}
-                            />
-                        ))}
+                        {loading ? (
+                            <p className="col-span-full text-sm text-gray-600">Cargando campos...</p>
+                        ) : campos.length === 0 ? (
+                            <p className="col-span-full text-sm text-gray-600">No hay campos registrados.</p>
+                        ) : (
+                            campos.map((campo) => (
+                                <FieldCard
+                                    key={campo.id}
+                                    {...campo}
+                                    onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
+                                    onDelete={() => {
+                                        void handleEliminar(campo.id);
+                                    }}
+                                />
+                            ))
+                        )}
                     </div>
                 </ScrollArea>
             </div>

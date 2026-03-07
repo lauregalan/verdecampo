@@ -9,7 +9,7 @@ import { X } from 'lucide-react';
 interface FormularioCampoProps {
     show: boolean;
     onClose: () => void;
-    onSubmit: (campo: CampoDraft) => void;
+    onSubmit: (campo: CampoDraft) => Promise<boolean>;
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
@@ -70,7 +70,7 @@ export default function FormularioCampo({
     };
 
     // --- Submit ---
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         const nuevoCampo: CampoDraft = {
@@ -85,8 +85,10 @@ export default function FormularioCampo({
             polygon,
         };
 
-        onSubmit(nuevoCampo);
-        resetForm();
+        const created = await onSubmit(nuevoCampo);
+        if (created) {
+            resetForm();
+        }
     };
 
     return (
