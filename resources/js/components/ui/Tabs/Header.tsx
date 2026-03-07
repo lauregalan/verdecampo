@@ -16,8 +16,8 @@ import { Link } from '@inertiajs/react';
 export default function(){
     return(
 
-                        <div className="mx-1 bg-transparent h-20 w-full flex items-center px-6 rounded-tr-xl justify-between">
-
+                        <div>
+{/* 
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem>
@@ -48,7 +48,7 @@ export default function(){
                                     <AvatarImage src="https://github.com/shadcn.png" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
-                            </div>
+                            </div> */}
 
                         </div>
 
