@@ -50,6 +50,20 @@ const getRoleBadgeClass = (role: string) => {
     return "bg-gray-500";
 };
 
+const rolePriority: Record<string, number> = {
+    productor: 0,
+    ingeniero: 1,
+    empleado: 2,
+};
+
+const getUserRolePriority = (roles: string[]) => {
+    if (!Array.isArray(roles) || roles.length === 0) return 99;
+    return roles.reduce((best, role) => {
+        const current = rolePriority[role.toLowerCase()] ?? 99;
+        return Math.min(best, current);
+    }, 99);
+};
+
 export default function UserManagment({ header }: UserManagmentProps) {
     const [users, setUsers] = useState<BackendUser[]>([]);
     const [search, setSearch] = useState("");
@@ -92,15 +106,21 @@ export default function UserManagment({ header }: UserManagmentProps) {
 
     const filteredUsers = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) return users;
+        const base = term
+            ? users.filter((user) => {
+                const primaryRole = user.roles[0] ?? "Sin rol";
+                return (
+                    user.name.toLowerCase().includes(term) ||
+                    user.email.toLowerCase().includes(term) ||
+                    primaryRole.toLowerCase().includes(term)
+                );
+            })
+            : [...users];
 
-        return users.filter((user) => {
-            const primaryRole = user.roles[0] ?? "Sin rol";
-            return (
-                user.name.toLowerCase().includes(term) ||
-                user.email.toLowerCase().includes(term) ||
-                primaryRole.toLowerCase().includes(term)
-            );
+        return base.sort((a, b) => {
+            const byRole = getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
+            if (byRole !== 0) return byRole;
+            return a.name.localeCompare(b.name, "es");
         });
     }, [search, users]);
 
