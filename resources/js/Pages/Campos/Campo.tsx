@@ -119,22 +119,22 @@ export default function Campo() {
 
     return (
         <AuthenticatedLayout>
-            <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
-                <div className="mx-auto mb-10 flex max-w-7xl items-center justify-between">
+            <div className="flex h-full min-h-0 flex-col bg-[#f9f4ea] p-8 font-sans">
+                <div className="mx-auto mb-6 flex w-full max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Gestion de Campos
                     </h1>
                     <button
                         type="button"
                         onClick={() => setShowFormulario(true)}
-                        className="flex items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700"
+                        className="inline-flex w-fit self-end items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700 sm:self-auto"
                     >
                         <Plus size={20} />
                         Nuevo Campo
                     </button>
                 </div>
 
-                <ScrollArea className="mx-auto h-[60vh] w-full max-w-7xl rounded-xl pr-4 md:h-[68vh]">
+                <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-7xl rounded-xl pr-4">
                     <div className="grid grid-cols-1 gap-8 pb-4 md:grid-cols-2 lg:grid-cols-3">
                         {campos.map((campo) => (
                             <FieldCard

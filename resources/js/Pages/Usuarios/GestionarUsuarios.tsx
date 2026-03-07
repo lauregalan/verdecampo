@@ -106,7 +106,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
 
     return (
         <AuthenticatedLayout>
-            <div className="flex h-full min-h-0 flex-col gap-4">
+            <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col gap-4">
                 {header && (
                     <header className="border-b border-black/5 pb-4">
                         <h1 className="text-2xl font-black uppercase tracking-tight text-[#0f2e1e]">
@@ -133,16 +133,16 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     </InputGroupAddon>
                 </InputGroup>
 
-                <ScrollArea className="min-h-0 flex-1 w-full rounded-lg border border-black/10 bg-white/70 pr-3">
-                    <Table className="w-full min-w-[1180px]">
+                <ScrollArea className="min-h-0 flex-1 w-full rounded-lg border border-black/10 bg-white/70 pr-1 lg:pr-3">
+                    <Table className="w-full min-w-[820px] table-fixed lg:min-w-[1040px]">
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-16"></TableHead>
-                                <TableHead className="w-[260px]">Nombre y apellido</TableHead>
-                                <TableHead className="w-[320px]">Correo electronico</TableHead>
-                                <TableHead className="w-[170px]">Rol</TableHead>
-                                <TableHead className="w-[230px] text-center">Ultimo acceso</TableHead>
-                                <TableHead className="w-[160px] text-center">Estado</TableHead>
+                                <TableHead className="w-14"></TableHead>
+                                <TableHead className="w-[220px]">Nombre y apellido</TableHead>
+                                <TableHead className="w-[280px]">Correo electronico</TableHead>
+                                <TableHead className="w-[150px]">Rol</TableHead>
+                                <TableHead className="hidden w-[210px] text-center lg:table-cell">Ultimo acceso</TableHead>
+                                <TableHead className="w-[140px] text-center">Estado</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -192,14 +192,14 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                                     </Avatar>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="w-[260px] font-medium">{user.name}</TableCell>
-                                            <TableCell className="w-[320px] whitespace-nowrap">{user.email}</TableCell>
+                                            <TableCell className="truncate font-medium" title={user.name}>{user.name}</TableCell>
+                                            <TableCell className="truncate" title={user.email}>{user.email}</TableCell>
                                             <TableCell>
                                                 <Badge className={getRoleBadgeClass(primaryRole)}>
                                                     {primaryRole}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap text-center">
+                                            <TableCell className="hidden whitespace-nowrap text-center lg:table-cell">
                                                 {formatDate(user.updated_at)}
                                             </TableCell>
                                             <TableCell className="text-center">
