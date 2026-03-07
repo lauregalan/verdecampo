@@ -8,9 +8,9 @@ Route::get('/test', function () {
     return response()->json(['message' => 'Hola!']);
 });
 
-Route::get('/roles', [App\Http\Controllers\RolesController::class, 'index']);
 
 Route::apiResource('campos', App\Http\Controllers\CampoController::class);
-Route::get('/roles', [RoleController::class, 'index']);
 
+Route::get('/roles', [RoleController::class, 'index']);
+Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
 Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);

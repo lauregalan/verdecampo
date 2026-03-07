@@ -56,4 +56,9 @@ class UserController extends Controller
     {
         $this->roleService->modificarRoles(User::findOrFail($id), $request->validated()['roles']);
     }
+
+    public function getRoles(string $id)
+    {
+        return response()->json($this->roleService->getRolesByUserId($id));
+    }
 }
