@@ -1,6 +1,6 @@
-import Main from "@/Pages/Frames/Main";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Head, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import FormularioCampo from "./FormularioCampo";
@@ -118,9 +118,7 @@ export default function Campo() {
     };
 
     return (
-        <Main>
-            <Head title="Gestion de Campos" />
-
+        <AuthenticatedLayout>
             <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
                 <div className="mx-auto mb-10 flex max-w-7xl items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">
@@ -155,6 +153,6 @@ export default function Campo() {
                 onClose={() => setShowFormulario(false)}
                 onSubmit={handleAgregar}
             />
-        </Main>
+        </AuthenticatedLayout>
     );
 }
