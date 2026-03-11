@@ -1,15 +1,16 @@
-import { FormEvent, useCallback, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Modal from '@/components/Modal';
 import InputLabel from '@/components/InputLabel';
 import TextInput from '@/components/TextInput';
 import MapaInteractivo, { Coord } from './MapaInteractivo';
-import type { CampoDraft, StatusColor } from './types';
+import type { CampoCard, CampoDraft, StatusColor } from './types';
 import { X } from 'lucide-react';
 
 interface FormularioCampoProps {
     show: boolean;
     onClose: () => void;
     onSubmit: (campo: CampoDraft) => void;
+    initialData?: CampoCard | null;
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
@@ -25,6 +26,7 @@ export default function FormularioCampo({
     show,
     onClose,
     onSubmit,
+    initialData,
 }: FormularioCampoProps) {
     // --- Estado del formulario ---
     const [name, setName] = useState('');
@@ -35,6 +37,23 @@ export default function FormularioCampo({
     const [longitude, setLongitude] = useState<number>(0);
     const [surface, setSurface] = useState<number>(0);
     const [polygon, setPolygon] = useState<Coord[]>([]);
+
+    useEffect(() => {
+        if (show && initialData) {
+            setName(initialData.name);
+            setStatus(initialData.status);
+            setStatusColor(initialData.statusColor);
+            setLastCrop(initialData.lastCrop);
+            setLatitude(initialData.latitude);
+            setLongitude(initialData.longitude);
+            // Convert '500 Ha' string back to number 500
+            const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ''));
+            setSurface(isNaN(numericSurface) ? 0 : numericSurface);
+            setPolygon(initialData.polygon || []);
+        } else if (show && !initialData) {
+            resetForm();
+        }
+    }, [show, initialData]);
 
     // --- Handlers del mapa ---
     const handleCenterChange = useCallback((lat: number, lng: number) => {
@@ -95,7 +114,7 @@ export default function FormularioCampo({
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
-                        Registrar nuevo campo
+                        {initialData ? 'Editar campo' : 'Registrar nuevo campo'}
                     </h2>
                     <button
                         type="button"
@@ -217,7 +236,7 @@ export default function FormularioCampo({
                         type="submit"
                         className="rounded-lg bg-[#1d4ed8] px-5 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700"
                     >
-                        Registrar
+                        {initialData ? 'Guardar cambios' : 'Registrar'}
                     </button>
                 </div>
             </form>

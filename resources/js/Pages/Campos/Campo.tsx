@@ -10,6 +10,7 @@ import type { CampoCard, CampoDraft } from "./types";
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
+    onEdit: () => void;
 }
 
 const FieldCard = ({
@@ -22,6 +23,7 @@ const FieldCard = ({
     statusColor,
     onOpenDetail,
     onDelete,
+    onEdit,
 }: FieldCardProps) => {
     return (
         <div
@@ -62,8 +64,12 @@ const FieldCard = ({
             <div className="mt-6 flex justify-end gap-4 text-gray-600">
                 <button
                     type="button"
-                    onClick={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onEdit();
+                    }}
                     className="transition-colors hover:text-blue-600"
+                    title="Editar campo"
                 >
                     <Pencil size={20} />
                 </button>
@@ -104,13 +110,38 @@ const FieldCard = ({
 export default function Campo() {
     const [campos, setCampos] = useState<CampoCard[]>(camposIniciales);
     const [showFormulario, setShowFormulario] = useState(false);
+    const [campoEditando, setCampoEditando] = useState<CampoCard | null>(null);
 
-    const handleAgregar = (nuevoCampo: CampoDraft) => {
+    const handleGuardar = (campoProcesado: CampoDraft) => {
         setCampos((prev) => {
-            const nextId = prev.length > 0 ? Math.max(...prev.map((campo) => campo.id)) + 1 : 1;
-            return [...prev, { id: nextId, ...nuevoCampo }];
+            if (campoEditando) {
+                // Modo Edición: Mantiene la posición reemplazando por ID
+                return prev.map((c) =>
+                    c.id === campoEditando.id ? { ...campoProcesado, id: c.id } : c
+                );
+            } else {
+                // Modo Creación: Añade al final
+                const nextId = prev.length > 0 ? Math.max(...prev.map((c) => c.id)) + 1 : 1;
+                return [...prev, { id: nextId, ...campoProcesado }];
+            }
         });
+        handleCerrarFormulario();
+    };
+
+    const handleCerrarFormulario = () => {
         setShowFormulario(false);
+        // Pequeño timeout para evitar ver el texto parpadear mientras se cierra el modal
+        setTimeout(() => setCampoEditando(null), 200);
+    };
+
+    const handleAbrirCreacion = () => {
+        setCampoEditando(null);
+        setShowFormulario(true);
+    };
+
+    const handleAbrirEdicion = (campo: CampoCard) => {
+        setCampoEditando(campo);
+        setShowFormulario(true);
     };
 
     const handleEliminar = (id: number) => {
@@ -126,7 +157,7 @@ export default function Campo() {
                     </h1>
                     <button
                         type="button"
-                        onClick={() => setShowFormulario(true)}
+                        onClick={handleAbrirCreacion}
                         className="flex items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700"
                     >
                         <Plus size={20} />
@@ -141,6 +172,7 @@ export default function Campo() {
                                 key={campo.id}
                                 {...campo}
                                 onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
+                                onEdit={() => handleAbrirEdicion(campo)}
                                 onDelete={() => handleEliminar(campo.id)}
                             />
                         ))}
@@ -150,8 +182,9 @@ export default function Campo() {
 
             <FormularioCampo
                 show={showFormulario}
-                onClose={() => setShowFormulario(false)}
-                onSubmit={handleAgregar}
+                onClose={handleCerrarFormulario}
+                onSubmit={handleGuardar}
+                initialData={campoEditando}
             />
         </AuthenticatedLayout>
     );
