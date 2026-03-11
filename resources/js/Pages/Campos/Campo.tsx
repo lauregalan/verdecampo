@@ -10,6 +10,7 @@ import type { CampoCard, CampoDraft } from "./types";
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
+    onEdit: () => void;
 }
 
 interface BackendCampo {
@@ -46,6 +47,7 @@ const FieldCard = ({
     statusColor,
     onOpenDetail,
     onDelete,
+    onEdit,
 }: FieldCardProps) => {
     return (
         <div
@@ -86,8 +88,12 @@ const FieldCard = ({
             <div className="mt-6 flex justify-end gap-4 text-gray-600">
                 <button
                     type="button"
-                    onClick={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onEdit();
+                    }}
                     className="transition-colors hover:text-blue-600"
+                    title="Editar campo"
                 >
                     <Pencil size={20} />
                 </button>
@@ -130,6 +136,22 @@ export default function Campo() {
     const [showFormulario, setShowFormulario] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [campoEditando, setCampoEditando] = useState<CampoCard | null>(null);
+
+    const handleAbrirCreacion = () => {
+        setCampoEditando(null);
+        setShowFormulario(true);
+    };
+
+    const handleAbrirEdicion = (campo: CampoCard) => {
+        setCampoEditando(campo);
+        setShowFormulario(true);
+    };
+
+    const handleCerrarFormulario = () => {
+        setShowFormulario(false);
+        setCampoEditando(null);
+    };
 
     const cargarCampos = useCallback(async () => {
         try {
@@ -166,6 +188,37 @@ export default function Campo() {
                 ? Math.round(Number.parseFloat(nuevoCampo.surface))
                 : 0;
 
+            if (campoEditando) {
+                const response = await fetch(`/api/campos/${campoEditando.id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        nombre: nuevoCampo.name,
+                        latitud: String(nuevoCampo.latitude),
+                        longitud: String(nuevoCampo.longitude),
+                        hectareas,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("No se pudo actualizar el campo.");
+                }
+
+                const updatedCampo = (await response.json()) as BackendCampo;
+                const updatedCard = toCampoCard(updatedCampo);
+
+                setCampos((prev) =>
+                    prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
+                );
+                setShowFormulario(false);
+                setCampoEditando(null);
+                setError(null);
+                return true;
+            }
+
             const response = await fetch("/api/campos", {
                 method: "POST",
                 headers: {
@@ -190,7 +243,7 @@ export default function Campo() {
             setError(null);
             return true;
         } catch {
-            setError("Error al crear el campo.");
+            setError(campoEditando ? "Error al actualizar el campo." : "Error al crear el campo.");
             return false;
         }
     };
@@ -224,7 +277,7 @@ export default function Campo() {
                     </h1>
                     <button
                         type="button"
-                        onClick={() => setShowFormulario(true)}
+                        onClick={handleAbrirCreacion}
                         className="inline-flex w-fit self-end items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700 sm:self-auto"
                     >
                         <Plus size={20} />
@@ -250,6 +303,7 @@ export default function Campo() {
                                     key={campo.id}
                                     {...campo}
                                     onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
+                                    onEdit={() => handleAbrirEdicion(campo)}
                                     onDelete={() => {
                                         void handleEliminar(campo.id);
                                     }}
@@ -262,8 +316,9 @@ export default function Campo() {
 
             <FormularioCampo
                 show={showFormulario}
-                onClose={() => setShowFormulario(false)}
+                onClose={handleCerrarFormulario}
                 onSubmit={handleAgregar}
+                initialData={campoEditando}
             />
         </Body>
     );
