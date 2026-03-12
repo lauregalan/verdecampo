@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CampoRequest;
-use App\Http\Services\CampoService;
 use App\Models\Campo;
+use App\Services\CampoService;
 use Illuminate\Http\JsonResponse;
 
 class CampoController extends Controller
