@@ -30,9 +30,7 @@ class LoteRequest extends FormRequest
             'latitud' => ['required', 'numeric'],
             'ph' => ['nullable', 'numeric', 'between:0,14'],
             'napa' => ['nullable', 'numeric', 'min:0'],
-            //'id_campania' => ['nullable', 'exists:campanias,id'],
             'id_campo' => ['required', 'exists:campos,id'],
-            'id_campania' => ['nullable', 'numeric'],
         ];
     }
 
@@ -46,7 +44,6 @@ class LoteRequest extends FormRequest
             'latitud.required' => 'La latitud es requerida',
             'ph.nullable' => 'El ph es requerido',
             'napa.nullable' => 'La napa es requerida',
-            'id_campania.nullable' => 'La campaña es requerida',
             'id_campo.required' => 'El campo es requerido',
         ];
     }

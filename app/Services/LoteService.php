@@ -23,7 +23,7 @@ class LoteService
 
     // public function getAllByCampania(int $id_campania)
     // {
-    //     return Lote::with('campania')->where('id_campania', $id_campania)->get();
+    //     return Lote::with('id')->where('id_campania', $id_campania)->get();
     // }
 
     public function create(array $data)
