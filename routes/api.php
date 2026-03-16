@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\LoteController;
+use App\Http\Controllers\CultivoController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Hola!']);
@@ -15,6 +16,10 @@ Route::apiResource('campanias', App\Http\Controllers\CampaniaController::class);
 Route::get('/campanias/{campania}/lotes', [App\Http\Controllers\CampaniaController::class, 'getLotes']);
 Route::post('/campanias/{campania}/lotes', [App\Http\Controllers\CampaniaController::class, 'asignarLotes']);
 Route::delete('/campanias/{campania}/lotes/{loteId}', [App\Http\Controllers\CampaniaController::class, 'quitarLote']);
+
+Route::apiResource('cultivos', CultivoController::class);
+Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
+Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
 
 Route::get('/roles', [RoleController::class, 'index']);
 Route::get('/users', [UserController::class, 'index']);
