@@ -10,7 +10,6 @@ class Campania extends Model
     protected $fillable = [
         'campo_id',
         'nombre',
-        'cultivo',
         'fecha_inicio',
         'fecha_fin',
         'estado',
@@ -25,5 +24,10 @@ class Campania extends Model
     {
         return $this->belongsToMany(Lote::class, 'campania_lote')
                     ->withTimestamps();
+    }
+
+    public function cultivos()
+    {
+        return $this->hasMany(Cultivo::class);
     }
 }

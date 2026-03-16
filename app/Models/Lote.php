@@ -29,4 +29,9 @@ class Lote extends Model
         return $this->belongsToMany(Campania::class, 'campania_lote')
                     ->withTimestamps();
     }
+
+    public function cultivos()
+    {
+        return $this->hasMany(Cultivo::class);
+    }
 }

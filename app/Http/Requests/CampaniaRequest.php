@@ -24,7 +24,6 @@ class CampaniaRequest extends FormRequest
         return [
             'campo_id'           => ['required', 'integer', 'exists:campos,id'],
             'nombre'             => ['required', 'string', 'max:255'],
-            'cultivo'            => ['required', 'string', 'max:255'],
             'fecha_inicio'       => ['required', 'date'],
             'fecha_fin'          => ['nullable', 'date', 'after:fecha_inicio'],
             'estado'             => ['required', 'string', 'in:Planificada,En Curso,Finalizada,Cancelada'],
