@@ -12,6 +12,9 @@ Route::get('/test', function () {
 
 Route::apiResource('campos', App\Http\Controllers\CampoController::class);
 Route::apiResource('campanias', App\Http\Controllers\CampaniaController::class);
+Route::get('/campanias/{campania}/lotes', [App\Http\Controllers\CampaniaController::class, 'getLotes']);
+Route::post('/campanias/{campania}/lotes', [App\Http\Controllers\CampaniaController::class, 'asignarLotes']);
+Route::delete('/campanias/{campania}/lotes/{loteId}', [App\Http\Controllers\CampaniaController::class, 'quitarLote']);
 
 Route::get('/roles', [RoleController::class, 'index']);
 Route::get('/users', [UserController::class, 'index']);

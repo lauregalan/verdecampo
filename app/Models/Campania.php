@@ -20,4 +20,10 @@ class Campania extends Model
     {
         return $this->belongsTo(Campo::class);
     }
+
+    public function lotes()
+    {
+        return $this->belongsToMany(Lote::class, 'campania_lote')
+                    ->withTimestamps();
+    }
 }

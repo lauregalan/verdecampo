@@ -32,4 +32,19 @@ class CampaniaService
     {
         $campania->delete();
     }
+
+    public function getLotes(Campania $campania)
+    {
+        return $campania->lotes;
+    }
+
+    public function asignarLotes(Campania $campania, array $loteIds): void
+    {
+        $campania->lotes()->syncWithoutDetaching($loteIds);
+    }
+
+    public function quitarLote(Campania $campania, int $loteId): void
+    {
+        $campania->lotes()->detach($loteId);
+    }
 }

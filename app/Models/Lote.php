@@ -24,8 +24,9 @@ class Lote extends Model
         return $this->belongsTo(Campo::class, 'id_campo', 'id');
     }
 
-    // public function campania()
-    // {
-    //     return $this->belongsTo(Campania::class, 'id_campania');
-    // }
+    public function campanias()
+    {
+        return $this->belongsToMany(Campania::class, 'campania_lote')
+                    ->withTimestamps();
+    }
 }
