@@ -37,6 +37,12 @@ Route::get('/campo/{campoId}', function (int $campoId) {
     ]);
 })->middleware(['auth', 'verified'])->whereNumber('campoId')->name('campo.detalle');
 
+Route::get('/lotes/crear/{campoId}', function (int $campoId) {
+    return Inertia::render('Lotes/FormularioLote', [
+        'campoId' => $campoId,
+    ]);
+})->middleware(['auth', 'verified'])->whereNumber('campoId')->name('lotes.crear');
+
 Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');

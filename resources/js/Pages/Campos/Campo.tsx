@@ -1,7 +1,7 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { router } from "@inertiajs/react";
-import { Eye, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, MapPin, Pencil, Plus, Trash2} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
 import { statusStyles } from "./mockCampos";
@@ -37,6 +37,15 @@ const toCampoCard = (campo: BackendCampo): CampoCard => ({
     polygon: [],
 });
 
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+
+
 const FieldCard = ({
     id,
     name,
@@ -50,7 +59,7 @@ const FieldCard = ({
     onEdit,
 }: FieldCardProps) => {
     return (
-        <div
+        <Card
             role="button"
             tabIndex={0}
             onClick={onOpenDetail}
@@ -60,49 +69,59 @@ const FieldCard = ({
                     onOpenDetail();
                 }
             }}
-            className="flex h-full cursor-pointer flex-col rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="group flex h-full cursor-pointer flex-col overflow-hidden border-stone-300 bg-[#FCFBF8] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/50"
             aria-label={`Abrir detalle de ${name}`}
             data-campo-id={id}
         >
-            <h3 className="mb-4 text-xl font-bold text-gray-800">{name}</h3>
-
-            <div className="mb-4 h-32 w-full overflow-hidden rounded-xl">
-                <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+            <div className="h-24 w-full shrink-0 overflow-hidden border-b border-stone-200 bg-stone-100">
+                <img
+                    src={imageUrl}
+                    alt={`Vista de ${name}`}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
             </div>
 
-            <div className="flex-grow space-y-3">
-                <div>
-                    <p className="font-medium text-gray-700">Superficie: {surface}</p>
-                    <span
-                        className={`mt-1 inline-block rounded-full px-3 py-1 text-sm font-semibold ${statusStyles[statusColor]}`}
-                    >
-                        {status}
-                    </span>
+            <CardHeader className="flex flex-row items-start justify-between gap-2 p-4 pb-2 space-y-0">
+                <CardTitle className="text-base font-bold uppercase tracking-wide text-stone-800 line-clamp-1">
+                    {name}
+                </CardTitle>
+                <span
+                    className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusStyles[statusColor]}`}
+                >
+                    {status}
+                </span>
+            </CardHeader>
+
+            <CardContent className="flex-grow flex flex-col justify-center gap-1.5 p-4 pt-1">
+                <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-stone-800">Superficie:</span>
+                    <span className="font-normal text-stone-600">{surface}</span>
                 </div>
+                <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-stone-800">Cultivo:</span>
+                    <span className="font-normal truncate text-stone-600 ml-2">{lastCrop}</span>
+                </div>
+            </CardContent>
 
-                <p className="pt-2 font-medium text-gray-700">
-                    Ultimo Cultivo: <span className="font-normal">{lastCrop}</span>
-                </p>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-4 text-gray-600">
+            <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-500">
                 <button
                     type="button"
                     onClick={(event) => {
                         event.stopPropagation();
                         onEdit();
                     }}
-                    className="transition-colors hover:text-blue-600"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
                     title="Editar campo"
                 >
-                    <Pencil size={20} />
+                    <Pencil strokeWidth={1.5} size={16} />
                 </button>
                 <button
                     type="button"
                     onClick={(event) => event.stopPropagation()}
-                    className="transition-colors hover:text-blue-600"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
+                    title="Ver en mapa"
                 >
-                    <MapPin size={20} />
+                    <MapPin strokeWidth={1.5} size={16} />
                 </button>
                 <button
                     type="button"
@@ -110,10 +129,10 @@ const FieldCard = ({
                         event.stopPropagation();
                         onOpenDetail();
                     }}
-                    className="transition-colors hover:text-blue-600"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
                     title="Ver detalle"
                 >
-                    <Eye size={20} />
+                    <Eye strokeWidth={1.5} size={16} />
                 </button>
                 <button
                     type="button"
@@ -121,17 +140,16 @@ const FieldCard = ({
                         event.stopPropagation();
                         onDelete();
                     }}
-                    className="transition-colors hover:text-red-600"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
                     title="Eliminar campo"
                 >
-                    <Trash2 size={20} />
+                    <Trash2 strokeWidth={1.5} size={16} />
                 </button>
-            </div>
-        </div>
+            </CardFooter>
+        </Card>
     );
 };
-
-export default function Campo() {
+;export default function Campo() {
     const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
     const [loading, setLoading] = useState(true);
