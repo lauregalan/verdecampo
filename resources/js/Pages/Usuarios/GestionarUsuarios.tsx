@@ -71,6 +71,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
     const reloadUsers = async () => {
         try {
@@ -228,10 +229,10 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                             <TableCell>
                                                 <Badge 
                                                     className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
-                                                    onClick={
-                                                        () => setSelectedRole(primaryRole)
-                                                        
-                                                    }
+                                                    onClick={() => {
+                                                        setSelectedRole(primaryRole);
+                                                        setSelectedUserId(user.id.toString());
+                                                    }}
                                                 >
                                                     {primaryRole}
                                                 </Badge>
@@ -274,9 +275,12 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 selectedRole={selectedRole}
                 availableRoles={availableRoles}
                 getRoleBadgeClass={getRoleBadgeClass}
-                onClose={() => setSelectedRole(null)}
+                onClose={() => {
+                    setSelectedRole(null);
+                    setSelectedUserId(null);
+                }}
                 onSelectRole={(role) => setSelectedRole(role)}
-                userId="2"
+                userId={selectedUserId ?? ""}
                 onRoleUpdated={reloadUsers}
             />
         </Body>
