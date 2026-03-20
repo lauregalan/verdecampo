@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
+import Campania from "../Campanias/Campania";
 
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;

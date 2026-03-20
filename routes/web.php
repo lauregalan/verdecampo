@@ -45,6 +45,12 @@ Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
 
+Route::get('/campanias', function () {
+    return Inertia::render('Campanias/Campania');
+})->middleware(['auth', 'verified'])->name('gestionarCampanias');
 
+Route::get('/campania', function () {
+    return Redirect('/campanias');
+})->middleware(['auth', 'verified'])->name('gestionarCampañas');
 
 require __DIR__.'/auth.php';
