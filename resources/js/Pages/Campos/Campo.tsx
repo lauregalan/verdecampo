@@ -1,12 +1,13 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { router } from "@inertiajs/react";
-import { Eye, MapPin, Pencil, Plus, Trash2} from "lucide-react";
+import { ClipboardPlus, Eye, Layers, MapPin, Pencil, Plus, Trash2} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
-
+import { Maximize2, Sprout } from 'lucide-react';
+import { ProductoSumary } from './ProductoSumary';
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
@@ -22,7 +23,7 @@ interface BackendCampo {
 }
 
 const PLACEHOLDER_IMAGE =
-    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
+    "https://plus.unsplash.com/premium_photo-1661899405263-a0bee333068e?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
 const toCampoCard = (campo: BackendCampo): CampoCard => ({
     id: campo.id,
@@ -58,6 +59,9 @@ const FieldCard = ({
     onDelete,
     onEdit,
 }: FieldCardProps) => {
+    const config = statusStyles[statusColor];
+    const { className, Icon } = config;
+
     return (
         <Card
             role="button"
@@ -73,7 +77,7 @@ const FieldCard = ({
             aria-label={`Abrir detalle de ${name}`}
             data-campo-id={id}
         >
-            <div className="h-24 w-full shrink-0 overflow-hidden border-b border-stone-200 bg-stone-100">
+            <div className="h-60 w-full shrink-0 overflow-hidden border-b border-stone-200 bg-stone-100">
                 <img
                     src={imageUrl}
                     alt={`Vista de ${name}`}
@@ -86,62 +90,82 @@ const FieldCard = ({
                     {name}
                 </CardTitle>
                 <span
-                    className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusStyles[statusColor]}`}
+                    className={`shrink-0 inline-flex items-center rounded-full gap-1 px-1 py-1 text-[10px] font-bold uppercase tracking-wider ${className}`}
                 >
-                    {status}
-                </span>
+                    <Icon className="size-3.5" aria-hidden="true" />
+                    <span>{status}</span>                
+            </span>
             </CardHeader>
 
             <CardContent className="flex-grow flex flex-col justify-center gap-1.5 p-4 pt-1">
                 <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-stone-800">Superficie:</span>
+                    <div className="flex items-center gap-2">
+                        <Maximize2 className="size-4 text-stone-400" aria-hidden="true" />
+                        <span className="font-semibold text-stone-800">Superficie:</span>
+                    </div>
                     <span className="font-normal text-stone-600">{surface}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-stone-800">Cultivo:</span>
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <Sprout className="size-4 text-stone-400" aria-hidden="true" />
+                        <span className="font-semibold text-stone-800">Cultivo:</span>
+                    </div>
                     <span className="font-normal truncate text-stone-600 ml-2">{lastCrop}</span>
                 </div>
             </CardContent>
 
-            <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-500">
+            <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
+                
+                {/* NUEVO: Acceso directo a Lotes */}
                 <button
                     type="button"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onEdit();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
-                    title="Editar campo"
+                    className="mr-auto rounded bg-transparent p-1.5 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                    title="Ver lotes de este campo"
                 >
-                    <Pencil strokeWidth={1.5} size={16} />
+                    <Layers strokeWidth={1.5} size={16} />
                 </button>
+
+                {/* NUEVO: Registrar actividad rápida */}
                 <button
                     type="button"
-                    onClick={(event) => event.stopPropagation()}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-blue-50 hover:text-blue-700"
+                    title="Registrar labor/actividad"
+                >
+                    <ClipboardPlus strokeWidth={1.5} size={16} />
+                </button>
+
+                {/* Botones actuales mejorados */}
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onOpenDetail(); }}
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                    title="Ver detalle completo"
+                >
+                    <Eye strokeWidth={1.5} size={16} />
+                </button>
+
+                <button
+                    type="button"
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
                     title="Ver en mapa"
                 >
                     <MapPin strokeWidth={1.5} size={16} />
                 </button>
+
                 <button
                     type="button"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenDetail();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-200 hover:text-stone-900"
-                    title="Ver detalle"
+                    onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                    title="Editar"
                 >
-                    <Eye strokeWidth={1.5} size={16} />
+                    <Pencil strokeWidth={1.5} size={16} />
                 </button>
+
                 <button
                     type="button"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onDelete();
-                    }}
+                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
                     className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
-                    title="Eliminar campo"
+                    title="Eliminar"
                 >
                     <Trash2 strokeWidth={1.5} size={16} />
                 </button>
@@ -286,58 +310,69 @@ const FieldCard = ({
         }
     };
 
-    return (
-        <Body>
-            <div className="flex h-full min-h-0 flex-col bg-[#f9f4ea] p-8 font-sans">
-                <div className="mx-auto mb-6 flex w-full max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        Gestion de Campos
-                    </h1>
-                    <button
-                        type="button"
-                        onClick={handleAbrirCreacion}
-                        className="inline-flex w-fit self-end items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700 sm:self-auto"
-                    >
-                        <Plus size={20} />
-                        Nuevo Campo
-                    </button>
-                </div>
 
-                <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-7xl rounded-xl pr-4">
-                    {error && (
-                        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {error}
-                        </p>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-8 pb-4 md:grid-cols-2 lg:grid-cols-3">
-                        {loading ? (
-                            <p className="col-span-full text-sm text-gray-600">Cargando campos...</p>
-                        ) : campos.length === 0 ? (
-                            <p className="col-span-full text-sm text-gray-600">No hay campos registrados.</p>
-                        ) : (
-                            campos.map((campo) => (
-                                <FieldCard
-                                    key={campo.id}
-                                    {...campo}
-                                    onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
-                                    onEdit={() => handleAbrirEdicion(campo)}
-                                    onDelete={() => {
-                                        void handleEliminar(campo.id);
-                                    }}
-                                />
-                            ))
-                        )}
-                    </div>
-                </ScrollArea>
+return (
+    <Body>
+        {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
+        <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
+            
+            {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
+            <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                    Gestión de Campos
+                </h1>
+                <button
+                    type="button"
+                    onClick={handleAbrirCreacion}
+                    className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                >
+                    <Plus size={20} strokeWidth={2.5} />
+                    Nuevo Campo
+                </button>
             </div>
 
-            <FormularioCampo
-                show={showFormulario}
-                onClose={handleCerrarFormulario}
-                onSubmit={handleAgregar}
-                initialData={campoEditando}
-            />
-        </Body>
-    );
+            {/* El Summary también debe seguir el ancho máximo */}
+            <div className="mx-auto w-full max-w-[1600px] mb-8">
+                <ProductoSumary />
+            </div>
+
+            {/* Quitamos pr-4 para que la grid esté centrada perfectamente */}
+            <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-[1600px]">
+                {error && (
+                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {error}
+                    </div>
+                )}
+
+                {/* Ajustamos el gap a 6 para que las cards no estén pegadas pero tampoco perdidas */}
+                <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {loading ? (
+                        <p className="col-span-full text-center py-10 text-stone-500">Cargando campos...</p>
+                    ) : campos.length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center py-20 text-stone-400">
+                            <p>No hay campos registrados aún.</p>
+                        </div>
+                    ) : (
+                        campos.map((campo) => (
+                            <FieldCard
+                                key={campo.id}
+                                {...campo}
+                                onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
+                                onEdit={() => handleAbrirEdicion(campo)}
+                                onDelete={() => handleEliminar(campo.id)}
+                            />
+                        ))
+                    )}
+                </div>
+            </ScrollArea>
+        </div>
+
+        <FormularioCampo
+            show={showFormulario}
+            onClose={handleCerrarFormulario}
+            onSubmit={handleAgregar}
+            initialData={campoEditando}
+        />
+    </Body>
+);
 }

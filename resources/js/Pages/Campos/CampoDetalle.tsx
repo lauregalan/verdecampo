@@ -79,7 +79,7 @@ export default function CampoDetalle() {
         return (
             <Body>
                 <Head title="Cargando campo" />
-                <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
+                <div className="min-h-full p-8 font-sans">
                     <div className="mx-auto max-w-7xl rounded-3xl border border-stone-300 bg-[#fdf8f0] p-8">
                         <p className="text-xl font-semibold text-gray-800">Cargando detalle del campo...</p>
                     </div>
@@ -92,7 +92,7 @@ export default function CampoDetalle() {
         return (
             <Body>
                 <Head title="Campo no encontrado" />
-                <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
+                <div className="min-h-full p-8 font-sans">
                     <div className="mx-auto max-w-7xl rounded-3xl border border-stone-300 bg-[#fdf8f0] p-8">
                         <p className="text-xl font-semibold text-gray-800">{error ?? "Ubicacion no disponible"}</p>
                         <Link
@@ -122,7 +122,7 @@ export default function CampoDetalle() {
         <Body>
             <Head title={`Detalle - ${campo.nombre}`} />
 
-            <div className="flex h-full w-full flex-col overflow-hidden bg-[#f9f4ea] p-4 font-sans md:p-6">
+            <div className="flex h-full w-full flex-col overflow-hidden p-4 font-sans md:p-6">
                 
                 <div className="mx-auto mb-4 w-full max-w-6xl shrink-0">
                     <Button 

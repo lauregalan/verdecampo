@@ -46,6 +46,7 @@
         "react-avatar": "^5.0.4",
         "react-label": "^0.0.6",
         "react-leaflet": "^4.2.1",
+        "recharts": "^3.8.0",
         "tailwind-merge": "^3.5.0"
     }
 }

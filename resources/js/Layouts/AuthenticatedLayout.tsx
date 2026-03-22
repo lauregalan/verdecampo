@@ -9,19 +9,15 @@ export default function Authenticated({
     
     return (
         <SidebarProvider defaultOpen={true}>
-            <div className="flex items-center justify-center min-h-screen w-full bg-fondo-agro bg-cover bg-center bg-no-repeat p-4">
+            <div className="flex items-center justify-center min-h-full w-full bg-fondo-agro bg-cover bg-center bg-no-repeat p-1">
                 
-                <div className="m-1 flex w-full max-w-8xl h-[93vh] bg-white/80 p-1.5 rounded-xl shadow-2xl overflow-hidden">
-                    
-                    <Sidebar/>
+                <div className="m-1 flex w-full max-w-8xl h-full bg-white/80 p-0.5 rounded-xl shadow-2xl overflow-hidden relative">
+                    <Sidebar /> {/* La sidebar ahora se quedará aquí dentro */}
                     <div className="flex-1 flex flex-col min-w-0 bg-transparent h-full">
-
-                        <Header/>
-                        
+                        <Header />
                         <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
                             {children}
                         </main>
-                        
                     </div>
                 </div>
                 
