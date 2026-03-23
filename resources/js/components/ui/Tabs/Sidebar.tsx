@@ -38,7 +38,7 @@ export default function AppSidebar() {
 
     return (
         <Sidebar
-            className=" h-full rounded-xl rounded-tr-none rounded-br-none bg-[#0f2e1e] text-white flex flex-col shadow-xl border-none"
+            className=" h-full rounded-xl rounded-tr-none rounded-br-none bg-[#0f2e1e] bg-blend-multiply border-white/5 backdrop-blur-none text-white flex flex-col shadow-xl border-none"
             collapsible="none"
         >
             <SidebarHeader className="p-6">
