@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button"
 import { Head } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect } from "react";
-import Combobox from "@/components/ui/combobox";
-
+//import Combobox from "@/components/ui/combobox";
+//import Combobox from "@/components/ui/combobox";
 interface Lote {
     id: number;
     nombre: string;
