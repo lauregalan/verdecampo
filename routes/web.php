@@ -41,6 +41,10 @@ Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');
 
+Route::get('/lotes', function () {
+    return Inertia::render('Lotes/Lotes');
+})->middleware(['auth', 'verified'])->name('lotes');
+
 Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');

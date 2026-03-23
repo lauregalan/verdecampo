@@ -16,6 +16,7 @@ Route::get('/roles', [RoleController::class, 'index']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
 Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);
+Route::get('/lotes', [LoteController::class, 'showAll']);
 Route::get('/lotes/{id}', [LoteController::class, 'show']);
 Route::post('/lotes', [LoteController::class, 'store']);
 Route::put('/lotes/{id}', [LoteController::class, 'update']);

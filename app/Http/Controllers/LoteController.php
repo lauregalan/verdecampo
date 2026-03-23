@@ -7,7 +7,7 @@ use App\Services\LoteService;
 use App\Models\Lote;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\LoteRequest;
-use App\Http\Requuests\StoreLoteRequest;
+use App\Http\Requests\StoreLoteRequest;
 
 class LoteController extends Controller
 {
@@ -52,6 +52,12 @@ class LoteController extends Controller
     public function indexByCampania(int $id_campania): JsonResponse
     {
         $lotes = $this->loteService->getAllByCampania($id_campania);
+        return response()->json($lotes, 200);
+    }
+
+    public function showAll(): JsonResponse
+    {
+        $lotes = $this->loteService->getAll();
         return response()->json($lotes, 200);
     }
 

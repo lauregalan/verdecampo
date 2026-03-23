@@ -49,4 +49,10 @@ class LoteService
     {
         return Lote::where('nombre','like', '%'.$nombre.'%')->get();
     }
+
+    public function getAll()
+    {
+        return Lote::all();
+    }
+
 }
