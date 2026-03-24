@@ -4,7 +4,7 @@ export default function Dashboard() {
     return (
         <Body>
             <Head title="Dashboard" />
-            <div className="min-h-full bg-[#f9f4ea] p-8 font-sans">
+            <div className="min-h-full p-8 font-sans">
                 <div className="mx-auto mb-10 max-w-7xl">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Dashboard
