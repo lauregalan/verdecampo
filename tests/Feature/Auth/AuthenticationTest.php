@@ -19,7 +19,9 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -32,12 +34,35 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
 
         $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
+
+        $this->assertGuest();
+    }
+
+    public function test_inactive_users_can_not_authenticate_using_the_login_screen(): void
+    {
+        $user = User::factory()->create([
+            'active' => false,
+            'password' => 'password',
+        ]);
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'email' => 'Tu cuenta esta desactivada. Contacta a un productor para reactivarla.',
+            ]);
 
         $this->assertGuest();
     }
@@ -50,5 +75,20 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_inactive_authenticated_users_are_logged_out_on_the_next_request(): void
+    {
+        $user = User::factory()->create([
+            'active' => false,
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response
+            ->assertRedirect('/login')
+            ->assertSessionHas('status', 'Tu cuenta fue desactivada. Contacta a un productor para reactivarla.');
+
+        $this->assertGuest();
     }
 }
