@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import Modal from "@/components/Modal";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
+import { getCsrfToken, getXsrfToken } from "@/lib/csrf";
 
 type RoleInfo = {
     name: string;
@@ -44,19 +45,24 @@ export default function UserModal({
 
 
     const [loading, setLoading] = useState(false);
+    const isApplyDisabled = !selectedRole || !userId || loading;
 
     // Función para enviar los datos al backend y actualizar el rol del usuario
     const handleApply = async () => {
-        if (!selectedRole) return;
+        if (!selectedRole || !userId) return;
 
         setLoading(true);
         try {
             const response = await fetch(`/api/users/${userId}/roles`, {
-                method: 'PUT',
+                method: "PUT",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    "X-XSRF-TOKEN": getXsrfToken(),
+                    "X-Requested-With": "XMLHttpRequest",
                 },
+                credentials: "same-origin",
                 body: JSON.stringify({
                     roles: [selectedRole],
                 }),
@@ -69,9 +75,9 @@ export default function UserModal({
                     await onRoleUpdated();
                 }
             } else {
-                const text = await response.text();
-                console.error("Error al actualizar rol", response.status, text);
-                alert("Error al actualizar el rol");
+                const payload = await response.json().catch(() => null);
+                console.error("Error al actualizar rol", response.status, payload);
+                alert(payload?.message ?? "Error al actualizar el rol");
             }
         } catch (error) {
             console.error("Error de red:", error);
@@ -129,10 +135,19 @@ export default function UserModal({
                     </div>
                     <div className="pt-4 border-t border-gray-200 flex justify-end px-4">
                         <button
+                            type="button"
                             onClick={handleApply}
-                            className="text-red-500 hover:text-gray-700"
+                            disabled={isApplyDisabled}
+                            className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
                         >
-                            Aplicar Cambios
+                            {loading ? (
+                                <span className="inline-flex items-center gap-2">
+                                    <span className="h-3.5 w-3.5 animate-spin rounded-full border border-white border-t-transparent" />
+                                    Aplicando...
+                                </span>
+                            ) : (
+                                'Aplicar Cambios'
+                            )}
                         </button>
                     </div>
                 </div>
