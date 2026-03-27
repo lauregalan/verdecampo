@@ -1,5 +1,5 @@
 export type StatusColor = 'verde' | 'amarillo' | 'rojo' | 'verde-claro';
-
+export type Coord = [number, number];
 export interface LoteCard {
     id: number;
     id_campo: number;
@@ -13,12 +13,26 @@ export interface LoteCard {
     longitude: number;
     polygon: { lat: number; lng: number }[];
 }
-
 export interface LoteDraft {
-            id_campo: number;
+    name: string;
+    caracteristicas: string;
+    hectareas: number;
+    status: string;
+    lastCrop: string;
+    statusColor: StatusColor;
+    imageUrl: string;
+    latitude: number;   
+    longitude: number;
+    ph: number;
+    napa: number;
+    polygon: Coord[];
+}
+
+/*export interface LoteDraft {
+            id_campo: number;id_campo: number;
             name: string;
             caracteristicas: string;
-            hectarea: number;
+            hectareas: number;
             status: string;
             lastCrop;
             statusColor;
@@ -28,7 +42,7 @@ export interface LoteDraft {
             ph: number;
             napa: number;
             polygon: { lat: number; lng: number }[];
-        }
+        }*/
 
 
     /*name: string;
@@ -40,3 +54,13 @@ export interface LoteDraft {
     longitude: number;
     polygon: { lat: number; lng: number }[];
 }*/
+export type Coord = {
+    lat: number;
+    lng: number;
+};
+setPolygon(
+    initialData.polygon.map(p => ({
+        lat: p.latitude,
+        lng: p.longitude
+    }))
+);

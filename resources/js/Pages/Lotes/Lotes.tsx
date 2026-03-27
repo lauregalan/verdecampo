@@ -72,11 +72,7 @@ export default function Lotes() {
     const [loteEditando, setLoteEditando] = useState<Lote | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [nombreBuscado, setNombreBuscado] = useState("");
-    const [campos, setCampos] = useState<Campo[]>([
-        { id: 1, nombre: "Campo A" },
-        { id: 2, nombre: "Campo B" },
-        { id: 3, nombre: "Campo C" },
-    ]);
+    const [campos, setCampos] = useState<Campo[]>([]);
     const [cultivos, setCultivos] = useState<Cultivo[]>([
         { id: 1, nombre: "Trigo" },
         { id: 2, nombre: "Maíz" },
@@ -95,6 +91,7 @@ export default function Lotes() {
         { nombre: "disponible" },
     ];
 
+    //-------------------------GET LOTES-------------------------
     const GetLotes = useCallback(async () => {
         try {
             const response = await fetch("/api/lotes");
@@ -120,6 +117,7 @@ export default function Lotes() {
         }
     }, []);
 
+    //-------------------------GET CAMPOS-------------------------
     const getCampos = useCallback(async () => {
         try {
             const response = await fetch("/api/campos");
@@ -140,6 +138,7 @@ export default function Lotes() {
         getCampos();
     }, []);
 
+    //-------------------------FILTRADO-------------------------
     useEffect(() => {
         const filtrados = lotes.filter((lote) => {
             console.log("Filtrando lote:", lote.nombre, "idCampo:", lote.idCampo, "campoSeleccionado:", campoSeleccionado?.id);
@@ -161,87 +160,142 @@ export default function Lotes() {
         setLotesFiltrados(filtrados);
     }, [lotes, campoSeleccionado, estadoSeleccionado, nombreBuscado]);
 
-const handleAbrirCreacion = () => {
-    setShowFormulario(true);
-};
-const handleAgregarLote = async (
-    nuevoLote: LoteDraft,
-    campoId: number | string
-): Promise<boolean> => {
-    try {
-        const hectareas = Number.isFinite(Number(nuevoLote.hectarea))
-            ? Math.round(Number(nuevoLote.hectarea
-            ))
-            : 0;
 
-        const payload = {
-            nombre: nuevoLote.name,
-            caracteristicas: nuevoLote.caracteristicas,
-            estado: nuevoLote.status,
-            latitud: Number(nuevoLote.latitude),
-            longitud: Number(nuevoLote.longitude),
-            hectareas,
-            idCampo: Number(campoId),
-            ph: nuevoLote.ph,
-            napa: nuevoLote.napa,
-        };
+    //-------------------------AGREGAR/EDITAR LOTE-------------------------
+    const handleAgregarLote = async (
+        nuevoLote: LoteDraft,
+        campoId: number | string
+    ): Promise<boolean> => {
 
-        // ✏️ EDITAR
-        if (loteEditando) {
-            const response = await fetch(`/api/lotes/${loteEditando.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
+        try {
+            const estadoNormalizado = nuevoLote.status
+                .toLowerCase()
+                .replace(/\s+/g, ""); // elimina TODOS los espacios
 
-            if (!response.ok) {
-                throw new Error("No se pudo actualizar el lote.");
+            const payload = {
+                nombre: nuevoLote.name?.trim() || "",
+                caracteristicas: nuevoLote.caracteristicas || "",
+                estado: nuevoLote.status.toLowerCase().replace(" ", ""),
+                latitud: Number(nuevoLote.latitude) ?? 0,
+                longitud: Number(nuevoLote.longitude) ?? 0,
+                hectareas: Number(nuevoLote.hectareas) ?? 0,
+                id_campo: Number(campoId),
+                ph: Number(nuevoLote.ph) || 0,
+                napa: Number(nuevoLote.napa) || 0,
+            };
+
+            console.log("📤 Enviando payload:", payload);
+
+            //let response, data;
+
+            // -------- EDITAR --------
+            if (loteEditando) {
+                const response = await fetch(`/api/lotes/${loteEditando.id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error("❌ Error backend:", data);
+                    throw new Error("No se pudo actualizar el lote.");
+                }
+                console.log("✅ Lote actualizado:", data);
+
+                setLotes((prev) =>
+                    prev.map((l) => (l.id === data.id ? data : l))
+                );
+
+                setShowFormulario(false);
+                setLoteEditando(null);
+                return true;
             }
 
-            const updatedLote = (await response.json()) as Lote;
+            else {
+                // -------- CREAR --------
+                const response = await fetch(`/api/lotes`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
 
-            setLotes((prev) =>
-                prev.map((l) => (l.id === updatedLote.id ? updatedLote : l))
-            );
+                const data = await response.json();
 
+                if (!response.ok) {
+                    console.error("❌ Error backend:", data);
+                    throw new Error("No se pudo crear el lote.");
+                }
+
+                console.log("✅ Lote creado:", data);
+
+                setLotes((prev) => [...prev, data]);
+            }
+            //Reset general
             setShowFormulario(false);
             setLoteEditando(null);
             setError(null);
 
             return true;
+
+        } catch (error) {
+            console.error("Error:", error);
+            setError("Error al guardar el lote.");
+            return false;
         }
+    };
+    const handleAbrirCreacion = () => {
+        setShowFormulario(true);
+    };
 
-        // ➕ CREAR
-        const response = await fetch(`/api/lotes`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
+    //-------------------------ELIMINAR LOTE-------------------------
+    const handleEliminarLote = async (id: number) => {
+        if (!confirm("¿Confirma que desea eliminar este lote?")) return;
 
-        if (!response.ok) {
-            throw new Error("No se pudo crear el lote.");
+        try {
+            const response = await fetch(`/api/lotes/${id}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                console.error("Error backend:", data);
+                throw new Error("No se pudo eliminar el lote.");
+            }
+
+            console.log("Lote eliminado");
+            setLotes((prev) => prev.filter((l) => l.id !== id));
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error al eliminar el lote.");
         }
-
-        const createdLote = (await response.json()) as Lote;
-
-        setLotes((prev) => [...prev, createdLote]);
-
-        setShowFormulario(false);
-        setError(null);
-
-        return true;
-    } catch (error) {
-        console.error(error);
-        setError("Error al guardar el lote.");
-        return false;
     }
-};
+
+
+    const loteToForm = (lote: Lote | null) => {
+        if (!lote) return null;
+
+        return {
+            id: lote.id,
+            name: lote.nombre,
+            status: lote.estado,
+            latitude: lote.latitud,
+            longitude: lote.longitud,
+            hectareas: lote.hectareas,
+            caracteristicas: lote.caracteristicas,
+            ph: lote.ph,
+            napa: lote.napa,
+            polygon: [],
+            id_campo: lote.idCampo,
+        };
+    };
 
     return (
         <Body>
@@ -458,23 +512,28 @@ const handleAgregarLote = async (
                                     console.log(`Abrir detalle de lote ${lote.id}`);
                                 }}
                                 onEdit={() => {
-                                    console.log(`Editar lote ${lote.id}`);
+                                    setLoteEditando(lote);
+                                    setShowFormulario(true);
                                 }}
                                 onDelete={() => {
-                                    console.log(`Eliminar lote ${lote.id}`);
+                                    //const confirm = window.confirm("¿Seguro que querés eliminar este lote?");
+                                    handleEliminarLote(lote.id);
                                 }}
                             />
                         ))}
                     </div>
                 </div>
+                <FormularioLote
+                    show={showFormulario}
+                    onClose={() => { setShowFormulario(false); setLoteEditando(null) }}
+                    campoId={campoSeleccionado ? campoSeleccionado.id : 0}
+                    onSubmit={handleAgregarLote}
+
+                    //campoId={id_campo} // 👈 ya lo sabés
+                    initialData={loteToForm(loteEditando)}
+                />
             </div>
 
-            <FormularioLote
-                show={showFormulario}
-                onClose={() => setShowFormulario(false)}
-                campoId={campoSeleccionado ? campoSeleccionado.id : 0}
-                onSubmit={handleAgregarLote}
-            />
         </Body>
     );
 }
