@@ -12,47 +12,8 @@ import {
 import FormularioLote from "./FormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
-import { LoteDraft } from "./types";
-
-export interface Lote {
-    id: number;
-    nombre: string;
-    caracteristicas: string;
-    estado: string;
-    longitud: number;
-    latitud: number;
-    hectareas: number;
-    idCampo: number;
-    ph: number;
-    napa: number;
-}
-
-interface Campo {
-    id: number;
-    nombre: string;
-}
-
-interface CampoDB {
-    id: number;
-    nombre: string;
-    latitud: string;
-    longitud: string;
-    hectareas: number;
-}
-
-interface Cultivo {
-    id: number;
-    nombre: string;
-}
-
-interface Campania {
-    id: number;
-    nombre: string;
-}
-
-interface Estado {
-    nombre: string;
-}
+import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado } from "./types";
+import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
 
 export default function Lotes() {
     const [lotes, setLotes] = useState<Lote[]>([]);
@@ -70,6 +31,7 @@ export default function Lotes() {
     );
 
     const [loteEditando, setLoteEditando] = useState<Lote | null>(null);
+    const [loteAEliminar, setLoteAEliminar] = useState<Lote | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [nombreBuscado, setNombreBuscado] = useState("");
     const [campos, setCampos] = useState<Campo[]>([]);
@@ -257,8 +219,6 @@ export default function Lotes() {
 
     //-------------------------ELIMINAR LOTE-------------------------
     const handleEliminarLote = async (id: number) => {
-        if (!confirm("¿Confirma que desea eliminar este lote?")) return;
-
         try {
             const response = await fetch(`/api/lotes/${id}`, {
                 method: "DELETE",
@@ -274,9 +234,11 @@ export default function Lotes() {
             setLotes((prev) => prev.filter((l) => l.id !== id));
         } catch (error) {
             console.error("Error:", error);
-            alert("Error al eliminar el lote.");
+            setError("Error al eliminar el lote.");
+        } finally {
+            setLoteAEliminar(null);
         }
-    }
+    };
 
 
     const loteToForm = (lote: Lote | null) => {
@@ -515,10 +477,7 @@ export default function Lotes() {
                                     setLoteEditando(lote);
                                     setShowFormulario(true);
                                 }}
-                                onDelete={() => {
-                                    //const confirm = window.confirm("¿Seguro que querés eliminar este lote?");
-                                    handleEliminarLote(lote.id);
-                                }}
+                                onDelete={() => setLoteAEliminar(lote)}
                             />
                         ))}
                     </div>
@@ -528,9 +487,15 @@ export default function Lotes() {
                     onClose={() => { setShowFormulario(false); setLoteEditando(null) }}
                     campoId={campoSeleccionado ? campoSeleccionado.id : 0}
                     onSubmit={handleAgregarLote}
-
-                    //campoId={id_campo} // 👈 ya lo sabés
                     initialData={loteToForm(loteEditando)}
+                />
+
+                <ModalConfirmacion
+                    show={loteAEliminar !== null}
+                    titulo="Eliminar lote"
+                    mensaje={`¿Estás seguro de que querés eliminar el lote "${loteAEliminar?.nombre}"? Esta acción no se puede deshacer.`}
+                    onConfirmar={() => loteAEliminar && handleEliminarLote(loteAEliminar.id)}
+                    onCancelar={() => setLoteAEliminar(null)}
                 />
             </div>
 

@@ -150,7 +150,7 @@ export default function FormularioLote({
     };
 
     return (
-        
+
         <Modal show={show} onClose={handleClose} maxWidth="2xl">
             <div className="flex max-h-[90vh] flex-col bg-white rounded-2xl">
 
