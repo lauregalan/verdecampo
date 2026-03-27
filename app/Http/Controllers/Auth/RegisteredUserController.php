@@ -44,6 +44,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'last_login_at' => now(),
             'password' => Hash::make($request->password),
         ]);
         $this->roleService->asignarRolPorDefecto($user);
