@@ -14,11 +14,11 @@ export const camposIniciales: CampoCard[] = [
         latitude: -34.6767,
         longitude: -58.5215,
         polygon: [
-            [-34.6749, -58.5254],
-            [-34.6786, -58.5241],
-            [-34.6802, -58.5197],
-            [-34.6756, -58.5174],
-            [-34.6737, -58.5211],
+            { lat: -34.6749, lng: -58.5254 },
+            { lat: -34.6786, lng: -58.5241 },
+            { lat: -34.6802, lng: -58.5197 },
+            { lat: -34.6756, lng: -58.5174 },
+            { lat: -34.6737, lng: -58.5211 },
         ],
     },
     {
@@ -33,11 +33,11 @@ export const camposIniciales: CampoCard[] = [
         latitude: -34.942,
         longitude: -60.049,
         polygon: [
-            [-34.9395, -60.0534],
-            [-34.9444, -60.0542],
-            [-34.9462, -60.0486],
-            [-34.9423, -60.0436],
-            [-34.9388, -60.0471],
+            { lat: -34.9395, lng: -60.0534 },
+            { lat: -34.9444, lng: -60.0542 },
+            { lat: -34.9462, lng: -60.0486 },
+            { lat: -34.9423, lng: -60.0436 },
+            { lat: -34.9388, lng: -60.0471 },
         ],
     },
     {
@@ -52,26 +52,26 @@ export const camposIniciales: CampoCard[] = [
         latitude: -33.2975,
         longitude: -62.0888,
         polygon: [
-            [-33.2937, -62.0941],
-            [-33.3008, -62.0948],
-            [-33.3035, -62.0882],
-            [-33.2999, -62.0822],
-            [-33.2945, -62.0837],
+            { lat: -33.2937, lng: -62.0941 },
+            { lat: -33.3008, lng: -62.0948 },
+            { lat: -33.3035, lng: -62.0882 },
+            { lat: -33.2999, lng: -62.0822 },
+            { lat: -33.2945, lng: -62.0837 },
         ],
     },
 ];
 
 export const statusStyles = {
     verde: {
-        className: "bg-emerald-100 text-emerald-800 border border-emerald-200", 
-        Icon: CheckCircle2, 
+        className: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+        Icon: CheckCircle2,
     },
     naranja: {
-        className: "bg-orange-100 text-orange-700 border border-orange-200", 
-        Icon: AlertTriangle, 
+        className: "bg-orange-100 text-orange-700 border border-orange-200",
+        Icon: AlertTriangle,
     },
     violeta: {
         className: "bg-purple-100 text-purple-700 border border-purple-200",
-        Icon: Clock, 
+        Icon: Clock,
     },
 };

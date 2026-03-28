@@ -4,8 +4,8 @@ import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Undo2, Trash2 } from 'lucide-react';
 
-/** Coordenada [latitud, longitud] */
-export type Coord = [number, number];
+/** Coordenada geográfica */
+export type Coord = { lat: number; lng: number };
 
 interface MapaInteractivoProps {
     /** Puntos del polígono actuales (controlado desde fuera) */
@@ -29,10 +29,10 @@ function calcularAreaM2(coords: Coord[]): number {
     const R = 6371000; // radio terrestre en metros
 
     // Convertir a metros planos (proyección equirectangular)
-    const latMedia = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+    const latMedia = coords.reduce((s, c) => s + c.lat, 0) / coords.length;
     const cosLat = Math.cos(toRad(latMedia));
 
-    const puntos = coords.map(([lat, lng]) => ({
+    const puntos = coords.map(({ lat, lng }) => ({
         x: toRad(lng) * R * cosLat,
         y: toRad(lat) * R,
     }));
@@ -50,17 +50,17 @@ function calcularAreaM2(coords: Coord[]): number {
 
 /** Calcula el centroide de un polígono. */
 function calcularCentroide(coords: Coord[]): Coord {
-    if (coords.length === 0) return [0, 0];
-    const lat = coords.reduce((s, c) => s + c[0], 0) / coords.length;
-    const lng = coords.reduce((s, c) => s + c[1], 0) / coords.length;
-    return [lat, lng];
+    if (coords.length === 0) return { lat: 0, lng: 0 };
+    const lat = coords.reduce((s, c) => s + c.lat, 0) / coords.length;
+    const lng = coords.reduce((s, c) => s + c.lng, 0) / coords.length;
+    return { lat, lng };
 }
 
 /** Componente interno que captura clics en el mapa. */
 function ClickHandler({ onMapClick }: { onMapClick: (coord: Coord) => void }) {
     useMapEvents({
         click(e) {
-            onMapClick([e.latlng.lat, e.latlng.lng]);
+            onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
         },
     });
     return null;
@@ -95,7 +95,7 @@ export default function MapaInteractivo({
     // Cada vez que cambia el polígono, recalcular centro y área
     useEffect(() => {
         if (polygon.length >= 3) {
-            const [lat, lng] = calcularCentroide(polygon);
+            const { lat, lng } = calcularCentroide(polygon);
             onCenterChange(lat, lng);
             const areaM2 = calcularAreaM2(polygon);
             const hectareas = areaM2 / 10000;
@@ -123,7 +123,7 @@ export default function MapaInteractivo({
 
                 {polygon.length >= 3 && (
                     <Polygon
-                        positions={polygon as LatLngExpression[]}
+                        positions={polygon.map(c => [c.lat, c.lng] as LatLngExpression)}
                         pathOptions={{
                             color: '#1d4ed8',
                             fillColor: '#3b82f6',
@@ -137,7 +137,7 @@ export default function MapaInteractivo({
                 {polygon.map((coord, idx) => (
                     <CircleMarker
                         key={idx}
-                        center={coord as LatLngExpression}
+                        center={[coord.lat, coord.lng] as LatLngExpression}
                         radius={6}
                         pathOptions={{
                             color: '#1d4ed8',

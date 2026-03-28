@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import {
@@ -14,6 +14,19 @@ import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
 import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado } from "./types";
 import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
+
+const mapearLote = (lote: any): Lote => ({
+    id: lote.id,
+    nombre: lote.nombre,
+    caracteristicas: lote.caracteristicas,
+    estado: lote.estado,
+    latitud: Number(lote.latitud),
+    longitud: Number(lote.longitud),
+    hectareas: Number(lote.hectareas),
+    idCampo: Number(lote.id_campo),
+    ph: Number(lote.ph),
+    napa: Number(lote.napa),
+});
 
 export default function Lotes() {
     const [lotes, setLotes] = useState<Lote[]>([]);
@@ -58,21 +71,7 @@ export default function Lotes() {
         try {
             const response = await fetch("/api/lotes");
             const data = await response.json();
-            setLotes(
-                data.map((lote: any) => ({
-                    id: lote.id,
-                    nombre: lote.nombre,
-                    caracteristicas: lote.caracteristicas,
-                    estado: lote.estado,
-                    latitud: lote.latitud,
-                    longitud: lote.longitud,
-                    hectareas: lote.hectareas,
-                    idCampo: lote.id_campo,
-                    ph: lote.ph,
-                    napa: lote.napa,
-                })),
-
-            );
+            setLotes(data.map(mapearLote));
             console.log("Lotes obtenidos:", data);
         } catch (error) {
             console.error("Error fetching lots:", error);
@@ -170,7 +169,7 @@ export default function Lotes() {
                 console.log("✅ Lote actualizado:", data);
 
                 setLotes((prev) =>
-                    prev.map((l) => (l.id === data.id ? data : l))
+                    prev.map((l) => (l.id === data.id ? mapearLote(data) : l))
                 );
 
                 setShowFormulario(false);
@@ -198,7 +197,7 @@ export default function Lotes() {
 
                 console.log("✅ Lote creado:", data);
 
-                setLotes((prev) => [...prev, data]);
+                setLotes((prev) => [...prev, mapearLote(data)]);
             }
             //Reset general
             setShowFormulario(false);
@@ -471,7 +470,7 @@ export default function Lotes() {
                                 key={lote.id}
                                 lote={lote}
                                 onOpenDetail={() => {
-                                    console.log(`Abrir detalle de lote ${lote.id}`);
+                                    router.visit(`/lotes/${lote.id}`);
                                 }}
                                 onEdit={() => {
                                     setLoteEditando(lote);

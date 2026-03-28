@@ -2,8 +2,8 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import Modal from "@/components/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
-import MapaInteractivo, { Coord } from "../Campos/MapaInteractivo"; // Reusing the map component
-import type { LoteCard, LoteDraft, StatusColor } from "./types";
+import MapaInteractivo from "../Campos/MapaInteractivo"; // Reusing the map component
+import type { Coord, LoteCard, LoteDraft, StatusColor } from "./types";
 import { X } from "lucide-react";
 
 interface FormularioLoteProps {
@@ -89,12 +89,16 @@ export default function FormularioLote({
 
     // --- Handlers del mapa ---
     const handleCenterChange = useCallback((lat: number, lng: number) => {
-        setLatitude(parseFloat(lat.toFixed(6)));
-        setLongitude(parseFloat(lng.toFixed(6)));
+        if (lat !== 0 || lng !== 0) {
+            setLatitude(parseFloat(lat.toFixed(6)));
+            setLongitude(parseFloat(lng.toFixed(6)));
+        }
     }, []);
 
     const handleAreaChange = useCallback((ha: number) => {
-        setHectareas(ha);
+        if (ha > 0) {
+            setHectareas(ha);
+        }
     }, []);
 
     const handleStatusChange = (value: string) => {

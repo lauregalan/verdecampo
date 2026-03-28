@@ -51,6 +51,12 @@ Route::get('/lotes', function () {
     return Inertia::render('Lotes/Lotes');
 })->middleware(['auth', 'verified'])->name('lotes');
 
+Route::get('/lotes/{loteId}', function (int $loteId) {
+    return Inertia::render('Lotes/LoteDetalle', [
+        'loteId' => $loteId,
+    ]);
+})->middleware(['auth', 'verified'])->whereNumber('loteId')->name('lote.detalle');
+
 Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
