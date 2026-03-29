@@ -25,7 +25,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import UserModal from "@/components/ui/UserModal";
-import { getCsrfToken, getXsrfToken } from "@/lib/csrf";
 
 interface BackendUser {
     id: number;
@@ -115,27 +114,33 @@ export default function UserManagment({ header }: UserManagmentProps) {
         setProcessingUserId(userId);
 
         try {
-            const response = await fetch(`/api/users/${userId}/active`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": getCsrfToken(),
-                    "X-XSRF-TOKEN": getXsrfToken(),
-                    "X-Requested-With": "XMLHttpRequest",
+            await window.axios.patch(
+                `/api/users/${userId}/active`,
+                { active: nextActive },
+                {
+                    headers: {
+                        Accept: "application/json",
+                    },
                 },
-                credentials: "same-origin",
-                body: JSON.stringify({ active: nextActive }),
-            });
-
-            if (!response.ok) {
-                const payload = await response.json().catch(() => null);
-                throw new Error(payload?.message ?? "No se pudo actualizar el estado del usuario.");
-            }
+            );
 
             await reloadUsers();
         } catch (err) {
-            alert(err instanceof Error ? err.message : "No se pudo actualizar el estado del usuario.");
+            const message =
+                typeof err === "object" &&
+                err !== null &&
+                "response" in err &&
+                typeof err.response === "object" &&
+                err.response !== null &&
+                "data" in err.response &&
+                typeof err.response.data === "object" &&
+                err.response.data !== null &&
+                "message" in err.response.data &&
+                typeof err.response.data.message === "string"
+                    ? err.response.data.message
+                    : "No se pudo actualizar el estado del usuario.";
+
+            alert(message);
         } finally {
             setProcessingUserId(null);
         }
