@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
+import { usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { Search, X } from "lucide-react";
 import {
@@ -31,7 +32,9 @@ interface BackendUser {
     email: string;
     roles: string[];
     updated_at: string | null;
+    last_login_at: string | null;
     email_verified_at: string | null;
+    active: boolean;
 }
 
 interface UserManagmentProps {
@@ -39,7 +42,7 @@ interface UserManagmentProps {
 }
 
 const formatDate = (value: string | null) => {
-    if (!value) return "Sin datos";
+    if (!value) return "Aun no ha Iniciado Sesion";
     return new Date(value).toLocaleString("es-AR");
 };
 
@@ -72,6 +75,10 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [processingUserId, setProcessingUserId] = useState<number | null>(null);
+
+    const authUser = usePage().props.auth?.user as { id?: number; roles?: string[] } | undefined;
+    const canManageUsers = authUser?.roles?.includes("Productor") ?? false;
 
     const reloadUsers = async () => {
         try {
@@ -100,6 +107,44 @@ export default function UserManagment({ header }: UserManagmentProps) {
     useEffect(() => {
         reloadUsers();
     }, []);
+
+    const toggleUserActive = async (userId: number, nextActive: boolean) => {
+        if (!canManageUsers) return;
+
+        setProcessingUserId(userId);
+
+        try {
+            await window.axios.patch(
+                `/api/users/${userId}/active`,
+                { active: nextActive },
+                {
+                    headers: {
+                        Accept: "application/json",
+                    },
+                },
+            );
+
+            await reloadUsers();
+        } catch (err) {
+            const message =
+                typeof err === "object" &&
+                err !== null &&
+                "response" in err &&
+                typeof err.response === "object" &&
+                err.response !== null &&
+                "data" in err.response &&
+                typeof err.response.data === "object" &&
+                err.response.data !== null &&
+                "message" in err.response.data &&
+                typeof err.response.data.message === "string"
+                    ? err.response.data.message
+                    : "No se pudo actualizar el estado del usuario.";
+
+            alert(message);
+        } finally {
+            setProcessingUserId(null);
+        }
+    };
 
     const filteredUsers = useMemo(() => {
         const term = search.trim().toLowerCase();
@@ -206,7 +251,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                 !error &&
                                 filteredUsers.map((user) => {
                                     const primaryRole = user.roles[0] ?? "Sin rol";
-                                    const estado = user.email_verified_at ? "Activo" : "Pendiente";
+                                    const estado = user.active ? "Activo" : "Inactivo";
 
                                     return (
                                         <TableRow key={user.id}>
@@ -238,32 +283,31 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="hidden whitespace-nowrap text-center lg:table-cell">
-                                                {formatDate(user.updated_at)}
+                                                {formatDate(user.last_login_at)}
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <div className="flex items-center justify-center">
                                                     <div className="flex items-center space-x-2">
-                                                        <Switch
-                                                            id={`user-${user.id}`}
-                                                            checked={estado === "Activo"}
-                                                            disabled
-                                                            className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
-                                                        />
-                                                        <Label
-                                                            htmlFor={`user-${user.id}`}
-                                                            className="min-w-[50px] text-xs font-medium text-gray-500"
-                                                        >
-                                                            {estado}
-                                                        </Label>
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch
+                                                                id={`user-${user.id}`}
+                                                                checked={user.active}
+                                                                disabled={!canManageUsers || processingUserId === user.id || authUser?.id === user.id}
+                                                                onCheckedChange={(checked) => toggleUserActive(user.id, checked)}
+                                                                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                                                            />
+                                                            <Label
+                                                                htmlFor={`user-${user.id}`}
+                                                                className="min-w-[50px] text-xs font-medium text-gray-500"
+                                                            >
+                                                                {estado}
+                                                            </Label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
                                     );
-
-
-
-
                                 })}
                         </TableBody>
                     </Table>
