@@ -17,6 +17,11 @@ class CultivoService
         return Cultivo::where('lote_id', $loteId)->get();
     }
 
+    public function getAll()
+    {
+        return Cultivo::all();
+    }
+
     public function show(Cultivo $cultivo)
     {
         return $cultivo;

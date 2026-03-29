@@ -19,7 +19,7 @@ Route::delete('/campanias/{campania}/lotes/{loteId}', [App\Http\Controllers\Camp
 
 Route::apiResource('cultivos', CultivoController::class);
 Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
-Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
+Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);  //esta no se usa pero como no sepo no lo borro
 
 Route::get('/roles', [RoleController::class, 'index']);
 Route::get('/users', [UserController::class, 'index']);

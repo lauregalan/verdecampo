@@ -22,6 +22,11 @@ interface BackendCampo {
     nombre: string;
 }
 
+interface BackendCultivo {
+    id: number;
+    tipo: string;
+}
+
 const toCampaniaCard = (campania: BackendCampania): CampaniaCard => ({
     id: campania.id,
     name: campania.nombre,
@@ -50,10 +55,12 @@ const CampaniaCardItem = ({ id, name }: CampaniaCard) => {
 export default function Campania() {
     const [campanias, setCampanias] = useState<CampaniaCard[]>([]);
     const [campos, setCampos] = useState<BackendCampo[]>([]);
+    const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [newCampaniaName, setNewCampaniaName] = useState("");
     const [newFechaInicio, setNewFechaInicio] = useState("");
     const [newFechaFin, setNewFechaFin] = useState("");
+    const [selectedCultivoId, setSelectedCultivoId] = useState<number | null>(null);
     const [selectedCampoId, setSelectedCampoId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -106,10 +113,33 @@ export default function Campania() {
         }
     }, []);
 
+    const cargarCultivos = useCallback(async () => {
+        try {
+            const response = await fetch("/api/cultivos", {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+            if (!response.ok) throw new Error("No se pudieron obtener los cultivos.");
+            const payload = (await response.json()) as BackendCultivo[];
+            setCultivos(Array.isArray(payload) ? payload : []);
+            if (payload.length > 0) {
+                setSelectedCultivoId(payload[0].id);
+            } else {
+                setSelectedCultivoId(null);
+            }
+        } catch {
+            setCultivos([]);
+            setSelectedCultivoId(null);
+        }
+    }
+    , []);
+
     useEffect(() => {
         void cargarCampanias();
         void cargarCampos();
-    }, [cargarCampanias, cargarCampos]);
+        void cargarCultivos();
+    }, [cargarCampanias, cargarCampos, cargarCultivos]);
 
     const resetForm = () => {
         setNewCampaniaName("");
@@ -134,7 +164,7 @@ export default function Campania() {
             setFormError("El nombre y la fecha de inicio son obligatorios.");
             return;
         }
-        if (!selectedCampoId) {
+        if (!selectedCultivoId) {
             setFormError("Debe seleccionar un campo primero.");
             return;
         }
@@ -150,7 +180,7 @@ export default function Campania() {
                     Accept: "application/json",
                 },
                 body: JSON.stringify({
-                    campo_id: selectedCampoId,
+                    campo_id: selectedCultivoId,
                     nombre: newCampaniaName,
                     fecha_inicio: newFechaInicio,
                     fecha_fin: newFechaFin || null,
@@ -264,7 +294,22 @@ export default function Campania() {
                                 />
                             </div>
                         </div>
-
+                        <div>
+                                <InputLabel htmlFor="campania-cultivo" value="Cultivo asociado" />
+                                <select
+                                    id="campania-cultivo"
+                                    value={selectedCultivoId ?? ""}
+                                    onChange={(e) => setSelectedCultivoId(Number(e.target.value) || null)}
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+                                >
+                                    {cultivos.map((cultivo) => (
+                                        <option key={cultivo.id} value={cultivo.id}>
+                                            {cultivo.tipo}
+                                        </option>
+                                    ))}
+                                </select>
+                        </div>
+                            
                         {campos.length > 0 && (
                             <div>
                                 <InputLabel htmlFor="campania-campo" value="Campo asociado" />
