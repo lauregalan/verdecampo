@@ -164,7 +164,7 @@ export default function Campania() {
             setFormError("El nombre y la fecha de inicio son obligatorios.");
             return;
         }
-        if (!selectedCultivoId) {
+        if (!selectedCampoId) {
             setFormError("Debe seleccionar un campo primero.");
             return;
         }
@@ -180,11 +180,12 @@ export default function Campania() {
                     Accept: "application/json",
                 },
                 body: JSON.stringify({
-                    campo_id: selectedCultivoId,
+                    campo_id: selectedCampoId,
                     nombre: newCampaniaName,
                     fecha_inicio: newFechaInicio,
                     fecha_fin: newFechaFin || null,
                     estado: "Planificada",
+                    cultivo_id: selectedCultivoId,
                 }),
             });
 

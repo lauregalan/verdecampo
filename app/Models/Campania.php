@@ -13,6 +13,7 @@ class Campania extends Model
         'fecha_inicio',
         'fecha_fin',
         'estado',
+        'cultivo_id',
     ];
 
     public function campo(): BelongsTo

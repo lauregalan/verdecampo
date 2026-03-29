@@ -23,6 +23,7 @@ class CampaniaRequest extends FormRequest
     {
         return [
             'campo_id'           => ['required', 'integer', 'exists:campos,id'],
+            'cultivo_id'         => ['nullable', 'integer', 'exists:cultivos,id'],
             'nombre'             => ['required', 'string', 'max:255'],
             'fecha_inicio'       => ['required', 'date'],
             'fecha_fin'          => ['nullable', 'date', 'after:fecha_inicio'],
