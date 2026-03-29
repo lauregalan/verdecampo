@@ -10,11 +10,18 @@ import { Plus, X } from "lucide-react";
 interface CampaniaCard {
     id: number;
     name: string;
+    onEdit?: () => void;
+    onView?: () => void;
 }
 
 interface BackendCampania {
     id: number;
     nombre: string;
+    campo_id?: number;
+    cultivo_id?: number;
+    fecha_inicio?: string;
+    fecha_fin?: string | null;
+    estado?: string;
 }
 
 interface BackendCampo {
@@ -32,19 +39,19 @@ const toCampaniaCard = (campania: BackendCampania): CampaniaCard => ({
     name: campania.nombre,
 });
 
-const CampaniaCardItem = ({ id, name }: CampaniaCard) => {
+const CampaniaCardItem = ({ id, name, onEdit, onView }: CampaniaCard) => {
     return (
         <div
             role="button"
             tabIndex={0}
-            onClick={() => router.visit(`/campania/${id}`)}
+            onClick={() => onView?.()}
             onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    router.visit(`/campania/${id}`);
+                    onView?.();
                 }
             }}
-            className="cursor-pointer rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="relative cursor-pointer rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
             aria-label={`Abrir detalle de ${name}`}
         >
             <h3 className="text-xl font-bold text-gray-800">{name}</h3>
@@ -57,11 +64,15 @@ export default function Campania() {
     const [campos, setCampos] = useState<BackendCampo[]>([]);
     const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
     const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailCampania, setDetailCampania] = useState<BackendCampania | null>(null);
+    const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(null);
     const [newCampaniaName, setNewCampaniaName] = useState("");
     const [newFechaInicio, setNewFechaInicio] = useState("");
     const [newFechaFin, setNewFechaFin] = useState("");
     const [selectedCultivoId, setSelectedCultivoId] = useState<number | null>(null);
     const [selectedCampoId, setSelectedCampoId] = useState<number | null>(null);
+    const [selectedEstado, setSelectedEstado] = useState("Planificada");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -142,20 +153,71 @@ export default function Campania() {
     }, [cargarCampanias, cargarCampos, cargarCultivos]);
 
     const resetForm = () => {
+        setEditingCampaniaId(null);
         setNewCampaniaName("");
         setNewFechaInicio("");
         setNewFechaFin("");
+        setSelectedCampoId(campos.length > 0 ? campos[0].id : null);
+        setSelectedCultivoId(cultivos.length > 0 ? cultivos[0].id : null);
+        setSelectedEstado("Planificada");
         setFormError(null);
     };
 
-    const openModal = () => {
+    const openCreateModal = () => {
+        resetForm();
         setShowModal(true);
-        setFormError(null);
+    };
+
+    const openEditModal = async (campaniaId: number) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/campanias/${campaniaId}`, {
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) throw new Error("No se pudo obtener la campaña.");
+            const data = await response.json();
+
+            setEditingCampaniaId(campaniaId);
+            setNewCampaniaName(data.nombre || "");
+            setNewFechaInicio(data.fecha_inicio || "");
+            setNewFechaFin(data.fecha_fin || "");
+            setSelectedCampoId(data.campo_id ?? null);
+            setSelectedCultivoId(data.cultivo_id ?? null);
+            setSelectedEstado(data.estado ?? "Planificada");
+            setFormError(null);
+            setShowModal(true);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error al cargar la campaña.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const closeModal = () => {
         setShowModal(false);
         resetForm();
+    };
+
+    const openDetailModal = async (campaniaId: number) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/campanias/${campaniaId}`, {
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) throw new Error("No se pudo obtener la campaña.");
+            const data = (await response.json()) as BackendCampania;
+            setDetailCampania(data);
+            setShowDetailModal(true);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error al cargar la campaña.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const closeDetailModal = () => {
+        setShowDetailModal(false);
+        setDetailCampania(null);
     };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -172,33 +234,44 @@ export default function Campania() {
         setSaving(true);
         setFormError(null);
 
+        const payload = {
+            campo_id: selectedCampoId,
+            nombre: newCampaniaName,
+            fecha_inicio: newFechaInicio,
+            fecha_fin: newFechaFin || null,
+            estado: selectedEstado,
+            cultivo_id: selectedCultivoId,
+        };
+
+        const url = editingCampaniaId ? `/api/campanias/${editingCampaniaId}` : "/api/campanias";
+        const method = editingCampaniaId ? "PUT" : "POST";
+
         try {
-            const response = await fetch("/api/campanias", {
-                method: "POST",
+            const response = await fetch(url, {
+                method,
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 },
-                body: JSON.stringify({
-                    campo_id: selectedCampoId,
-                    nombre: newCampaniaName,
-                    fecha_inicio: newFechaInicio,
-                    fecha_fin: newFechaFin || null,
-                    estado: "Planificada",
-                    cultivo_id: selectedCultivoId,
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
                 const data = await response.json().catch(() => null);
-                const msg = data?.message || "Error al crear la campaña.";
+                const msg = data?.message || (editingCampaniaId ? "Error al actualizar la campaña." : "Error al crear la campaña.");
                 throw new Error(msg);
             }
 
             await cargarCampanias();
             closeModal();
         } catch (err) {
-            setFormError(err instanceof Error ? err.message : "Error al crear la campaña.");
+            setFormError(
+                err instanceof Error
+                    ? err.message
+                    : editingCampaniaId
+                    ? "Error al actualizar la campaña."
+                    : "Error al crear la campaña."
+            );
         } finally {
             setSaving(false);
         }
@@ -211,7 +284,7 @@ export default function Campania() {
                     <h1 className="text-3xl font-bold text-gray-900">Gestión de Campañas</h1>
                     <button
                         type="button"
-                        onClick={openModal}
+                        onClick={openCreateModal}
                         className="inline-flex w-fit self-end items-center gap-2 rounded-lg bg-[#1d4ed8] px-5 py-2 font-medium text-white shadow-md transition-all hover:bg-blue-700 sm:self-auto"
                     >
                         <Plus size={20} />
@@ -233,17 +306,78 @@ export default function Campania() {
                             <p className="col-span-full text-sm text-gray-600">No hay campañas registradas.</p>
                         ) : (
                             campanias.map((campania) => (
-                                <CampaniaCardItem key={campania.id} {...campania} />
+                                <CampaniaCardItem
+                                    key={campania.id}
+                                    {...campania}
+                                    onView={() => void openDetailModal(campania.id)}
+                                    onEdit={() => void openEditModal(campania.id)}
+                                />
                             ))
                         )}
                     </div>
                 </ScrollArea>
             </div>
 
+
+            {/*Modal para ver datos de campaña */}
+            <Modal show={showDetailModal} onClose={closeDetailModal} maxWidth="lg">
+                <div className="p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-2xl font-semibold text-gray-900">Detalle de campaña</h2>
+                        <button
+                            type="button"
+                            onClick={closeDetailModal}
+                            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {detailCampania ? (
+                        <div className="space-y-3">
+                            <p><strong>Nombre:</strong> {detailCampania.nombre}</p>
+                            <p>
+                                <strong>Campo:</strong>{" "}
+                                {detailCampania.campo_id
+                                    ? campos.find((campo) => campo.id === detailCampania.campo_id)?.nombre ?? "Campo desconocido"
+                                    : "N/A"}
+                            </p>
+                            <p>
+                                <strong>Cultivo:</strong>{" "}
+                                {detailCampania.cultivo_id
+                                    ? cultivos.find((cultivo) => cultivo.id === detailCampania.cultivo_id)?.tipo ?? "Cultivo desconocido"
+                                    : "N/A"}
+                            </p>
+                            <p><strong>Fecha inicio:</strong> {detailCampania.fecha_inicio ?? "N/A"}</p>
+                            <p><strong>Fecha fin:</strong> {detailCampania.fecha_fin ?? "N/A"}</p>
+                            <p><strong>Estado:</strong> {detailCampania.estado ?? "N/A"}</p>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        closeDetailModal();
+                                        void openEditModal(detailCampania.id);
+                                    }}
+                                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                                >
+                                    Editar
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p>Cargando datos de la campaña...</p>
+                    )}
+                </div>
+            </Modal>
+
+            {/*Modal para crear nueva campaña */}
             <Modal show={showModal} onClose={closeModal} maxWidth="lg">
                 <form onSubmit={handleSubmit} className="p-6">
                     <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold text-gray-900">Crear nueva campaña</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900">
+                            {editingCampaniaId ? "Editar campaña" : "Crear nueva campaña"}
+                        </h2>
                         <button
                             type="button"
                             onClick={closeModal}
@@ -294,6 +428,20 @@ export default function Campania() {
                                     className="mt-1 w-full"
                                 />
                             </div>
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="campania-estado" value="Estado" />
+                            <select
+                                id="campania-estado"
+                                value={selectedEstado}
+                                onChange={(e) => setSelectedEstado(e.target.value)}
+                                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+                            >
+                                <option value="Planificada">Planificada</option>
+                                <option value="En Curso">En Curso</option>
+                                <option value="Finalizada">Finalizada</option>
+                                <option value="Cancelada">Cancelada</option>
+                            </select>
                         </div>
                         <div>
                                 <InputLabel htmlFor="campania-cultivo" value="Cultivo asociado" />
@@ -349,7 +497,7 @@ export default function Campania() {
                             disabled={saving || campos.length === 0}
                             className="rounded-lg bg-[#1d4ed8] px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
                         >
-                            {saving ? "Guardando..." : "Crear campaña"}
+                            {saving ? "Guardando..." : editingCampaniaId ? "Actualizar campaña" : "Crear campaña"}
                         </button>
                     </div>
                 </form>

@@ -1,4 +1,4 @@
-import { Lote } from "./Lotes";
+import { Lote } from "./types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Maximize2, MapPin, Pencil, Sprout, Trash2, Eye, Layers, ClipboardPlus, Timer, Tractor, Check} from "lucide-react";
 import { useCallback } from "react";
