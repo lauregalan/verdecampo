@@ -1,4 +1,5 @@
 import type { CampoCard, StatusColor } from "./types";
+import { CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 
 export const camposIniciales: CampoCard[] = [
     {
@@ -60,8 +61,17 @@ export const camposIniciales: CampoCard[] = [
     },
 ];
 
-export const statusStyles: Record<StatusColor, string> = {
-    verde: "bg-green-600 text-white",
-    naranja: "bg-orange-400 text-white",
-    violeta: "bg-violet-600 text-white",
+export const statusStyles = {
+    verde: {
+        className: "bg-emerald-100 text-emerald-800 border border-emerald-200", 
+        Icon: CheckCircle2, 
+    },
+    naranja: {
+        className: "bg-orange-100 text-orange-700 border border-orange-200", 
+        Icon: AlertTriangle, 
+    },
+    violeta: {
+        className: "bg-purple-100 text-purple-700 border border-purple-200",
+        Icon: Clock, 
+    },
 };

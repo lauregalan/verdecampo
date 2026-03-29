@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import Body from "@/components/ui/Tabs/Body";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -23,6 +23,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import UserModal from "@/components/ui/UserModal";
 
 interface BackendUser {
     id: number;
@@ -69,39 +70,35 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedRole, setSelectedRole] = useState<string | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+    const reloadUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("/api/users", {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo obtener el listado de usuarios.");
+            }
+
+            const payload = (await response.json()) as BackendUser[];
+            setUsers(Array.isArray(payload) ? payload : []);
+            setError(null);
+        } catch (err) {
+            setError("Error al cargar usuarios desde el backend.");
+            setUsers([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const controller = new AbortController();
-
-        const loadUsers = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch("/api/users", {
-                    headers: {
-                        Accept: "application/json",
-                    },
-                    signal: controller.signal,
-                });
-
-                if (!response.ok) {
-                    throw new Error("No se pudo obtener el listado de usuarios.");
-                }
-
-                const payload = (await response.json()) as BackendUser[];
-                setUsers(Array.isArray(payload) ? payload : []);
-                setError(null);
-            } catch (err) {
-                if ((err as Error).name === "AbortError") return;
-                setError("Error al cargar usuarios desde el backend.");
-                setUsers([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadUsers();
-
-        return () => controller.abort();
+        reloadUsers();
     }, []);
 
     const filteredUsers = useMemo(() => {
@@ -123,6 +120,21 @@ export default function UserManagment({ header }: UserManagmentProps) {
             return a.name.localeCompare(b.name, "es");
         });
     }, [search, users]);
+
+    const availableRoles = [
+        {
+            name: "Productor",
+            description: "Puede ver y gestionar campos, planes de cultivo y producción. Ademas de gestionar usuarios",
+        },
+        {
+            name: "Ingeniero",
+            description: "Accede a datos técnicos, informes y tareas de supervisión de campo.",
+        },
+        {
+            name: "Empleado",
+            description: "Realiza tareas de campo asignadas y actualiza estados de actividades.",
+        },
+    ];
 
     return (
         <Body>
@@ -215,7 +227,13 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                             <TableCell className="truncate font-medium" title={user.name}>{user.name}</TableCell>
                                             <TableCell className="truncate" title={user.email}>{user.email}</TableCell>
                                             <TableCell>
-                                                <Badge className={getRoleBadgeClass(primaryRole)}>
+                                                <Badge 
+                                                    className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
+                                                    onClick={() => {
+                                                        setSelectedRole(primaryRole);
+                                                        setSelectedUserId(user.id.toString());
+                                                    }}
+                                                >
                                                     {primaryRole}
                                                 </Badge>
                                             </TableCell>
@@ -242,11 +260,29 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                             </TableCell>
                                         </TableRow>
                                     );
+
+
+
+
                                 })}
                         </TableBody>
                     </Table>
                 </ScrollArea>
             </div>
+
+            <UserModal
+                show={selectedRole !== null}
+                selectedRole={selectedRole}
+                availableRoles={availableRoles}
+                getRoleBadgeClass={getRoleBadgeClass}
+                onClose={() => {
+                    setSelectedRole(null);
+                    setSelectedUserId(null);
+                }}
+                onSelectRole={(role) => setSelectedRole(role)}
+                userId={selectedUserId ?? ""}
+                onRoleUpdated={reloadUsers}
+            />
         </Body>
     );
 }
