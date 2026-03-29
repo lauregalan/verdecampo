@@ -1,4 +1,5 @@
 import {
+    CalendarDays,
     ChevronUp,
     GroupIcon,
     LayoutDashboard,
@@ -108,6 +109,16 @@ export default function AppSidebar() {
                                 <Link href="/lotes">
                                     <Sprout size={18} />
                                     <span className="font-medium">Mis Lotes</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={currentPath.startsWith("/campania")}
+                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                            >
+                                <Link href="/campania">
+                                    <CalendarDays size={18} />
+                                    <span className="font-medium">Campañas</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

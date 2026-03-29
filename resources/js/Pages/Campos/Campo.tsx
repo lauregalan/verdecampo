@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
+// import Campania from "../Campanias/Campania";
 import { Maximize2, Sprout } from 'lucide-react';
 import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
 import { ProductoSumary } from './ProductoSumary';

@@ -18,7 +18,9 @@ class LoteService
 
     public function getAllByCampania(int $id_campania)
     {
-        return 'falta implementar';
+        return Lote::whereHas('campanias', function ($query) use ($id_campania) {
+            $query->where('campanias.id', $id_campania);
+        })->get();
     }
 
     // public function getAllByCampania(int $id_campania)
