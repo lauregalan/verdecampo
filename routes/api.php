@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\CultivoController;
@@ -22,9 +21,8 @@ Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByC
 Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
 
 Route::get('/roles', [RoleController::class, 'index']);
-Route::get('/users', [UserController::class, 'index']);
-Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
-Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);
+
+
 Route::get('/lotes', [LoteController::class, 'showAll']);
 Route::get('/lotes/{id}', [LoteController::class, 'show']);
 Route::post('/lotes', [LoteController::class, 'store']);
@@ -33,4 +31,3 @@ Route::delete('/lotes/{id}', [LoteController::class, 'destroy']);
 Route::get('/lotes/campo/{id_campo}', [LoteController::class, 'indexByCampo']);
 Route::get('/lotes/nombre/{nombre}', [LoteController::class, 'indexByName']);
 Route::get('/lotes/campania/{id_campania}', [LoteController::class, 'indexByCampania']);
-

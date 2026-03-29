@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\RoleService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -16,10 +14,6 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    public function __construct(private RoleService $roleService)
-    {
-    }
-
     /**
      * Display the registration view.
      */
@@ -44,14 +38,15 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'active' => false,
+            'last_login_at' => null,
             'password' => Hash::make($request->password),
         ]);
-        $this->roleService->asignarRolPorDefecto($user);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()
+            ->route('login')
+            ->with('status', 'Registro enviado. Un productor debe activar tu cuenta y asignarte un rol antes de que puedas ingresar.');
     }
 }

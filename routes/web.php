@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -47,6 +48,7 @@ Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');
 
+
 Route::get('/lotes', function () {
     return Inertia::render('Lotes/Lotes');
 })->middleware(['auth', 'verified'])->name('lotes');
@@ -56,6 +58,14 @@ Route::get('/lotes/{loteId}', function (int $loteId) {
         'loteId' => $loteId,
     ]);
 })->middleware(['auth', 'verified'])->whereNumber('loteId')->name('lote.detalle');
+
+Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{user}/roles', [UserController::class, 'getRoles']);
+    Route::patch('/users/{user}/active', [UserController::class, 'updateActive']);
+    Route::put('/users/{user}/roles', [UserController::class, 'modificarRoles']);
+});
+
 
 Route::get('/main', function () {
     return Redirect('/usuarios');

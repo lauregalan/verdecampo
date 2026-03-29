@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,8 +43,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = [
+            'email' => (string) $this->string('email'),
+            'password' => (string) $this->string('password'),
+            'active' => true,
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+
+            $user = User::where('email', (string) $this->string('email'))->first();
+
+            if ($user && ! $user->active && Hash::check((string) $this->string('password'), $user->password)) {
+                throw ValidationException::withMessages([
+                    'email' => 'Tu cuenta esta desactivada. Contacta a un productor para reactivarla.',
+                ]);
+            }
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
