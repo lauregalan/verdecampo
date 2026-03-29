@@ -266,7 +266,6 @@ export default function Campania() {
                     fecha_inicio: newFechaInicio,
                     fecha_fin: newFechaFin || null,
                     estado: "Planificada",
-                    // cultivo_id: selectedCultivoId,
                 }),
             });
 
