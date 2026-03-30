@@ -65,11 +65,40 @@ export interface Cultivo {
     nombre: string;
 }
 
+export interface CultivoDB {
+    id: number;
+    tipo: string;
+    variedad: string;
+    fecha_siembra: string;
+    cultivo_antecesor: string;
+    notas: string;
+}
+
 export interface Campania {
     id: number;
     nombre: string;
 }
 
+export interface CampaniaDB {
+    id: number;
+    nombre: string;
+    cultivo_id: number;
+    campo_id: number;
+    fecha_inicio: string;
+    fecha_fin: string;
+    estado: string;
+}
+
 export interface Estado {
     nombre: string;
+}
+
+export interface IdLotesPorIdCampania {
+    campaniaId: number;
+    lotesId: number[];
+}
+
+export interface IdLotesPorIdCultivo {
+    cultivoId: number;
+    lotesId: number[];
 }

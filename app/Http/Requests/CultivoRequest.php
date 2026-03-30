@@ -22,8 +22,6 @@ class CultivoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lote_id'           => ['required', 'integer', 'exists:lotes,id'],
-            'campania_id'       => ['required', 'integer', 'exists:campanias,id'],
             'tipo'              => ['required', 'string', 'max:255'],
             'variedad'          => ['required', 'string', 'max:255'],
             'fecha_siembra'     => ['required', 'date', 'before_or_equal:today'],

@@ -12,7 +12,7 @@ import {
 import FormularioLote from "./FormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
-import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado } from "./types";
+import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado, CampaniaDB, CultivoDB, IdLotesPorIdCampania, IdLotesPorIdCultivo} from "./types";
 import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
 
 const mapearLote = (lote: any): Lote => ({
@@ -48,16 +48,10 @@ export default function Lotes() {
     const [error, setError] = useState<string | null>(null);
     const [nombreBuscado, setNombreBuscado] = useState("");
     const [campos, setCampos] = useState<Campo[]>([]);
-    const [cultivos, setCultivos] = useState<Cultivo[]>([
-        { id: 1, nombre: "Trigo" },
-        { id: 2, nombre: "Maíz" },
-        { id: 3, nombre: "Soja" },
-    ]);
-    const [campanias, setCampanias] = useState<Campania[]>([
-        { id: 1, nombre: "Campaña 2023" },
-        { id: 2, nombre: "Campaña 2024" },
-        { id: 3, nombre: "Campaña 2025" },
-    ]);
+    const [cultivos, setCultivos] = useState<Cultivo[]>([]);
+    const [campanias, setCampanias] = useState<Campania[]>([]);
+    const [lotesPorCampania, setLotesPorCampania] = useState<IdLotesPorIdCampania[]>([]);
+    const [lotesPorCultivo, setLotesPorCultivo] = useState<IdLotesPorIdCultivo[]>([]);
 
     const estados = [
         { nombre: "produccion" },
@@ -94,9 +88,73 @@ export default function Lotes() {
         }
     }, []);
 
+    //-------------------------GET CAMPANIAS-------------------------
+    const getCampanias = useCallback(async () => {
+        try {
+            const result_lotes = [];
+            const result_cultivos = [];
+            const response = await fetch("/api/campanias");
+            const data = await response.json();
+            setCampanias(
+                data.map((campania: CampaniaDB) => ({
+                    id: campania.id,
+                    nombre: campania.nombre,
+                }))
+            );
+
+            for (const campania of data) {
+                console.log(`Obteniendo lotes para campaña ${campania.id}...`);
+                const response_lotes = await fetch(`/api/campanias/${campania.id}/lotes`);
+                const data_lotes = await response_lotes.json();
+                console.log(`Lotes para campaña ${campania.id}:`, data_lotes);
+                result_lotes.push({
+                    campaniaId: campania.id,
+                    lotesId: data_lotes.map((lote: any) => lote.id),
+                });
+            }
+
+            // for (const campania of data) {
+            //     console.log(`Obteniendo cultivo para campaña ${campania.id}...`);
+            //     const response_lotes = await fetch(`/api//cultivos/campania/${}`);
+            //     const data_lotes = await response_lotes.json();
+            //     console.log(`Lotes para campaña ${campania.id}:`, data_lotes);
+            //     result_cultivos.push({
+            //         campaniaId: campania.id,
+            //         lotesId: data_lotes.map((lote: any) => lote.id),
+            //     });
+            // }
+
+            
+
+            console.log("Lotes por campaña:", result_lotes);
+
+            setLotesPorCampania(result_lotes);
+        } catch (error) {
+            console.error("Error fetching campaigns:", error);
+        }
+    }, []);
+
+    //-------------------------GET CULTIVOS-------------------------
+    const getCultivos = useCallback(async () => {
+        try {
+            const response = await fetch("/api/cultivos");
+            const data = await response.json();
+            setCultivos(
+                data.map((cultivo: CultivoDB) => ({
+                    id: cultivo.id,
+                    nombre: cultivo.tipo,
+                }))
+            );
+        } catch (error) {
+            console.error("Error fetching crops:", error);
+        }
+    }, []);
+
     useEffect(() => {
         GetLotes();
         getCampos();
+        getCampanias();
+        getCultivos();
     }, []);
 
     //-------------------------FILTRADO-------------------------
@@ -113,13 +171,20 @@ export default function Lotes() {
             if (nombreBuscado && !lote.nombre.toLowerCase().includes(nombreBuscado.toLowerCase())) {
                 return false;
             }
+            if (campaniaSeleccionada){
+                const loteEnCampania = lotesPorCampania.find(l => l.campaniaId === campaniaSeleccionada.id);
+                if (!loteEnCampania || !loteEnCampania.lotesId.includes(lote.id)) {
+                    console.log("Excluyendo lote por campaña");
+                    return false;
+                }
+            }
             // Para campania y cultivo, no hay propiedades en lote, así que omitir por ahora
             return true;
         });
         console.log("Lotes filtrados:", filtrados.length, "de", lotes.length);
         console.log("Filtrados: ", filtrados);
         setLotesFiltrados(filtrados);
-    }, [lotes, campoSeleccionado, estadoSeleccionado, nombreBuscado]);
+    }, [lotes, campoSeleccionado, estadoSeleccionado, nombreBuscado, campaniaSeleccionada, cultivoSeleccionado]);
 
 
     //-------------------------AGREGAR/EDITAR LOTE-------------------------
@@ -332,7 +397,7 @@ export default function Lotes() {
                                 </SelectContent>
                             </Select>
 
-                            {/* Campaña */}
+                            {/* Estados */}
                             <Select
                                 value={
                                     estadoSeleccionado
@@ -373,9 +438,9 @@ export default function Lotes() {
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
-                            </Select>
+                            </Select>                           
 
-                            {/* Estado */}
+                            {/* Campania */}
                             <Select
                                 value={
                                     campaniaSeleccionada

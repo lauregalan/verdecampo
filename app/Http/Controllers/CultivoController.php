@@ -21,6 +21,13 @@ class CultivoController extends Controller
         return response()->json($this->cultivoService->getByLote($loteId));
     }
 
+    public function index(): JsonResponse
+    {
+        $cultivos = $this->cultivoService->index();
+
+        return response()->json($cultivos);
+    }
+
     public function show(Cultivo $cultivo): JsonResponse
     {
         return response()->json($this->cultivoService->show($cultivo));
