@@ -10,8 +10,7 @@ class Cultivo extends Model
     protected $fillable = [
         'tipo',
         'variedad',
-        'fecha_siembra',
-        'cultivo_antecesor',
+        'cultivo_antecesor_id',
         'notas',
     ];
 
@@ -23,5 +22,10 @@ class Cultivo extends Model
     public function campania(): BelongsTo
     {
         return $this->belongsTo(Campania::class);
+    }
+
+    public function cultivoAntecesor(): BelongsTo
+    {
+        return $this->belongsTo(Cultivo::class, 'cultivo_antecesor_id');
     }
 }

@@ -69,8 +69,7 @@ export interface CultivoDB {
     id: number;
     tipo: string;
     variedad: string;
-    fecha_siembra: string;
-    cultivo_antecesor: string;
+    cultivo_antecesor_id: number | null;
     notas: string;
 }
 

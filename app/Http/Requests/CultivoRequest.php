@@ -22,11 +22,10 @@ class CultivoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tipo'              => ['required', 'string', 'max:255'],
-            'variedad'          => ['required', 'string', 'max:255'],
-            'fecha_siembra'     => ['required', 'date', 'before_or_equal:today'],
-            'cultivo_antecesor' => ['nullable', 'string', 'max:255'],
-            'notas'             => ['nullable', 'string'],
+            'tipo' => ['required', 'string', 'max:255'],
+            'variedad' => ['required', 'string', 'max:255'],
+            'cultivo_antecesor_id' => ['nullable', 'integer', 'exists:cultivos,id'],
+            'notas' => ['nullable', 'string'],
         ];
     }
 }
