@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cultivo extends Model
 {
@@ -14,14 +15,9 @@ class Cultivo extends Model
         'notas',
     ];
 
-    public function lote(): BelongsTo
+    public function campanias(): HasMany
     {
-        return $this->belongsTo(Lote::class);
-    }
-
-    public function campania(): BelongsTo
-    {
-        return $this->belongsTo(Campania::class);
+        return $this->hasMany(Campania::class);
     }
 
     public function cultivoAntecesor(): BelongsTo

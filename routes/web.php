@@ -2,17 +2,14 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    if(Auth::check()){
+    if (Auth::check()) {
         return Redirect('/dashboard');
-    }
-    else{
+    } else {
         return Redirect('/login');
     }
 });
@@ -26,7 +23,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 Route::get('/campo', function () {
     return Inertia::render('Campos/Campo');
@@ -48,7 +44,6 @@ Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');
 
-
 Route::get('/lotes', function () {
     return Inertia::render('Lotes/Lotes');
 })->middleware(['auth', 'verified'])->name('lotes');
@@ -66,7 +61,6 @@ Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
     Route::put('/users/{user}/roles', [UserController::class, 'modificarRoles']);
 });
 
-
 Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
@@ -79,5 +73,8 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampañas');
 
+Route::get('/cultivos', function () {
+    return Inertia::render('Cultivos/Cultivos');
+})->middleware(['auth', 'verified'])->name('gestionarCultivos');
 
 require __DIR__.'/auth.php';
