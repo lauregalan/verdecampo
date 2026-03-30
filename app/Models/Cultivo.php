@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Cultivo extends Model
 {
     protected $fillable = [
-        'lote_id',
-        'campania_id',
         'tipo',
         'variedad',
         'fecha_siembra',

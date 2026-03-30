@@ -98,7 +98,7 @@ export interface IdLotesPorIdCampania {
     lotesId: number[];
 }
 
-export interface IdLotesPorIdCultivo {
-    cultivoId: number;
-    lotesId: number[];
+export interface IdCultivoPorIdCampania {
+    campaniaId: number;
+    cultivosId: number;
 }

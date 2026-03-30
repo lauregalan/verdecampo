@@ -12,7 +12,7 @@ import {
 import FormularioLote from "./FormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
-import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado, CampaniaDB, CultivoDB, IdLotesPorIdCampania, IdLotesPorIdCultivo} from "./types";
+import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado, CampaniaDB, CultivoDB, IdLotesPorIdCampania, IdCultivoPorIdCampania} from "./types";
 import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
 
 const mapearLote = (lote: any): Lote => ({
@@ -51,7 +51,7 @@ export default function Lotes() {
     const [cultivos, setCultivos] = useState<Cultivo[]>([]);
     const [campanias, setCampanias] = useState<Campania[]>([]);
     const [lotesPorCampania, setLotesPorCampania] = useState<IdLotesPorIdCampania[]>([]);
-    const [lotesPorCultivo, setLotesPorCultivo] = useState<IdLotesPorIdCultivo[]>([]);
+    const [cultivoPorCampania, setCultivoPorCampania] = useState<IdCultivoPorIdCampania[]>([]);
 
     const estados = [
         { nombre: "produccion" },
@@ -113,22 +113,19 @@ export default function Lotes() {
                 });
             }
 
-            // for (const campania of data) {
-            //     console.log(`Obteniendo cultivo para campaña ${campania.id}...`);
-            //     const response_lotes = await fetch(`/api//cultivos/campania/${}`);
-            //     const data_lotes = await response_lotes.json();
-            //     console.log(`Lotes para campaña ${campania.id}:`, data_lotes);
-            //     result_cultivos.push({
-            //         campaniaId: campania.id,
-            //         lotesId: data_lotes.map((lote: any) => lote.id),
-            //     });
-            // }
+            for (const campania of data) {
+                result_cultivos.push({
+                    campaniaId: campania.id,
+                    cultivosId: campania.cultivo_id,
+                });
+            }
 
             
 
             console.log("Lotes por campaña:", result_lotes);
 
             setLotesPorCampania(result_lotes);
+            setCultivoPorCampania(result_cultivos);
         } catch (error) {
             console.error("Error fetching campaigns:", error);
         }
@@ -174,6 +171,14 @@ export default function Lotes() {
             if (campaniaSeleccionada){
                 const loteEnCampania = lotesPorCampania.find(l => l.campaniaId === campaniaSeleccionada.id);
                 if (!loteEnCampania || !loteEnCampania.lotesId.includes(lote.id)) {
+                    console.log("Excluyendo lote por campaña");
+                    return false;
+                }
+            }
+            if (cultivoSeleccionado){
+                const idCampania = lotesPorCampania.find(l => l.lotesId.includes(lote.id))?.campaniaId;
+                const cultivoEnCampania = cultivoPorCampania.find(c => c.campaniaId === idCampania);
+                if (cultivoEnCampania?.cultivosId !== cultivoSeleccionado.id) {
                     console.log("Excluyendo lote por campaña");
                     return false;
                 }
