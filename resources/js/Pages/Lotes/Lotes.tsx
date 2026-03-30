@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Head, router } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
+import api from "@/lib/api";
 import {
     Select,
     SelectTrigger,
@@ -12,7 +13,19 @@ import {
 import FormularioLote from "./FormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
-import { LoteDraft, Lote, Campo, CampoDB, Cultivo, Campania, Estado, CampaniaDB, CultivoDB, IdLotesPorIdCampania, IdCultivoPorIdCampania} from "./types";
+import {
+    LoteDraft,
+    Lote,
+    Campo,
+    CampoDB,
+    Cultivo,
+    Campania,
+    Estado,
+    CampaniaDB,
+    CultivoDB,
+    IdLotesPorIdCampania,
+    IdCultivoPorIdCampania,
+} from "./types";
 import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
 
 const mapearLote = (lote: any): Lote => ({
@@ -50,8 +63,12 @@ export default function Lotes() {
     const [campos, setCampos] = useState<Campo[]>([]);
     const [cultivos, setCultivos] = useState<Cultivo[]>([]);
     const [campanias, setCampanias] = useState<Campania[]>([]);
-    const [lotesPorCampania, setLotesPorCampania] = useState<IdLotesPorIdCampania[]>([]);
-    const [cultivoPorCampania, setCultivoPorCampania] = useState<IdCultivoPorIdCampania[]>([]);
+    const [lotesPorCampania, setLotesPorCampania] = useState<
+        IdLotesPorIdCampania[]
+    >([]);
+    const [cultivoPorCampania, setCultivoPorCampania] = useState<
+        IdCultivoPorIdCampania[]
+    >([]);
 
     const estados = [
         { nombre: "produccion" },
@@ -63,7 +80,7 @@ export default function Lotes() {
     //-------------------------GET LOTES-------------------------
     const GetLotes = useCallback(async () => {
         try {
-            const response = await fetch("/api/lotes");
+            const response = await api.get("/api/lotes");
             const data = await response.json();
             setLotes(data.map(mapearLote));
             console.log("Lotes obtenidos:", data);
@@ -75,13 +92,13 @@ export default function Lotes() {
     //-------------------------GET CAMPOS-------------------------
     const getCampos = useCallback(async () => {
         try {
-            const response = await fetch("/api/campos");
+            const response = await api.get("/api/campos");
             const data = await response.json();
             setCampos(
                 data.map((campo: CampoDB) => ({
                     id: campo.id,
                     nombre: campo.nombre,
-                }))
+                })),
             );
         } catch (error) {
             console.error("Error fetching lots:", error);
@@ -93,18 +110,20 @@ export default function Lotes() {
         try {
             const result_lotes = [];
             const result_cultivos = [];
-            const response = await fetch("/api/campanias");
+            const response = await api.get("/api/campanias");
             const data = await response.json();
             setCampanias(
                 data.map((campania: CampaniaDB) => ({
                     id: campania.id,
                     nombre: campania.nombre,
-                }))
+                })),
             );
 
             for (const campania of data) {
                 console.log(`Obteniendo lotes para campaña ${campania.id}...`);
-                const response_lotes = await fetch(`/api/campanias/${campania.id}/lotes`);
+                const response_lotes = await api.get(
+                    `/api/campanias/${campania.id}/lotes`,
+                );
                 const data_lotes = await response_lotes.json();
                 console.log(`Lotes para campaña ${campania.id}:`, data_lotes);
                 result_lotes.push({
@@ -120,8 +139,6 @@ export default function Lotes() {
                 });
             }
 
-            
-
             console.log("Lotes por campaña:", result_lotes);
 
             setLotesPorCampania(result_lotes);
@@ -134,13 +151,13 @@ export default function Lotes() {
     //-------------------------GET CULTIVOS-------------------------
     const getCultivos = useCallback(async () => {
         try {
-            const response = await fetch("/api/cultivos");
+            const response = await api.get("/api/cultivos");
             const data = await response.json();
             setCultivos(
                 data.map((cultivo: CultivoDB) => ({
                     id: cultivo.id,
                     nombre: cultivo.tipo,
-                }))
+                })),
             );
         } catch (error) {
             console.error("Error fetching crops:", error);
@@ -157,27 +174,49 @@ export default function Lotes() {
     //-------------------------FILTRADO-------------------------
     useEffect(() => {
         const filtrados = lotes.filter((lote) => {
-            console.log("Filtrando lote:", lote.nombre, "idCampo:", lote.idCampo, "campoSeleccionado:", campoSeleccionado?.id);
+            console.log(
+                "Filtrando lote:",
+                lote.nombre,
+                "idCampo:",
+                lote.idCampo,
+                "campoSeleccionado:",
+                campoSeleccionado?.id,
+            );
             if (campoSeleccionado && lote.idCampo !== campoSeleccionado.id) {
                 console.log("Excluyendo lote por campo");
                 return false;
             }
-            if (estadoSeleccionado && lote.estado !== estadoSeleccionado.nombre) {
+            if (
+                estadoSeleccionado &&
+                lote.estado !== estadoSeleccionado.nombre
+            ) {
                 return false;
             }
-            if (nombreBuscado && !lote.nombre.toLowerCase().includes(nombreBuscado.toLowerCase())) {
+            if (
+                nombreBuscado &&
+                !lote.nombre.toLowerCase().includes(nombreBuscado.toLowerCase())
+            ) {
                 return false;
             }
-            if (campaniaSeleccionada){
-                const loteEnCampania = lotesPorCampania.find(l => l.campaniaId === campaniaSeleccionada.id);
-                if (!loteEnCampania || !loteEnCampania.lotesId.includes(lote.id)) {
+            if (campaniaSeleccionada) {
+                const loteEnCampania = lotesPorCampania.find(
+                    (l) => l.campaniaId === campaniaSeleccionada.id,
+                );
+                if (
+                    !loteEnCampania ||
+                    !loteEnCampania.lotesId.includes(lote.id)
+                ) {
                     console.log("Excluyendo lote por campaña");
                     return false;
                 }
             }
-            if (cultivoSeleccionado){
-                const idCampania = lotesPorCampania.find(l => l.lotesId.includes(lote.id))?.campaniaId;
-                const cultivoEnCampania = cultivoPorCampania.find(c => c.campaniaId === idCampania);
+            if (cultivoSeleccionado) {
+                const idCampania = lotesPorCampania.find((l) =>
+                    l.lotesId.includes(lote.id),
+                )?.campaniaId;
+                const cultivoEnCampania = cultivoPorCampania.find(
+                    (c) => c.campaniaId === idCampania,
+                );
                 if (cultivoEnCampania?.cultivosId !== cultivoSeleccionado.id) {
                     console.log("Excluyendo lote por campaña");
                     return false;
@@ -189,15 +228,20 @@ export default function Lotes() {
         console.log("Lotes filtrados:", filtrados.length, "de", lotes.length);
         console.log("Filtrados: ", filtrados);
         setLotesFiltrados(filtrados);
-    }, [lotes, campoSeleccionado, estadoSeleccionado, nombreBuscado, campaniaSeleccionada, cultivoSeleccionado]);
-
+    }, [
+        lotes,
+        campoSeleccionado,
+        estadoSeleccionado,
+        nombreBuscado,
+        campaniaSeleccionada,
+        cultivoSeleccionado,
+    ]);
 
     //-------------------------AGREGAR/EDITAR LOTE-------------------------
     const handleAgregarLote = async (
         nuevoLote: LoteDraft,
-        campoId: number | string
+        campoId: number | string,
     ): Promise<boolean> => {
-
         try {
             const estadoNormalizado = nuevoLote.status
                 .toLowerCase()
@@ -221,14 +265,10 @@ export default function Lotes() {
 
             // -------- EDITAR --------
             if (loteEditando) {
-                const response = await fetch(`/api/lotes/${loteEditando.id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                });
+                const response = await api.put(
+                    `/api/lotes/${loteEditando.id}`,
+                    payload,
+                );
 
                 const data = await response.json();
 
@@ -239,24 +279,15 @@ export default function Lotes() {
                 console.log("✅ Lote actualizado:", data);
 
                 setLotes((prev) =>
-                    prev.map((l) => (l.id === data.id ? mapearLote(data) : l))
+                    prev.map((l) => (l.id === data.id ? mapearLote(data) : l)),
                 );
 
                 setShowFormulario(false);
                 setLoteEditando(null);
                 return true;
-            }
-
-            else {
+            } else {
                 // -------- CREAR --------
-                const response = await fetch(`/api/lotes`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                });
+                const response = await api.post(`/api/lotes`, payload);
 
                 const data = await response.json();
 
@@ -275,7 +306,6 @@ export default function Lotes() {
             setError(null);
 
             return true;
-
         } catch (error) {
             console.error("Error:", error);
             setError("Error al guardar el lote.");
@@ -289,9 +319,7 @@ export default function Lotes() {
     //-------------------------ELIMINAR LOTE-------------------------
     const handleEliminarLote = async (id: number) => {
         try {
-            const response = await fetch(`/api/lotes/${id}`, {
-                method: "DELETE",
-            });
+            const response = await api.delete(`/api/lotes/${id}`);
 
             if (!response.ok) {
                 const data = await response.json();
@@ -308,7 +336,6 @@ export default function Lotes() {
             setLoteAEliminar(null);
         }
     };
-
 
     const loteToForm = (lote: Lote | null) => {
         if (!lote) return null;
@@ -376,7 +403,14 @@ export default function Lotes() {
                                             ) || null;
                                         setCampoSeleccionado(campo);
                                     }
-                                    console.log("Campo seleccionado:", value === "todos" ? null : campos.find((c) => String(c.id) === value));
+                                    console.log(
+                                        "Campo seleccionado:",
+                                        value === "todos"
+                                            ? null
+                                            : campos.find(
+                                                  (c) => String(c.id) === value,
+                                              ),
+                                    );
                                 }}
                             >
                                 <SelectTrigger className="w-full rounded-xl border border-gray-300 bg-[#fffaf0] hover:bg-gray-100 focus:ring-2 focus:ring-green-500">
@@ -419,7 +453,14 @@ export default function Lotes() {
                                             ) || null;
                                         setEstadoSeleccionado(estado);
                                     }
-                                    console.log("Estado seleccionado:", value === "todos" ? null : estados.find((e) => e.nombre === value));
+                                    console.log(
+                                        "Estado seleccionado:",
+                                        value === "todos"
+                                            ? null
+                                            : estados.find(
+                                                  (e) => e.nombre === value,
+                                              ),
+                                    );
                                 }}
                             >
                                 <SelectTrigger className="w-full rounded-xl border border-gray-300 bg-[#fffaf0] hover:bg-gray-100 focus:ring-2 focus:ring-green-500">
@@ -443,7 +484,7 @@ export default function Lotes() {
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
-                            </Select>                           
+                            </Select>
 
                             {/* Campania */}
                             <Select
@@ -462,7 +503,14 @@ export default function Lotes() {
                                             ) || null;
                                         setCampaniaSeleccionada(campania);
                                     }
-                                    console.log("Campaña seleccionada:", value === "todos" ? null : campanias.find((c) => String(c.id) === value));
+                                    console.log(
+                                        "Campaña seleccionada:",
+                                        value === "todos"
+                                            ? null
+                                            : campanias.find(
+                                                  (c) => String(c.id) === value,
+                                              ),
+                                    );
                                 }}
                             >
                                 <SelectTrigger className="w-full rounded-xl border border-gray-300 bg-[#fffaf0] hover:bg-gray-100 focus:ring-2 focus:ring-green-500">
@@ -505,7 +553,14 @@ export default function Lotes() {
                                             ) || null;
                                         setCultivoSeleccionado(cultivo);
                                     }
-                                    console.log("Cultivo seleccionado:", value === "todos" ? null : cultivos.find((c) => String(c.id) === value));
+                                    console.log(
+                                        "Cultivo seleccionado:",
+                                        value === "todos"
+                                            ? null
+                                            : cultivos.find(
+                                                  (c) => String(c.id) === value,
+                                              ),
+                                    );
                                 }}
                             >
                                 <SelectTrigger className="w-full rounded-xl border border-gray-300 bg-[#fffaf0] hover:bg-gray-100 focus:ring-2 focus:ring-green-500">
@@ -553,7 +608,10 @@ export default function Lotes() {
                 </div>
                 <FormularioLote
                     show={showFormulario}
-                    onClose={() => { setShowFormulario(false); setLoteEditando(null) }}
+                    onClose={() => {
+                        setShowFormulario(false);
+                        setLoteEditando(null);
+                    }}
                     campoId={campoSeleccionado ? campoSeleccionado.id : 0}
                     onSubmit={handleAgregarLote}
                     initialData={loteToForm(loteEditando)}
@@ -563,11 +621,12 @@ export default function Lotes() {
                     show={loteAEliminar !== null}
                     titulo="Eliminar lote"
                     mensaje={`¿Estás seguro de que querés eliminar el lote "${loteAEliminar?.nombre}"? Esta acción no se puede deshacer.`}
-                    onConfirmar={() => loteAEliminar && handleEliminarLote(loteAEliminar.id)}
+                    onConfirmar={() =>
+                        loteAEliminar && handleEliminarLote(loteAEliminar.id)
+                    }
                     onCancelar={() => setLoteAEliminar(null)}
                 />
             </div>
-
         </Body>
     );
 }

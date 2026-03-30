@@ -16,15 +16,12 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import UserModal from "@/components/ui/UserModal";
+import api from "@/lib/api";
 
 interface BackendUser {
     id: number;
@@ -75,19 +72,19 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [processingUserId, setProcessingUserId] = useState<number | null>(null);
+    const [processingUserId, setProcessingUserId] = useState<number | null>(
+        null,
+    );
 
-    const authUser = usePage().props.auth?.user as { id?: number; roles?: string[] } | undefined;
+    const authUser = usePage().props.auth?.user as
+        | { id?: number; roles?: string[] }
+        | undefined;
     const canManageUsers = authUser?.roles?.includes("Productor") ?? false;
 
     const reloadUsers = async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/users", {
-                headers: {
-                    Accept: "application/json",
-                },
-            });
+            const response = await api.get("/api/users");
 
             if (!response.ok) {
                 throw new Error("No se pudo obtener el listado de usuarios.");
@@ -150,17 +147,18 @@ export default function UserManagment({ header }: UserManagmentProps) {
         const term = search.trim().toLowerCase();
         const base = term
             ? users.filter((user) => {
-                const primaryRole = user.roles[0] ?? "Sin rol";
-                return (
-                    user.name.toLowerCase().includes(term) ||
-                    user.email.toLowerCase().includes(term) ||
-                    primaryRole.toLowerCase().includes(term)
-                );
-            })
+                  const primaryRole = user.roles[0] ?? "Sin rol";
+                  return (
+                      user.name.toLowerCase().includes(term) ||
+                      user.email.toLowerCase().includes(term) ||
+                      primaryRole.toLowerCase().includes(term)
+                  );
+              })
             : [...users];
 
         return base.sort((a, b) => {
-            const byRole = getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
+            const byRole =
+                getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
             if (byRole !== 0) return byRole;
             return a.name.localeCompare(b.name, "es");
         });
@@ -169,15 +167,18 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const availableRoles = [
         {
             name: "Productor",
-            description: "Puede ver y gestionar campos, planes de cultivo y producción. Ademas de gestionar usuarios",
+            description:
+                "Puede ver y gestionar campos, planes de cultivo y producción. Ademas de gestionar usuarios",
         },
         {
             name: "Ingeniero",
-            description: "Accede a datos técnicos, informes y tareas de supervisión de campo.",
+            description:
+                "Accede a datos técnicos, informes y tareas de supervisión de campo.",
         },
         {
             name: "Empleado",
-            description: "Realiza tareas de campo asignadas y actualiza estados de actividades.",
+            description:
+                "Realiza tareas de campo asignadas y actualiza estados de actividades.",
         },
     ];
 
@@ -215,17 +216,28 @@ export default function UserManagment({ header }: UserManagmentProps) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-14"></TableHead>
-                                <TableHead className="w-[220px]">Nombre y apellido</TableHead>
-                                <TableHead className="w-[280px]">Correo electronico</TableHead>
+                                <TableHead className="w-[220px]">
+                                    Nombre y apellido
+                                </TableHead>
+                                <TableHead className="w-[280px]">
+                                    Correo electronico
+                                </TableHead>
                                 <TableHead className="w-[150px]">Rol</TableHead>
-                                <TableHead className="hidden w-[210px] text-center lg:table-cell">Ultimo acceso</TableHead>
-                                <TableHead className="w-[140px] text-center">Estado</TableHead>
+                                <TableHead className="hidden w-[210px] text-center lg:table-cell">
+                                    Ultimo acceso
+                                </TableHead>
+                                <TableHead className="w-[140px] text-center">
+                                    Estado
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-sm text-gray-500">
+                                    <TableCell
+                                        colSpan={6}
+                                        className="text-center text-sm text-gray-500"
+                                    >
                                         Cargando usuarios...
                                     </TableCell>
                                 </TableRow>
@@ -233,50 +245,83 @@ export default function UserManagment({ header }: UserManagmentProps) {
 
                             {!loading && error && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-sm text-red-600">
+                                    <TableCell
+                                        colSpan={6}
+                                        className="text-center text-sm text-red-600"
+                                    >
                                         {error}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-
-                            {!loading && !error && filteredUsers.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-sm text-gray-500">
-                                        No hay usuarios para mostrar.
                                     </TableCell>
                                 </TableRow>
                             )}
 
                             {!loading &&
                                 !error &&
+                                filteredUsers.length === 0 && (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={6}
+                                            className="text-center text-sm text-gray-500"
+                                        >
+                                            No hay usuarios para mostrar.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                            {!loading &&
+                                !error &&
                                 filteredUsers.map((user) => {
-                                    const primaryRole = user.roles[0] ?? "Sin rol";
-                                    const estado = user.active ? "Activo" : "Inactivo";
+                                    const primaryRole =
+                                        user.roles[0] ?? "Sin rol";
+                                    const estado = user.active
+                                        ? "Activo"
+                                        : "Inactivo";
 
                                     return (
                                         <TableRow key={user.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
-                                                        <AvatarImage src="" alt={user.name} />
+                                                        <AvatarImage
+                                                            src=""
+                                                            alt={user.name}
+                                                        />
                                                         <AvatarFallback className="bg-green-100 text-xs font-bold uppercase text-green-700">
                                                             {user.name
                                                                 .split(" ")
-                                                                .map((n) => n[0])
+                                                                .map(
+                                                                    (n) => n[0],
+                                                                )
                                                                 .join("")
-                                                                .substring(0, 2)}
+                                                                .substring(
+                                                                    0,
+                                                                    2,
+                                                                )}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="truncate font-medium" title={user.name}>{user.name}</TableCell>
-                                            <TableCell className="truncate" title={user.email}>{user.email}</TableCell>
+                                            <TableCell
+                                                className="truncate font-medium"
+                                                title={user.name}
+                                            >
+                                                {user.name}
+                                            </TableCell>
+                                            <TableCell
+                                                className="truncate"
+                                                title={user.email}
+                                            >
+                                                {user.email}
+                                            </TableCell>
                                             <TableCell>
-                                                <Badge 
+                                                <Badge
                                                     className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
                                                     onClick={() => {
-                                                        setSelectedRole(primaryRole);
-                                                        setSelectedUserId(user.id.toString());
+                                                        setSelectedRole(
+                                                            primaryRole,
+                                                        );
+                                                        setSelectedUserId(
+                                                            user.id.toString(),
+                                                        );
                                                     }}
                                                 >
                                                     {primaryRole}
@@ -291,9 +336,24 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                                         <div className="flex items-center gap-2">
                                                             <Switch
                                                                 id={`user-${user.id}`}
-                                                                checked={user.active}
-                                                                disabled={!canManageUsers || processingUserId === user.id || authUser?.id === user.id}
-                                                                onCheckedChange={(checked) => toggleUserActive(user.id, checked)}
+                                                                checked={
+                                                                    user.active
+                                                                }
+                                                                disabled={
+                                                                    !canManageUsers ||
+                                                                    processingUserId ===
+                                                                        user.id ||
+                                                                    authUser?.id ===
+                                                                        user.id
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked,
+                                                                ) =>
+                                                                    toggleUserActive(
+                                                                        user.id,
+                                                                        checked,
+                                                                    )
+                                                                }
                                                                 className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
                                                             />
                                                             <Label

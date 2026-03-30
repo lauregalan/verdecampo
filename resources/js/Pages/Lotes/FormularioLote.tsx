@@ -5,6 +5,7 @@ import TextInput from "@/components/TextInput";
 import MapaInteractivo from "../Campos/MapaInteractivo"; // Reusing the map component
 import type { Coord, LoteCard, LoteDraft, StatusColor } from "./types";
 import { X } from "lucide-react";
+import api from "@/lib/api";
 
 interface FormularioLoteProps {
     show: boolean;
@@ -47,14 +48,14 @@ export default function FormularioLote({
     const [ph, setPh] = useState(0);
     const [napa, setNapa] = useState(0);
     const [campos, setCampos] = useState<{ id: number; nombre: string }[]>([]);
-    const [campoSeleccionado, setCampoSeleccionado] = useState<number | string>(campoId);
+    const [campoSeleccionado, setCampoSeleccionado] = useState<number | string>(
+        campoId,
+    );
 
     useEffect(() => {
         const fetchCampos = async () => {
             try {
-                const res = await fetch("/api/campos", {
-                    headers: { Accept: "application/json" },
-                });
+                const res = await api.get("/api/campos");
 
                 if (!res.ok) throw new Error();
 
@@ -146,7 +147,7 @@ export default function FormularioLote({
             polygon,
         };
 
-        const created = await onSubmit(nuevoLote, campoSeleccionado);; // Pass campoId here
+        const created = await onSubmit(nuevoLote, campoSeleccionado); // Pass campoId here
         if (created) {
             resetForm();
             onClose();
@@ -154,10 +155,8 @@ export default function FormularioLote({
     };
 
     return (
-
         <Modal show={show} onClose={handleClose} maxWidth="2xl">
             <div className="flex max-h-[90vh] flex-col bg-white rounded-2xl">
-
                 {/* HEADER */}
                 <div className="flex items-center justify-between px-6 pt-5 pb-3">
                     <h2 className="text-2xl font-bold text-gray-800">
@@ -192,7 +191,9 @@ export default function FormularioLote({
                         <InputLabel value="Campo" />
                         <select
                             value={campoSeleccionado}
-                            onChange={(e) => setCampoSeleccionado(Number(e.target.value))}
+                            onChange={(e) =>
+                                setCampoSeleccionado(Number(e.target.value))
+                            }
                             className="mt-1 w-full rounded-md border-green-700 focus:border-green-800 focus:ring-green-800"
                             required
                         >
