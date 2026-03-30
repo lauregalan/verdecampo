@@ -1,10 +1,10 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import Modal from '@/components/Modal';
-import InputLabel from '@/components/InputLabel';
-import TextInput from '@/components/TextInput';
-import MapaInteractivo, { Coord } from './MapaInteractivo';
-import type { CampoCard, CampoDraft, StatusColor } from './types';
-import { X } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import Modal from "@/components/Modal";
+import InputLabel from "@/components/InputLabel";
+import TextInput from "@/components/TextInput";
+import MapaInteractivo, { Coord } from "./MapaInteractivo";
+import type { CampoCard, CampoDraft, StatusColor } from "./types";
+import { X } from "lucide-react";
 
 interface FormularioCampoProps {
     show: boolean;
@@ -14,13 +14,13 @@ interface FormularioCampoProps {
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
-    { label: 'En Producción', value: 'En Produccion', color: 'verde' },
-    { label: 'En Preparación', value: 'En Preparacion', color: 'naranja' },
-    { label: 'En Barbecho', value: 'En Barbecho', color: 'violeta' },
+    { label: "En Producción", value: "En Produccion", color: "verde" },
+    { label: "En Preparación", value: "En Preparacion", color: "naranja" },
+    { label: "En Barbecho", value: "En Barbecho", color: "violeta" },
 ];
 
 const PLACEHOLDER_IMAGE =
-    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400';
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
 
 export default function FormularioCampo({
     show,
@@ -29,10 +29,12 @@ export default function FormularioCampo({
     initialData,
 }: FormularioCampoProps) {
     // --- Estado del formulario ---
-    const [name, setName] = useState('');
+    const [name, setName] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0].value);
-    const [statusColor, setStatusColor] = useState<StatusColor>(STATUS_OPTIONS[0].color);
-    const [lastCrop, setLastCrop] = useState('');
+    const [statusColor, setStatusColor] = useState<StatusColor>(
+        STATUS_OPTIONS[0].color,
+    );
+    const [lastCrop, setLastCrop] = useState("");
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
     const [surface, setSurface] = useState<number>(0);
@@ -47,7 +49,9 @@ export default function FormularioCampo({
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
             // Convert '500 Ha' string back to number 500
-            const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ''));
+            const numericSurface = parseFloat(
+                initialData.surface.replace(/[^\d.-]/g, ""),
+            );
             setSurface(isNaN(numericSurface) ? 0 : numericSurface);
             setPolygon(initialData.polygon || []);
         } else if (show && !initialData) {
@@ -73,10 +77,10 @@ export default function FormularioCampo({
 
     // --- Reset ---
     const resetForm = () => {
-        setName('');
+        setName("");
         setStatus(STATUS_OPTIONS[0].value);
         setStatusColor(STATUS_OPTIONS[0].color);
-        setLastCrop('');
+        setLastCrop("");
         setLatitude(0);
         setLongitude(0);
         setSurface(0);
@@ -116,7 +120,7 @@ export default function FormularioCampo({
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
-                        {initialData ? 'Editar campo' : 'Registrar nuevo campo'}
+                        {initialData ? "Editar campo" : "Registrar nuevo campo"}
                     </h2>
                     <button
                         type="button"
@@ -130,7 +134,10 @@ export default function FormularioCampo({
                 <div className="space-y-5">
                     {/* Nombre */}
                     <div>
-                        <InputLabel htmlFor="campo-nombre" value="Nombre del campo" />
+                        <InputLabel
+                            htmlFor="campo-nombre"
+                            value="Nombre del campo"
+                        />
                         <TextInput
                             id="campo-nombre"
                             value={name}
@@ -148,7 +155,9 @@ export default function FormularioCampo({
                             <select
                                 id="campo-status"
                                 value={status}
-                                onChange={(e) => handleStatusChange(e.target.value)}
+                                onChange={(e) =>
+                                    handleStatusChange(e.target.value)
+                                }
                                 className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 {STATUS_OPTIONS.map((opt) => (
@@ -158,25 +167,14 @@ export default function FormularioCampo({
                                 ))}
                             </select>
                         </div>
-
-                        <div>
-                            <InputLabel htmlFor="campo-cultivo" value="Último cultivo" />
-                            <TextInput
-                                id="campo-cultivo"
-                                value={lastCrop}
-                                onChange={(e) => setLastCrop(e.target.value)}
-                                placeholder="Ej: Maíz"
-                                className="mt-1 w-full"
-                                required
-                            />
-                        </div>
                     </div>
 
                     {/* Mapa interactivo */}
                     <div>
                         <InputLabel value="Ubicación y área del campo" />
                         <p className="mb-2 text-xs text-gray-500">
-                            Hacé clic en el mapa para dibujar el perímetro de tu campo.
+                            Hacé clic en el mapa para dibujar el perímetro de tu
+                            campo.
                         </p>
                         <MapaInteractivo
                             polygon={polygon}
@@ -195,7 +193,9 @@ export default function FormularioCampo({
                                 type="number"
                                 step="any"
                                 value={latitude}
-                                onChange={(e) => setLatitude(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setLatitude(parseFloat(e.target.value) || 0)
+                                }
                                 className="mt-1 w-full"
                             />
                         </div>
@@ -206,19 +206,28 @@ export default function FormularioCampo({
                                 type="number"
                                 step="any"
                                 value={longitude}
-                                onChange={(e) => setLongitude(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setLongitude(
+                                        parseFloat(e.target.value) || 0,
+                                    )
+                                }
                                 className="mt-1 w-full"
                             />
                         </div>
                         <div>
-                            <InputLabel htmlFor="campo-superficie" value="Superficie (Ha)" />
+                            <InputLabel
+                                htmlFor="campo-superficie"
+                                value="Superficie (Ha)"
+                            />
                             <TextInput
                                 id="campo-superficie"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 value={surface}
-                                onChange={(e) => setSurface(parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setSurface(parseFloat(e.target.value) || 0)
+                                }
                                 className="mt-1 w-full"
                             />
                         </div>
@@ -238,7 +247,7 @@ export default function FormularioCampo({
                         type="submit"
                         className="rounded-lg bg-[#1d4ed8] px-5 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700"
                     >
-                        {initialData ? 'Guardar cambios' : 'Registrar'}
+                        {initialData ? "Guardar cambios" : "Registrar"}
                     </button>
                 </div>
             </form>
