@@ -175,11 +175,6 @@ export default function UserManagment({ header }: UserManagmentProps) {
             description:
                 "Accede a datos técnicos, informes y tareas de supervisión de campo.",
         },
-        {
-            name: "Empleado",
-            description:
-                "Realiza tareas de campo asignadas y actualiza estados de actividades.",
-        },
     ];
 
     return (
