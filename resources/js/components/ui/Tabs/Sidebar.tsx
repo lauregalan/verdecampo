@@ -59,18 +59,20 @@ export default function AppSidebar() {
                     </SidebarGroupLabel>
 
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={currentPath.startsWith("/dashboard")}
-                                className="hover:bg-[#1a4030] text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                            >
-                                <Link href="/dashboard">
-                                    <LayoutDashboard size={18} />
-                                    <span className="font-medium">Dashboard</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {hasProductorRole && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={currentPath.startsWith("/dashboard")}
+                                    className="hover:bg-[#1a4030] text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                >
+                                    <Link href="/dashboard">
+                                        <LayoutDashboard size={18} />
+                                        <span className="font-medium">Dashboard</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
 
                         {hasProductorRole && (
                             <SidebarMenuItem>

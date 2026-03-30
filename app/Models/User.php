@@ -53,4 +53,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function hasProductorRole(): bool
+    {
+        return $this->hasRole('Productor');
+    }
+
+    public function homeRouteName(): string
+    {
+        return $this->hasProductorRole() ? 'dashboard' : 'campo';
+    }
 }
