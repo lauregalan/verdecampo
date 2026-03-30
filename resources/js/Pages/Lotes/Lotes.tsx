@@ -243,9 +243,12 @@ export default function Lotes() {
         campoId: number | string,
     ): Promise<boolean> => {
         try {
-            const estadoNormalizado = nuevoLote.status
-                .toLowerCase()
-                .replace(/\s+/g, ""); // elimina TODOS los espacios
+            const campoIdNumerico = Number(campoId);
+
+            if (!Number.isInteger(campoIdNumerico) || campoIdNumerico <= 0) {
+                setError("Selecciona un campo valido antes de guardar el lote.");
+                return false;
+            }
 
             const payload = {
                 nombre: nuevoLote.name?.trim() || "",
@@ -254,7 +257,7 @@ export default function Lotes() {
                 latitud: Number(nuevoLote.latitude) ?? 0,
                 longitud: Number(nuevoLote.longitude) ?? 0,
                 hectareas: Number(nuevoLote.hectareas) ?? 0,
-                id_campo: Number(campoId),
+                id_campo: campoIdNumerico,
                 ph: Number(nuevoLote.ph) || 0,
                 napa: Number(nuevoLote.napa) || 0,
             };
@@ -612,7 +615,7 @@ export default function Lotes() {
                         setShowFormulario(false);
                         setLoteEditando(null);
                     }}
-                    campoId={campoSeleccionado ? campoSeleccionado.id : 0}
+                    campoId={campoSeleccionado ? campoSeleccionado.id : ""}
                     onSubmit={handleAgregarLote}
                     initialData={loteToForm(loteEditando)}
                 />

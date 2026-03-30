@@ -117,6 +117,7 @@ export default function FormularioLote({
         setPh(7);
         setNapa(0);
         setLastCrop("");
+        setCampoSeleccionado(campoId || "");
         //setLatitude(0);
         //setLongitude(0);
         setHectareas(0);

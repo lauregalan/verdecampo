@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Campania;
 use App\Models\Campo;
 use App\Models\Lote;
 use Illuminate\Database\Seeder;
@@ -18,7 +17,6 @@ class LoteSeeder extends Seeder
             'Estancia La Esperanza' => [
                 [
                     'nombre' => 'Lote Norte',
-                    'campania' => 'Gruesa 2025/2026',
                     'caracteristicas' => '95 ha. Suelo franco limoso, buen escurrimiento y ambiente de alto potencial.',
                     'estado' => 'produccion',
                     'latitud' => -33.8962,
@@ -29,7 +27,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote Molino',
-                    'campania' => 'Fina 2026',
                     'caracteristicas' => '78 ha. Sector con loma suave, rotacion trigo/soja y baja limitacion hidrica.',
                     'estado' => 'barbecho',
                     'latitud' => -33.9084,
@@ -40,7 +37,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote Bajo',
-                    'campania' => 'Fina 2026',
                     'caracteristicas' => '64 ha. Ambiente con mayor contenido de arcilla y riesgo de anegamiento en otonos lluviosos.',
                     'estado' => 'preparacion',
                     'latitud' => -33.9141,
@@ -53,7 +49,6 @@ class LoteSeeder extends Seeder
             'Don Ricardo' => [
                 [
                     'nombre' => 'Lote Ruta 8',
-                    'campania' => 'Gruesa 2025/2026 Oeste',
                     'caracteristicas' => '88 ha. Perfil profundo y uniforme, apto para maiz temprano y soja de primera.',
                     'estado' => 'produccion',
                     'latitud' => -33.7418,
@@ -64,7 +59,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote Canada Honda',
-                    'campania' => 'Gruesa 2025/2026 Oeste',
                     'caracteristicas' => '71 ha. Ambiente mixto con sectores mas pesados y buen aporte de rastrojo.',
                     'estado' => 'produccion',
                     'latitud' => -33.7526,
@@ -75,7 +69,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote La Curva',
-                    'campania' => 'Fina 2024',
                     'caracteristicas' => '54 ha. Cuadro cercano al casco, ideal para seguimiento y ensayos comparativos.',
                     'estado' => 'barbecho',
                     'latitud' => -33.7557,
@@ -88,7 +81,6 @@ class LoteSeeder extends Seeder
             'Los Aromos' => [
                 [
                     'nombre' => 'Lote Sierra Chica',
-                    'campania' => 'Papa 2025/2026',
                     'caracteristicas' => '60 ha. Suelo franco arenoso, buena aptitud para papa y cultivos de servicio.',
                     'estado' => 'produccion',
                     'latitud' => -37.8424,
@@ -99,7 +91,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote El Ombu',
-                    'campania' => 'Cobertura Invierno 2026',
                     'caracteristicas' => '52 ha. Sector bien drenado con historial de fina y cobertura invernal.',
                     'estado' => 'preparacion',
                     'latitud' => -37.8512,
@@ -110,7 +101,6 @@ class LoteSeeder extends Seeder
                 ],
                 [
                     'nombre' => 'Lote Laguna',
-                    'campania' => 'Cobertura Invierno 2026',
                     'caracteristicas' => '47 ha. Lote frio de menor potencial, reservado para estrategias conservadoras.',
                     'estado' => 'barbecho',
                     'latitud' => -37.8554,
@@ -126,22 +116,12 @@ class LoteSeeder extends Seeder
             $campo = Campo::query()->where('nombre', $campoNombre)->firstOrFail();
 
             foreach ($lotes as $lote) {
-                $campania = Campania::query()
-                    ->where('campo_id', $campo->id)
-                    ->where('nombre', $lote['campania'])
-                    ->firstOrFail();
-
                 Lote::query()->updateOrCreate(
                     [
                         'id_campo' => $campo->id,
                         'nombre' => $lote['nombre'],
                     ],
-                    collect($lote)
-                        ->except('campania')
-                        ->all() + [
-                            'id_campania' => $campania->id,
-                            'id_campo' => $campo->id,
-                        ],
+                    $lote + ['id_campo' => $campo->id],
                 );
             }
         }

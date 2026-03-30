@@ -16,7 +16,6 @@ class Lote extends Model
         'hectareas',
         'ph',
         'napa',
-        'id_campania',
         'id_campo',
     ];
 
