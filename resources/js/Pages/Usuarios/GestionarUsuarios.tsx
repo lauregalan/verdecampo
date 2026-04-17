@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import UserModal from "@/components/ui/UserModal";
+import UserModal from "@/components/Modals/UserModal";
 import api from "@/lib/api";
 
 interface BackendUser {

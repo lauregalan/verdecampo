@@ -10,7 +10,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import FormularioLote from "./FormularioLote";
+import ModalFormularioLote from "@/components/Modals/ModalFormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
 import {
@@ -26,7 +26,7 @@ import {
     IdLotesPorIdCampania,
     IdCultivoPorIdCampania,
 } from "./types";
-import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
+import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 
 const mapearLote = (lote: any): Lote => ({
     id: lote.id,
@@ -609,7 +609,7 @@ export default function Lotes() {
                         ))}
                     </div>
                 </div>
-                <FormularioLote
+                <ModalFormularioLote
                     show={showFormulario}
                     onClose={() => {
                         setShowFormulario(false);

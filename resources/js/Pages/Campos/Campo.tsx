@@ -11,13 +11,13 @@ import {
     Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import FormularioCampo from "./FormularioCampo";
+import ModalFormularioCampo from "@/components/Modals/ModalFormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
 import api from "@/lib/api";
 // import Campania from "../Campanias/Campania";
 import { Maximize2, Sprout } from "lucide-react";
-import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
+import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import { ProductoSumary } from "./ProductoSumary";
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
@@ -394,7 +394,7 @@ export default function Campo() {
                 </ScrollArea>
             </div>
 
-            <FormularioCampo
+            <ModalFormularioCampo
                 show={showFormulario}
                 onClose={handleCerrarFormulario}
                 onSubmit={handleAgregar}
