@@ -3,7 +3,12 @@ import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
 import MapaInteractivo from "@/Pages/Campos/MapaInteractivo";
-import type { Coord, LoteCard, LoteDraft, StatusColor } from "@/Pages/Lotes/types";
+import type {
+    Coord,
+    LoteCard,
+    LoteDraft,
+    StatusColor,
+} from "@/Pages/Lotes/types";
 import { X } from "lucide-react";
 import api from "@/lib/api";
 
@@ -34,7 +39,9 @@ export default function ModalFormularioLote({
 }: ModalFormularioLoteProps) {
     const [name, setName] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0].value);
-    const [statusColor, setStatusColor] = useState<StatusColor>(STATUS_OPTIONS[0].color);
+    const [statusColor, setStatusColor] = useState<StatusColor>(
+        STATUS_OPTIONS[0].color,
+    );
     const [lastCrop, setLastCrop] = useState("");
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
@@ -44,7 +51,9 @@ export default function ModalFormularioLote({
     const [ph, setPh] = useState(0);
     const [napa, setNapa] = useState(0);
     const [campos, setCampos] = useState<{ id: number; nombre: string }[]>([]);
-    const [campoSeleccionado, setCampoSeleccionado] = useState<number | string>(campoId);
+    const [campoSeleccionado, setCampoSeleccionado] = useState<number | string>(
+        campoId,
+    );
 
     useEffect(() => {
         const fetchCampos = async () => {
@@ -73,7 +82,7 @@ export default function ModalFormularioLote({
             setNapa(initialData.napa);
             setHectareas(initialData.hectareas ?? 0);
             setPolygon(initialData.polygon || []);
-            setCampoSeleccionado(initialData.id_campo);
+            setCampoSeleccionado(initialData.campo_id);
         } else if (show && !initialData) {
             resetForm();
         }
@@ -170,7 +179,9 @@ export default function ModalFormularioLote({
                         <InputLabel value="Campo" />
                         <select
                             value={campoSeleccionado}
-                            onChange={(e) => setCampoSeleccionado(Number(e.target.value))}
+                            onChange={(e) =>
+                                setCampoSeleccionado(Number(e.target.value))
+                            }
                             className="mt-1 w-full rounded-md border-green-700 focus:border-green-800 focus:ring-green-800"
                             required
                         >
@@ -208,7 +219,9 @@ export default function ModalFormularioLote({
                     <div className="rounded-xl border border-green-700 p-4 shadow-sm bg-white">
                         <div className="flex justify-between mb-2">
                             <span className="text-gray-700">pH del suelo</span>
-                            <span className="text-green-600 font-semibold">{ph.toFixed(1)}</span>
+                            <span className="text-green-600 font-semibold">
+                                {ph.toFixed(1)}
+                            </span>
                         </div>
                         <input
                             type="range"
@@ -225,7 +238,9 @@ export default function ModalFormularioLote({
                         <TextInput
                             type="number"
                             value={napa}
-                            onChange={(e) => setNapa(parseFloat(e.target.value) || 0)}
+                            onChange={(e) =>
+                                setNapa(parseFloat(e.target.value) || 0)
+                            }
                             className="mt-2 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                         />
                     </div>
@@ -245,7 +260,9 @@ export default function ModalFormularioLote({
                         <TextInput
                             type="number"
                             value={hectareas}
-                            onChange={(e) => setHectareas(parseFloat(e.target.value) || 0)}
+                            onChange={(e) =>
+                                setHectareas(parseFloat(e.target.value) || 0)
+                            }
                             className="border-green-700 focus:border-green-800 focus:ring-green-800"
                         />
                     </div>

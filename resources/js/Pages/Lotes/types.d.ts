@@ -7,7 +7,7 @@ export type Coord = {
 
 export interface LoteCard {
     id: number;
-    id_campo: number;
+    campo_id: number;
     name: string;
     hectareas: number;
     caracteristicas: string;

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Lote extends Model
 {
     protected $table = 'lotes';
+
     protected $fillable = [
         'nombre',
         'caracteristicas',
@@ -16,18 +17,18 @@ class Lote extends Model
         'hectareas',
         'ph',
         'napa',
-        'id_campo',
+        'campo_id',
     ];
 
     public function campo()
     {
-        return $this->belongsTo(Campo::class, 'id_campo', 'id');
+        return $this->belongsTo(Campo::class, 'campo_id', 'id');
     }
 
     public function campanias()
     {
         return $this->belongsToMany(Campania::class, 'campania_lote')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     public function cultivos()

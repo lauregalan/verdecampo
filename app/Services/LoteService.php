@@ -8,7 +8,7 @@ class LoteService
 {
     public function getAllByCampo(int $id_campo)
     {
-        return Lote::with('campo')->where('id_campo', $id_campo)->get();
+        return Lote::with('campo')->where('campo_id', $id_campo)->get();
     }
 
     public function getById(int $id)
@@ -25,13 +25,14 @@ class LoteService
 
     public function create(array $data)
     {
-        return Lote::create($data);   
+        return Lote::create($data);
     }
 
     public function update(int $id, array $data)
     {
         $lote = Lote::find($id);
         $lote->update($data);
+
         return $lote;
     }
 
@@ -39,17 +40,17 @@ class LoteService
     {
         $lote = Lote::find($id);
         $lote->delete();
+
         return $lote;
     }
 
     public function getByName(string $nombre)
     {
-        return Lote::where('nombre','like', '%'.$nombre.'%')->get();
+        return Lote::where('nombre', 'like', '%'.$nombre.'%')->get();
     }
 
     public function getAll()
     {
         return Lote::all();
     }
-
 }
