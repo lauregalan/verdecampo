@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+
 class UserSeeder extends Seeder
 {
     /**
@@ -31,14 +32,14 @@ class UserSeeder extends Seeder
                 'email' => 'lucia.benitez@verdecampo.test',
                 'active' => true,
                 'last_login_at' => now()->subDays(2),
-                'roles' => ['Empleado'],
+                'roles' => ['Ingeniero'],
             ],
             [
                 'name' => 'Camila Ruiz',
                 'email' => 'camila.ruiz@verdecampo.test',
                 'active' => false,
                 'last_login_at' => null,
-                'roles' => ['Empleado'],
+                'roles' => ['Ingeniero'],
             ],
             [
                 'name' => 'Tomas Soria',

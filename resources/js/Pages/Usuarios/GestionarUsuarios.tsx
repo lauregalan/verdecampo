@@ -47,14 +47,12 @@ const getRoleBadgeClass = (role: string) => {
     const normalized = role.toLowerCase();
     if (normalized === "productor") return "bg-blue-500";
     if (normalized === "ingeniero") return "bg-green-700";
-    if (normalized === "empleado") return "bg-orange-500";
     return "bg-gray-500";
 };
 
 const rolePriority: Record<string, number> = {
     productor: 0,
     ingeniero: 1,
-    empleado: 2,
 };
 
 const getUserRolePriority = (roles: string[]) => {
