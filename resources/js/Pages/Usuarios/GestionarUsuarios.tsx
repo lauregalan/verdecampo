@@ -1,15 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
-import { Search, X } from "lucide-react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { Search } from "lucide-react";
 import {
     InputGroup,
     InputGroupAddon,
@@ -21,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import UserModal from "@/components/Modals/UserModal";
+import { DataTable, type ColumnDef, type PaginationMeta } from "@/components/ui/DataTable";
 import api from "@/lib/api";
 
 interface BackendUser {
@@ -50,18 +43,14 @@ const getRoleBadgeClass = (role: string) => {
     return "bg-gray-500";
 };
 
-const rolePriority: Record<string, number> = {
-    productor: 0,
-    ingeniero: 1,
-};
+const rolePriority: Record<string, number> = { productor: 0, ingeniero: 1 };
 
 const getUserRolePriority = (roles: string[]) => {
     if (!Array.isArray(roles) || roles.length === 0) return 99;
-    return roles.reduce((best, role) => {
-        const current = rolePriority[role.toLowerCase()] ?? 99;
-        return Math.min(best, current);
-    }, 99);
+    return roles.reduce((best, role) => Math.min(best, rolePriority[role.toLowerCase()] ?? 99), 99);
 };
+
+const PER_PAGE = 20;
 
 export default function UserManagment({ header }: UserManagmentProps) {
     const [users, setUsers] = useState<BackendUser[]>([]);
@@ -70,28 +59,21 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [processingUserId, setProcessingUserId] = useState<number | null>(
-        null,
-    );
+    const [processingUserId, setProcessingUserId] = useState<number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const authUser = usePage().props.auth?.user as
-        | { id?: number; roles?: string[] }
-        | undefined;
+    const authUser = usePage().props.auth?.user as { id?: number; roles?: string[] } | undefined;
     const canManageUsers = authUser?.roles?.includes("Productor") ?? false;
 
     const reloadUsers = async () => {
         try {
             setLoading(true);
             const response = await api.get("/api/users");
-
-            if (!response.ok) {
-                throw new Error("No se pudo obtener el listado de usuarios.");
-            }
-
+            if (!response.ok) throw new Error();
             const payload = (await response.json()) as BackendUser[];
             setUsers(Array.isArray(payload) ? payload : []);
             setError(null);
-        } catch (err) {
+        } catch {
             setError("Error al cargar usuarios desde el backend.");
             setUsers([]);
         } finally {
@@ -99,42 +81,25 @@ export default function UserManagment({ header }: UserManagmentProps) {
         }
     };
 
-    useEffect(() => {
-        reloadUsers();
-    }, []);
+    useEffect(() => { reloadUsers(); }, []);
+    useEffect(() => { setCurrentPage(1); }, [search]);
 
     const toggleUserActive = async (userId: number, nextActive: boolean) => {
         if (!canManageUsers) return;
-
         setProcessingUserId(userId);
-
         try {
             await window.axios.patch(
                 `/api/users/${userId}/active`,
                 { active: nextActive },
-                {
-                    headers: {
-                        Accept: "application/json",
-                    },
-                },
+                { headers: { Accept: "application/json" } },
             );
-
             await reloadUsers();
         } catch (err) {
             const message =
-                typeof err === "object" &&
-                err !== null &&
-                "response" in err &&
-                typeof err.response === "object" &&
-                err.response !== null &&
-                "data" in err.response &&
-                typeof err.response.data === "object" &&
-                err.response.data !== null &&
-                "message" in err.response.data &&
-                typeof err.response.data.message === "string"
-                    ? err.response.data.message
+                typeof err === "object" && err !== null &&
+                "response" in err && typeof (err as any).response?.data?.message === "string"
+                    ? (err as any).response.data.message
                     : "No se pudo actualizar el estado del usuario.";
-
             alert(message);
         } finally {
             setProcessingUserId(null);
@@ -144,34 +109,126 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const filteredUsers = useMemo(() => {
         const term = search.trim().toLowerCase();
         const base = term
-            ? users.filter((user) => {
-                  const primaryRole = user.roles[0] ?? "Sin rol";
+            ? users.filter((u) => {
+                  const primaryRole = u.roles[0] ?? "Sin rol";
                   return (
-                      user.name.toLowerCase().includes(term) ||
-                      user.email.toLowerCase().includes(term) ||
+                      u.name.toLowerCase().includes(term) ||
+                      u.email.toLowerCase().includes(term) ||
                       primaryRole.toLowerCase().includes(term)
                   );
               })
             : [...users];
-
         return base.sort((a, b) => {
-            const byRole =
-                getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
-            if (byRole !== 0) return byRole;
-            return a.name.localeCompare(b.name, "es");
+            const byRole = getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
+            return byRole !== 0 ? byRole : a.name.localeCompare(b.name, "es");
         });
     }, [search, users]);
+
+    const pagination: PaginationMeta = {
+        currentPage,
+        lastPage: Math.max(1, Math.ceil(filteredUsers.length / PER_PAGE)),
+        total: filteredUsers.length,
+        perPage: PER_PAGE,
+        from: filteredUsers.length === 0 ? 0 : (currentPage - 1) * PER_PAGE + 1,
+        to: Math.min(currentPage * PER_PAGE, filteredUsers.length),
+    };
+
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * PER_PAGE,
+        currentPage * PER_PAGE,
+    );
 
     const availableRoles = [
         {
             name: "Productor",
-            description:
-                "Puede ver y gestionar campos, planes de cultivo y producción. Ademas de gestionar usuarios",
+            description: "Puede ver y gestionar campos, planes de cultivo y producción. Ademas de gestionar usuarios",
         },
         {
             name: "Ingeniero",
-            description:
-                "Accede a datos técnicos, informes y tareas de supervisión de campo.",
+            description: "Accede a datos técnicos, informes y tareas de supervisión de campo.",
+        },
+    ];
+
+    const columns: ColumnDef<BackendUser>[] = [
+        {
+            id: "avatar",
+            header: "",
+            headerClassName: "w-14",
+            cell: (user) => (
+                <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
+                    <AvatarImage src="" alt={user.name} />
+                    <AvatarFallback className="bg-green-100 text-xs font-bold uppercase text-green-700">
+                        {user.name.split(" ").map((n) => n[0]).join("").substring(0, 2)}
+                    </AvatarFallback>
+                </Avatar>
+            ),
+        },
+        {
+            id: "nombre",
+            header: "Nombre y apellido",
+            headerClassName: "w-[220px]",
+            cellClassName: "truncate font-medium",
+            cell: (user) => <span title={user.name}>{user.name}</span>,
+        },
+        {
+            id: "email",
+            header: "Correo electronico",
+            headerClassName: "w-[280px]",
+            cellClassName: "truncate",
+            cell: (user) => <span title={user.email}>{user.email}</span>,
+        },
+        {
+            id: "rol",
+            header: "Rol",
+            headerClassName: "w-[150px]",
+            cell: (user) => {
+                const primaryRole = user.roles[0] ?? "Sin rol";
+                return (
+                    <Badge
+                        className={`${getRoleBadgeClass(primaryRole)} cursor-pointer transition-opacity hover:opacity-80`}
+                        onClick={() => {
+                            setSelectedRole(primaryRole);
+                            setSelectedUserId(user.id.toString());
+                        }}
+                    >
+                        {primaryRole}
+                    </Badge>
+                );
+            },
+        },
+        {
+            id: "ultimo_acceso",
+            header: "Ultimo acceso",
+            headerClassName: "hidden w-[210px] text-center lg:table-cell",
+            cellClassName: "hidden whitespace-nowrap text-center lg:table-cell",
+            cell: (user) => formatDate(user.last_login_at),
+        },
+        {
+            id: "estado",
+            header: "Estado",
+            headerClassName: "w-[140px] text-center",
+            cellClassName: "text-center",
+            cell: (user) => (
+                <div className="flex items-center justify-center gap-2">
+                    <Switch
+                        id={`user-${user.id}`}
+                        checked={user.active}
+                        disabled={
+                            !canManageUsers ||
+                            processingUserId === user.id ||
+                            authUser?.id === user.id
+                        }
+                        onCheckedChange={(checked) => toggleUserActive(user.id, checked)}
+                        className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                    />
+                    <Label
+                        htmlFor={`user-${user.id}`}
+                        className="min-w-[50px] text-xs font-medium text-gray-500"
+                    >
+                        {user.active ? "Activo" : "Inactivo"}
+                    </Label>
+                </div>
+            ),
         },
     ];
 
@@ -194,7 +251,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     <InputGroupInput
                         placeholder="Buscar por nombre, email o rol..."
                         value={search}
-                        onChange={(event) => setSearch(event.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
                     <InputGroupAddon>
                         <Search />
@@ -205,165 +262,16 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 </InputGroup>
 
                 <ScrollArea className="min-h-0 flex-1 w-full rounded-lg border border-black/10 bg-white/70 pr-1 lg:pr-3">
-                    <Table className="w-full min-w-[820px] table-fixed lg:min-w-[1040px]">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-14"></TableHead>
-                                <TableHead className="w-[220px]">
-                                    Nombre y apellido
-                                </TableHead>
-                                <TableHead className="w-[280px]">
-                                    Correo electronico
-                                </TableHead>
-                                <TableHead className="w-[150px]">Rol</TableHead>
-                                <TableHead className="hidden w-[210px] text-center lg:table-cell">
-                                    Ultimo acceso
-                                </TableHead>
-                                <TableHead className="w-[140px] text-center">
-                                    Estado
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="text-center text-sm text-gray-500"
-                                    >
-                                        Cargando usuarios...
-                                    </TableCell>
-                                </TableRow>
-                            )}
-
-                            {!loading && error && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="text-center text-sm text-red-600"
-                                    >
-                                        {error}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-
-                            {!loading &&
-                                !error &&
-                                filteredUsers.length === 0 && (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="text-center text-sm text-gray-500"
-                                        >
-                                            No hay usuarios para mostrar.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-
-                            {!loading &&
-                                !error &&
-                                filteredUsers.map((user) => {
-                                    const primaryRole =
-                                        user.roles[0] ?? "Sin rol";
-                                    const estado = user.active
-                                        ? "Activo"
-                                        : "Inactivo";
-
-                                    return (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
-                                                        <AvatarImage
-                                                            src=""
-                                                            alt={user.name}
-                                                        />
-                                                        <AvatarFallback className="bg-green-100 text-xs font-bold uppercase text-green-700">
-                                                            {user.name
-                                                                .split(" ")
-                                                                .map(
-                                                                    (n) => n[0],
-                                                                )
-                                                                .join("")
-                                                                .substring(
-                                                                    0,
-                                                                    2,
-                                                                )}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell
-                                                className="truncate font-medium"
-                                                title={user.name}
-                                            >
-                                                {user.name}
-                                            </TableCell>
-                                            <TableCell
-                                                className="truncate"
-                                                title={user.email}
-                                            >
-                                                {user.email}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
-                                                    onClick={() => {
-                                                        setSelectedRole(
-                                                            primaryRole,
-                                                        );
-                                                        setSelectedUserId(
-                                                            user.id.toString(),
-                                                        );
-                                                    }}
-                                                >
-                                                    {primaryRole}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="hidden whitespace-nowrap text-center lg:table-cell">
-                                                {formatDate(user.last_login_at)}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <div className="flex items-center justify-center">
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <Switch
-                                                                id={`user-${user.id}`}
-                                                                checked={
-                                                                    user.active
-                                                                }
-                                                                disabled={
-                                                                    !canManageUsers ||
-                                                                    processingUserId ===
-                                                                        user.id ||
-                                                                    authUser?.id ===
-                                                                        user.id
-                                                                }
-                                                                onCheckedChange={(
-                                                                    checked,
-                                                                ) =>
-                                                                    toggleUserActive(
-                                                                        user.id,
-                                                                        checked,
-                                                                    )
-                                                                }
-                                                                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
-                                                            />
-                                                            <Label
-                                                                htmlFor={`user-${user.id}`}
-                                                                className="min-w-[50px] text-xs font-medium text-gray-500"
-                                                            >
-                                                                {estado}
-                                                            </Label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
+                    <DataTable
+                        columns={columns}
+                        data={error ? [] : paginatedUsers}
+                        keyExtractor={(u) => u.id}
+                        loading={loading}
+                        emptyMessage={error ?? "No hay usuarios para mostrar."}
+                        pagination={pagination}
+                        onPageChange={setCurrentPage}
+                        tableClassName="w-full min-w-[820px] table-fixed lg:min-w-[1040px]"
+                    />
                 </ScrollArea>
             </div>
 
@@ -372,10 +280,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 selectedRole={selectedRole}
                 availableRoles={availableRoles}
                 getRoleBadgeClass={getRoleBadgeClass}
-                onClose={() => {
-                    setSelectedRole(null);
-                    setSelectedUserId(null);
-                }}
+                onClose={() => { setSelectedRole(null); setSelectedUserId(null); }}
                 onSelectRole={(role) => setSelectedRole(role)}
                 userId={selectedUserId ?? ""}
                 onRoleUpdated={reloadUsers}
