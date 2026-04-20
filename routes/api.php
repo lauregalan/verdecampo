@@ -12,7 +12,9 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Hola!']);
+
 });
+
 
 // Rutas protegidas con Sanctum
 Route::middleware('auth:sanctum')->group(function () {
@@ -45,4 +47,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lotes/campo/{id_campo}', [LoteController::class, 'indexByCampo']);
     Route::get('/lotes/nombre/{nombre}', [LoteController::class, 'indexByName']);
     Route::get('/lotes/campania/{id_campania}', [LoteController::class, 'indexByCampania']);
+
+    // Siembras
+    Route::get('/siembras', [App\Http\Controllers\SiembraController::class, 'showAll']);
+    Route::get('/siembras/{id}', [App\Http\Controllers\SiembraController::class, 'show']);
+    Route::post('/siembras', [App\Http\Controllers\SiembraController::class, 'store']);
+    Route::put('/siembras/{id}', [App\Http\Controllers\SiembraController::class, 'update']);
+    Route::delete('/siembras/{id}', [App\Http\Controllers\SiembraController::class, 'destroy']);
 });
