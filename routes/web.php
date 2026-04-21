@@ -71,9 +71,13 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
 
-Route::get('/aceptar/{email}', function($email) {
-    return "Link verificado para $email";
-})->middleware('signed')->name('invitation.accept');
+use App\Http\Controllers\AceptarInvitacionController;
 
+Route::get('/aceptar/{email}', [AceptarInvitacionController::class, 'show'])
+    ->middleware('signed')
+    ->name('invitation.accept');
+
+Route::post('/invitation/set-password', [AceptarInvitacionController::class, 'store'])
+    ->name('invitation.set-password');
 
 require __DIR__.'/auth.php';

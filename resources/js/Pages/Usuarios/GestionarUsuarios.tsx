@@ -108,7 +108,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
         setInviteEmailError(null);
         setInviteLoading(true);
         try {
-            const response = await fetch("/api/invitar/0", {
+            const response = await fetch("/api/invitar/5", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
