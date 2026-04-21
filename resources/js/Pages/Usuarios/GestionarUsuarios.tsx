@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Body from "@/components/ui/Tabs/Body";
-import { Search, X } from "lucide-react";
+import { Mail, Plus, Search, X } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -72,6 +72,62 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+    // Invite collaborator state
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [inviteEmailError, setInviteEmailError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const showToast = (type: "success" | "error", message: string) => {
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        setToast({ type, message });
+        toastTimerRef.current = setTimeout(() => setToast(null), 4000);
+    };
+
+    const handleOpenInvite = () => {
+        setInviteEmail("");
+        setInviteEmailError(null);
+        setShowInviteModal(true);
+    };
+
+    const handleCloseInvite = () => {
+        setShowInviteModal(false);
+        setInviteEmail("");
+        setInviteEmailError(null);
+    };
+
+    const handleSendInvite = async () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!inviteEmail.trim() || !emailRegex.test(inviteEmail.trim())) {
+            setInviteEmailError("Por favor ingresa un correo electrónico válido.");
+            return;
+        }
+        setInviteEmailError(null);
+        setInviteLoading(true);
+        try {
+            const response = await fetch("/api/invitar/0", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ email: inviteEmail.trim() }),
+            });
+            const data = await response.json() as { status?: string; message?: string; error?: string };
+            if (!response.ok || data.status !== "success") {
+                throw new Error(data.error ?? "Error al enviar la invitación.");
+            }
+            handleCloseInvite();
+            showToast("success", "✓ Correo de invitación enviado correctamente.");
+        } catch (err) {
+            showToast("error", err instanceof Error ? err.message : "Error al enviar la invitación.");
+        } finally {
+            setInviteLoading(false);
+        }
+    };
 
     const reloadUsers = async () => {
         try {
@@ -147,9 +203,19 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     </header>
                 )}
 
-                <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-                    Gestion de usuarios
-                </h2>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-2">
+                    <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
+                        Gestión de usuarios
+                    </h2>
+                    <button
+                        type="button"
+                        onClick={handleOpenInvite}
+                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                    >
+                        <Plus size={20} strokeWidth={2.5} />
+                        Invitar Colaborador
+                    </button>
+                </div>
 
                 <InputGroup className="max-w-full">
                     <InputGroupInput
@@ -227,7 +293,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                             <TableCell className="truncate font-medium" title={user.name}>{user.name}</TableCell>
                                             <TableCell className="truncate" title={user.email}>{user.email}</TableCell>
                                             <TableCell>
-                                                <Badge 
+                                                <Badge
                                                     className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
                                                     onClick={() => {
                                                         setSelectedRole(primaryRole);
@@ -283,6 +349,112 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 userId={selectedUserId ?? ""}
                 onRoleUpdated={reloadUsers}
             />
+
+            {/* Invite Collaborator Modal */}
+            {showInviteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        onClick={handleCloseInvite}
+                    />
+                    <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+                        <button
+                            type="button"
+                            onClick={handleCloseInvite}
+                            className="absolute right-4 top-4 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                            aria-label="Cerrar"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="mb-6 flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100">
+                                <Mail size={20} className="text-green-700" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Invitar Colaborador</h3>
+                                <p className="text-sm text-gray-500">Se enviará un enlace de acceso por correo.</p>
+                            </div>
+                        </div>
+
+                        <div className="mb-5">
+                            <label htmlFor="invite-email" className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                Correo electrónico
+                            </label>
+                            <input
+                                id="invite-email"
+                                type="email"
+                                value={inviteEmail}
+                                onChange={(e) => {
+                                    setInviteEmail(e.target.value);
+                                    if (inviteEmailError) setInviteEmailError(null);
+                                }}
+                                onKeyDown={(e) => { if (e.key === "Enter") void handleSendInvite(); }}
+                                placeholder="colaborador@ejemplo.com"
+                                className={`w-full rounded-xl border px-4 py-2.5 text-sm shadow-sm outline-none transition-all focus:ring-2 ${inviteEmailError
+                                        ? "border-red-400 focus:ring-red-200"
+                                        : "border-gray-200 focus:border-green-500 focus:ring-green-100"
+                                    }`}
+                            />
+                            {inviteEmailError && (
+                                <p className="mt-1.5 text-xs text-red-500">{inviteEmailError}</p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={handleCloseInvite}
+                                disabled={inviteLoading}
+                                className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => void handleSendInvite()}
+                                disabled={inviteLoading}
+                                className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95 disabled:opacity-60"
+                            >
+                                {inviteLoading ? (
+                                    <>
+                                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Enviando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Mail size={16} />
+                                        Enviar invitación
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast notification */}
+            {toast && (
+                <div
+                    className={`fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-lg transition-all duration-300 ${toast.type === "success"
+                            ? "bg-green-600 text-white"
+                            : "bg-red-600 text-white"
+                        }`}
+                >
+                    <span className="text-sm font-semibold">{toast.message}</span>
+                    <button
+                        type="button"
+                        onClick={() => setToast(null)}
+                        className="rounded-lg p-0.5 opacity-80 hover:opacity-100"
+                        aria-label="Cerrar notificación"
+                    >
+                        <X size={15} />
+                    </button>
+                </div>
+            )}
         </Body>
     );
 }
