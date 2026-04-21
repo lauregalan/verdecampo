@@ -51,7 +51,14 @@ export default function FormularioLote({
             setLongitude(initialData.longitude);
             const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ''));
             setSurface(isNaN(numericSurface) ? 0 : numericSurface);
-            setPolygon(initialData.polygon || []);
+
+        if (initialData.polygon) {
+            const formattedPolygon: Coord[] = initialData.polygon.map(
+                point => [point.lat, point.lng] as Coord
+            );
+            setPolygon(formattedPolygon);
+        }
+
         } else if (show && !initialData) {
             resetForm();
         }
@@ -103,7 +110,10 @@ export default function FormularioLote({
             imageUrl: PLACEHOLDER_IMAGE,
             latitude,
             longitude,
-            polygon,
+            polygon: polygon.map(([lat, lng]) => ({
+                        lat,
+                        lng
+                    })),
         };
 
         const created = await onSubmit(nuevoLote, campoId); // Pass campoId here

@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\CultivoController;
+use App\Http\Controllers\InvitarController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Hola!']);
@@ -32,4 +33,4 @@ Route::delete('/lotes/{id}', [LoteController::class, 'destroy']);
 Route::get('/lotes/campo/{id_campo}', [LoteController::class, 'indexByCampo']);
 Route::get('/lotes/nombre/{nombre}', [LoteController::class, 'indexByName']);
 Route::get('/lotes/campania/{id_campania}', [LoteController::class, 'indexByCampania']);
-
+Route::post('/invitar/{userId}', [InvitarController::class, 'generarInvitacion']);

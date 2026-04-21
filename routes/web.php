@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ValidateSignature;
 
 Route::get('/', function () {
     if(Auth::check()){
@@ -47,6 +49,16 @@ Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');
 
+Route::get('/lotes', function () {
+    return Inertia::render('Lotes/Lotes');
+})->middleware(['auth', 'verified'])->name('lotes');
+
+Route::get('/lotes/{loteId}', function (int $loteId) {
+    return Inertia::render('Lotes/LoteDetalle', [
+        'loteId' => $loteId,
+    ]);
+})->middleware(['auth', 'verified'])->whereNumber('loteId')->name('lote.detalle');
+
 Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
@@ -57,7 +69,11 @@ Route::get('/campanias', function () {
 
 Route::get('/campania', function () {
     return Redirect('/campanias');
-})->middleware(['auth', 'verified'])->name('gestionarCampañas');
+})->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
+
+Route::get('/aceptar/{email}', function($email) {
+    return "Link verificado para $email";
+})->middleware('signed')->name('invitation.accept');
 
 
 require __DIR__.'/auth.php';
