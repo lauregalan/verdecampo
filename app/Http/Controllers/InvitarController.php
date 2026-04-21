@@ -10,19 +10,41 @@ use App\Http\Requests\LoteRequest;
 use App\Http\Requuests\StoreLoteRequest;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\InvitacionColaborador;   
 
 class InvitarController extends Controller{
+        
+    public function __construct() {}
 
     public function generarInvitacion(Request $request, $userId): JsonResponse
     {
-        $link = URL::temporarySignedRoute(
+        $emailInvitado = $request->json('email');
+
+        if (!$emailInvitado) {
+            return response()->json([
+                'error' => 'El campo email no llegó al servidor',
+                'debug_recibido' => $request->all() 
+            ], 422);
+        }
+        //creacion del hash 
+        $url = URL::temporarySignedRoute(
             'invitation.accept', 
-            now()->addDays(2),   
-            ['user' => $userId]  
+            now()->addDays(2), 
+            ['email' => $emailInvitado]
         );
 
-        Mail::to($request->email)->send(new InvitacionColaborador($link));
+        /* { ejemplo de request
+            "email": "colaborador@ejemplo.com",
+            "role": "ingeniero",
+        } */
 
-        return response()->json(['message' => 'Invitación enviada con éxito a ' . $request->email]);
+        //facade mail para enviar el mailable 
+        Mail::to($emailInvitado)->send(new InvitacionColaborador($url));
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Invitación enviada correctamente a ' . $emailInvitado
+        ]);
     }
 }
