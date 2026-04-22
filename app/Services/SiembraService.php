@@ -7,9 +7,10 @@ class SiembraService
 {
     public function getAll()
     {
-        return Siembra::with(['campania', 'lote', 'cultivo'])
-        ->orderByDesc('fecha_siembra')
-        ->get();
+        return Siembra::all();
+        //return Siembra::with(['campania', 'lote', 'cultivo'])
+        //->orderByDesc('fecha_siembra')
+        //->get();
     }
 
     public function getAllByCampania(int $id_campania)
