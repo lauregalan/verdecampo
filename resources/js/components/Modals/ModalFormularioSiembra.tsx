@@ -146,12 +146,12 @@ export default function ModalFormularioSiembra({
             return;
         }
 
-        const payload: SiembraDraft = {
+        const payload = {
             campania_id: Number(campaniaId),
             lote_id: Number(loteId),
             cultivo_id: Number(cultivoId),
-            fecha,
-            observaciones,
+            fecha_siembra: fecha,
+            observaciones: observaciones || null,
         };
 
         setSubmitting(true);
@@ -206,6 +206,7 @@ export default function ModalFormularioSiembra({
 
                 {/* Body */}
                 <form
+                    id="siembra-form"
                     onSubmit={handleSubmit}
                     className="flex-1 overflow-y-auto px-6 py-5 space-y-5"
                 >
@@ -332,8 +333,8 @@ export default function ModalFormularioSiembra({
                         Cancelar
                     </button>
                     <button
-                        type="button"
-                        onClick={handleSubmit}
+                        type="submit"
+                        form="siembra-form"
                         disabled={submitting}
                         className="bg-green-700 text-white px-5 py-2 rounded-lg shadow-md hover:bg-green-800 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
