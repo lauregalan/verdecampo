@@ -76,4 +76,8 @@ Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
 })->middleware(['auth', 'verified'])->name('gestionarCultivos');
 
+Route::get('/siembras', function (){
+    return Inertia::render('Siembras/Siembras');
+})->middleware(['auth', 'verified'])->name('gestionarSiembras');
+
 require __DIR__.'/auth.php';

@@ -155,9 +155,27 @@ export default function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={currentPath.startsWith("/siembras")}
+                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                            >
+                                <Link href="/siembras">
+                                    <Sprout size={18} />
+                                    <span className="font-medium">
+                                        Siembras
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
+
+
 
             <SidebarFooter className="p-4 mt-auto border-t border-white/10">
                 <SidebarMenu>
