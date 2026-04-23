@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ValidateSignature;
 
+
 Route::get('/', function () {
     if(Auth::check()){
         return Redirect('/dashboard');
@@ -71,13 +72,9 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
 
-use App\Http\Controllers\AceptarInvitacionController;
+Route::get('/aceptar/{email}', function($email) {
+    return Inertia::render('Auth/Register');
+})->middleware('signed')->name('invitation.accept');    
 
-Route::get('/aceptar/{email}', [AceptarInvitacionController::class, 'show'])
-    ->middleware('signed')
-    ->name('invitation.accept');
-
-Route::post('/invitation/set-password', [AceptarInvitacionController::class, 'store'])
-    ->name('invitation.set-password');
 
 require __DIR__.'/auth.php';

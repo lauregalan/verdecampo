@@ -33,4 +33,4 @@ Route::delete('/lotes/{id}', [LoteController::class, 'destroy']);
 Route::get('/lotes/campo/{id_campo}', [LoteController::class, 'indexByCampo']);
 Route::get('/lotes/nombre/{nombre}', [LoteController::class, 'indexByName']);
 Route::get('/lotes/campania/{id_campania}', [LoteController::class, 'indexByCampania']);
-Route::post('/invitar/{userId}', [InvitarController::class, 'generarInvitacion']);
+Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);

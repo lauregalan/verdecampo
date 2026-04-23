@@ -108,15 +108,17 @@ export default function UserManagment({ header }: UserManagmentProps) {
         setInviteEmailError(null);
         setInviteLoading(true);
         try {
-            const response = await fetch("/api/invitar/5", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({ email: inviteEmail.trim() }),
-            });
-            const data = await response.json() as { status?: string; message?: string; error?: string };
+    const response = await fetch("api/invitar", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ email: inviteEmail.trim() }),
+    });
+
+
+    const data = await response.json() as { status?: string; message?: string; error?: string };
             if (!response.ok || data.status !== "success") {
                 throw new Error(data.error ?? "Error al enviar la invitación.");
             }
