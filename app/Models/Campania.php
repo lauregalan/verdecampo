@@ -31,4 +31,9 @@ class Campania extends Model
     {
         return $this->belongsTo(Cultivo::class);
     }
+
+    public function aplicaciones()
+    {
+        return $this->hasMany(Aplicacion::class);
+    }
 }
