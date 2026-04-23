@@ -337,9 +337,8 @@ export default function Campo() {
 
     return (
         <Body>
-            {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
-            <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
-                {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
+            {/* Elimine el px-4 py-6 y lo reemplace con un p-8 para que quede alineado y acorde al resto de las tabs :)*/}
+            <div className="flex h-full min-h-0 flex-col p-8 font-sans lg:px-8">
                 <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                         Gestión de Campos
