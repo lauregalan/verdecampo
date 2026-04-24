@@ -80,11 +80,11 @@ Route::get('/aplicaciones', function () {
     return Inertia::render('Aplicaciones/Aplicaciones');
 })->middleware(['auth', 'verified'])->name('aplicaciones');
 
-Route::get('/aplicaciones/productos', function () {
+Route::get('/productos', function () {
     return Inertia::render('Aplicaciones/Productos');
 })->middleware(['auth', 'verified'])->name('productos');
 
-Route::get('/aplicaciones/tipos', function () {
+Route::get('/tipos', function () {
     return Inertia::render('Aplicaciones/Tipos');
 })->middleware(['auth', 'verified'])->name('tipos');
 

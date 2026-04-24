@@ -193,14 +193,14 @@ export default function AppSidebar() {
                                         </SidebarMenuSubItem>
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton className="text-white hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200" asChild>
-                                                <a href="/aplicaciones/productos">
+                                                <a href="/productos">
                                                     <span>Productos</span>
                                                 </a>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton className="text-white hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200" asChild>
-                                                <a href="/aplicaciones/tipos">
+                                                <a href="/tipos">
                                                     <span>Tipos</span>
                                                 </a>
                                             </SidebarMenuSubButton>
