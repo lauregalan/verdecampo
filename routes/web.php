@@ -76,4 +76,17 @@ Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
 })->middleware(['auth', 'verified'])->name('gestionarCultivos');
 
+Route::get('/aplicaciones', function () {
+    return Inertia::render('Aplicaciones/Aplicaciones');
+})->middleware(['auth', 'verified'])->name('aplicaciones');
+
+Route::get('/aplicaciones/productos', function () {
+    return Inertia::render('Aplicaciones/Productos');
+})->middleware(['auth', 'verified'])->name('productos');
+
+Route::get('/aplicaciones/tipos', function () {
+    return Inertia::render('Aplicaciones/Tipos');
+})->middleware(['auth', 'verified'])->name('tipos');
+
+
 require __DIR__.'/auth.php';
