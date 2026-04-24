@@ -167,9 +167,10 @@ export default function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <Collapsible
-                            key="Aplicaciones"
+                            key="aplicaciones"
                             asChild
                             className="group/collapsible"
+                            defaultOpen={currentPath === "/aplicaciones" || currentPath === "/productos" || currentPath === "/tipos"}
                         >
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
@@ -185,24 +186,42 @@ export default function AppSidebar() {
                                 <CollapsibleContent>
                                     <SidebarMenuSub>
                                         <SidebarMenuSubItem>
-                                            <SidebarMenuSubButton className="text-white hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200" asChild>
-                                                <a href="/aplicaciones">
-                                                    <span>Aplicaciones</span>
-                                                </a>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={currentPath === "/aplicaciones"}
+                                            >
+                                                <Link href="/aplicaciones">
+                                                    <span className="font-medium">
+                                                        Aplicaciones
+                                                    </span>
+                                                </Link>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                         <SidebarMenuSubItem>
-                                            <SidebarMenuSubButton className="text-white hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200" asChild>
-                                                <a href="/productos">
-                                                    <span>Productos</span>
-                                                </a>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={currentPath === "/productos"}
+                                            >
+                                                <Link href="/productos">
+                                                    <span className="font-medium">
+                                                        Productos
+                                                    </span>
+                                                </Link>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                         <SidebarMenuSubItem>
-                                            <SidebarMenuSubButton className="text-white hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200" asChild>
-                                                <a href="/tipos">
-                                                    <span>Tipos</span>
-                                                </a>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={currentPath === "/tipos"}
+                                            >
+                                                <Link href="/tipos">
+                                                    <span className="font-medium">
+                                                        Tipos
+                                                    </span>
+                                                </Link>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                     </SidebarMenuSub>
