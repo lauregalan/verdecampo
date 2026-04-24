@@ -72,9 +72,11 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
 
-Route::get('/aceptar/{email}', function($email) {
-    return Inertia::render('Auth/Register');
-})->middleware('signed')->name('invitation.accept');    
+Route::get('/aceptar/{email}', function (Request $request, $email) {
+    return Inertia::render('Auth/Register', [
+        'emailInvitado' => $email 
+    ]);
+})->name('invitation.accept');
 
 
 require __DIR__.'/auth.php';
