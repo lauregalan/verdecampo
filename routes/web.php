@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AceptarInvitacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -75,11 +76,12 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
 
-Route::get('/aceptar/{email}', function (Request $request, $email) {
-    return Inertia::render('Auth/Register', [
-        'emailInvitado' => $email 
-    ]);
-})->name('invitation.accept');
+Route::get('/aceptar/{email}', [AceptarInvitacionController::class, 'show'])
+    ->middleware('signed')
+    ->name('invitation.accept');
+
+Route::post('/aceptar', [AceptarInvitacionController::class, 'store'])
+    ->name('invitation.set-password');
 
 Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
