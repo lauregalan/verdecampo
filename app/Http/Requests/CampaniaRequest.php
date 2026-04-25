@@ -28,6 +28,8 @@ class CampaniaRequest extends FormRequest
             'fecha_inicio'       => ['required', 'date'],
             'fecha_fin'          => ['nullable', 'date', 'after:fecha_inicio'],
             'estado'             => ['required', 'string', 'in:Planificada,En Curso,Finalizada,Cancelada'],
+            'lote_ids'           => ['nullable', 'array'],
+            'lote_ids.*'         => ['integer', 'exists:lotes,id'],
         ];
     }
 }

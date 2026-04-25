@@ -110,7 +110,7 @@ export default function Dashboard({
         <Body>
             <Head title="Dashboard" />
 
-            <div className="min-h-full bg-[#f4efe6] p-6 md:p-8">
+            <div className="min-h-full p-6 md:p-8">
                 <div className="mx-auto flex max-w-7xl flex-col gap-6">
                     <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[#0f2e1e] text-white shadow-xl">
                         <div className="grid gap-6 p-6 md:grid-cols-[1.6fr_1fr] md:p-8">

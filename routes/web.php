@@ -1,14 +1,12 @@
 <?php
 
+use App\Http\Controllers\AceptarInvitacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Middleware\ValidateSignature;
-
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -75,14 +73,31 @@ Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
 
-Route::get('/aceptar/{email}', function (Request $request, $email) {
-    return Inertia::render('Auth/Register', [
-        'emailInvitado' => $email 
-    ]);
-})->name('invitation.accept');
+Route::get('/aceptar/{email}', [AceptarInvitacionController::class, 'show'])
+    ->middleware('signed')
+    ->name('invitation.accept');
+
+Route::post('/aceptar', [AceptarInvitacionController::class, 'store'])
+    ->name('invitation.set-password');
 
 Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
 })->middleware(['auth', 'verified'])->name('gestionarCultivos');
+
+Route::get('/aplicaciones', function () {
+    return Inertia::render('Aplicaciones/Aplicaciones');
+})->middleware(['auth', 'verified'])->name('aplicaciones');
+
+Route::get('/productos', function () {
+    return Inertia::render('Aplicaciones/Productos');
+})->middleware(['auth', 'verified'])->name('productos');
+
+Route::get('/tipos', function () {
+    return Inertia::render('Aplicaciones/Tipos');
+})->middleware(['auth', 'verified'])->name('tipos');
+
+Route::get('/siembras', function () {
+    return Inertia::render('Siembras/Siembras');
+})->middleware(['auth', 'verified'])->name('gestionarSiembras');
 
 require __DIR__.'/auth.php';

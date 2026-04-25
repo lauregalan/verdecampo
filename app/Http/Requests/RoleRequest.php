@@ -8,7 +8,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class RoleRequest extends FormRequest
 {
-    private const ALLOWED_ROLES = ['Productor', 'Ingeniero', 'Empleado'];
+    private const ALLOWED_ROLES = ['Productor', 'Ingeniero'];
 
     /**
      * Determine if the user is authorized to make this request.
@@ -35,7 +35,7 @@ class RoleRequest extends FormRequest
     {
         throw new HttpResponseException(
             response()->json([
-                'message' => 'Rol invalido. Roles permitidos: Productor, Ingeniero, Empleado.',
+                'message' => 'Rol invalido. Roles permitidos: Productor o Ingeniero.',
                 'errors' => $validator->errors(),
             ], 300)
         );

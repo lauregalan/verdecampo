@@ -118,10 +118,10 @@ class LoteSeeder extends Seeder
             foreach ($lotes as $lote) {
                 Lote::query()->updateOrCreate(
                     [
-                        'id_campo' => $campo->id,
+                        'campo_id' => $campo->id,
                         'nombre' => $lote['nombre'],
                     ],
-                    $lote + ['id_campo' => $campo->id],
+                    $lote + ['campo_id' => $campo->id],
                 );
             }
         }

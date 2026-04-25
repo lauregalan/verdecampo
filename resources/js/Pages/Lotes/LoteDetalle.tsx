@@ -31,7 +31,7 @@ interface BackendLote {
     latitud: number | string;
     longitud: number | string;
     hectareas: number;
-    id_campo: number;
+    campo_id: number;
     ph: number;
     napa: number;
 }

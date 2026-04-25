@@ -31,7 +31,7 @@ class LoteRequest extends FormRequest
             'hectareas' => ['required', 'numeric', 'min:0'],
             'ph' => ['nullable', 'numeric', 'between:0,14'],
             'napa' => ['nullable', 'numeric', 'min:0'],
-            'id_campo' => ['required', 'exists:campos,id'],
+            'campo_id' => ['required', 'exists:campos,id'],
         ];
     }
 
@@ -46,7 +46,7 @@ class LoteRequest extends FormRequest
             'hectareas.required' => 'Las hectareas son requeridas',
             'ph.nullable' => 'El ph es requerido',
             'napa.nullable' => 'La napa es requerida',
-            'id_campo.required' => 'El campo es requerido',
+            'campo_id.required' => 'El campo es requerido',
         ];
     }
 }

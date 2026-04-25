@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import Modal from "@/components/Modal";
+import Modal from "@/components/Modals/Modal";
 import { Badge } from "@/components/ui/badge";
 
 type RoleInfo = {

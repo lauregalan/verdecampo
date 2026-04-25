@@ -1,19 +1,23 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import Modal from "@/components/Modal";
+import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
-import MapaInteractivo from "../Campos/MapaInteractivo"; // Reusing the map component
-import type { Coord, LoteCard, LoteDraft, StatusColor } from "./types";
+import MapaInteractivo from "@/Pages/Campos/MapaInteractivo";
+import type {
+    Coord,
+    LoteCard,
+    LoteDraft,
+    StatusColor,
+} from "@/Pages/Lotes/types";
 import { X } from "lucide-react";
 import api from "@/lib/api";
 
-interface FormularioLoteProps {
+interface ModalFormularioLoteProps {
     show: boolean;
     onClose: () => void;
-    // Pass campoId to onSubmit for associating the lote with a specific campo
     onSubmit: (lote: LoteDraft, campoId: number | string) => Promise<boolean>;
     initialData?: LoteCard | null;
-    campoId: number | string; // The ID of the parent field
+    campoId: number | string;
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
@@ -26,14 +30,13 @@ const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
 const PLACEHOLDER_IMAGE =
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
 
-export default function FormularioLote({
+export default function ModalFormularioLote({
     show,
     onClose,
     onSubmit,
     initialData,
     campoId,
-}: FormularioLoteProps) {
-    // --- Estado del formulario ---
+}: ModalFormularioLoteProps) {
     const [name, setName] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0].value);
     const [statusColor, setStatusColor] = useState<StatusColor>(
@@ -56,16 +59,13 @@ export default function FormularioLote({
         const fetchCampos = async () => {
             try {
                 const res = await api.get("/api/campos");
-
                 if (!res.ok) throw new Error();
-
                 const data = await res.json();
                 setCampos(data);
             } catch {
                 console.error("Error al cargar campos");
             }
         };
-
         if (show) fetchCampos();
     }, [show]);
 
@@ -73,7 +73,7 @@ export default function FormularioLote({
         if (show && initialData) {
             setName(initialData.name);
             setStatus(initialData.status);
-            setStatusColor("verde"); // temporal
+            setStatusColor("verde");
             setLastCrop("falta implementar");
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
@@ -92,13 +92,12 @@ export default function FormularioLote({
             setNapa(initialData.napa);
             setHectareas(initialData.hectareas ?? 0);
             setPolygon(initialData.polygon || []);
-            setCampoSeleccionado(initialData.id_campo);
+            setCampoSeleccionado(initialData.campo_id);
         } else if (show && !initialData) {
             resetForm();
         }
     }, [show, initialData]);
 
-    // --- Handlers del mapa ---
     const handleCenterChange = useCallback((lat: number, lng: number) => {
         if (lat !== 0 || lng !== 0) {
             setLatitude(parseFloat(lat.toFixed(6)));
@@ -107,9 +106,7 @@ export default function FormularioLote({
     }, []);
 
     const handleAreaChange = useCallback((ha: number) => {
-        if (ha > 0) {
-            setHectareas(ha);
-        }
+        if (ha > 0) setHectareas(ha);
     }, []);
 
     const handleStatusChange = (value: string) => {
@@ -118,7 +115,6 @@ export default function FormularioLote({
         if (match) setStatusColor(match.color);
     };
 
-    // --- Reset ---
     const resetForm = () => {
         setName("");
         setStatus(STATUS_OPTIONS[0].value);
@@ -128,8 +124,6 @@ export default function FormularioLote({
         setNapa(0);
         setLastCrop("");
         setCampoSeleccionado(campoId || "");
-        //setLatitude(0);
-        //setLongitude(0);
         setHectareas(0);
         setPolygon([]);
     };
@@ -139,10 +133,8 @@ export default function FormularioLote({
         onClose();
     };
 
-    // --- Submit ---
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-
         const nuevoLote: LoteDraft = {
             name,
             caracteristicas,
@@ -161,8 +153,7 @@ export default function FormularioLote({
             napa,
             polygon,
         };
-
-        const created = await onSubmit(nuevoLote, campoSeleccionado); // Pass campoId here
+        const created = await onSubmit(nuevoLote, campoSeleccionado);
         if (created) {
             resetForm();
             onClose();
@@ -172,7 +163,6 @@ export default function FormularioLote({
     return (
         <Modal show={show} onClose={handleClose} maxWidth="2xl">
             <div className="flex max-h-[90vh] flex-col bg-white rounded-2xl">
-                {/* HEADER */}
                 <div className="flex items-center justify-between px-6 pt-5 pb-3">
                     <h2 className="text-2xl font-bold text-gray-800">
                         {initialData ? "Editar lote" : "Registrar nuevo lote"}
@@ -186,12 +176,10 @@ export default function FormularioLote({
                     </button>
                 </div>
 
-                {/* CONTENIDO */}
                 <form
                     onSubmit={handleSubmit}
                     className="flex-1 overflow-y-auto px-6 pb-6 space-y-5"
                 >
-                    {/* Nombre */}
                     <div>
                         <InputLabel value="Nombre del lote" />
                         <TextInput
@@ -201,7 +189,6 @@ export default function FormularioLote({
                             required
                         />
                     </div>
-                    {/* Campo al que pertenece */}
                     <div>
                         <InputLabel value="Campo" />
                         <select
@@ -220,8 +207,6 @@ export default function FormularioLote({
                             ))}
                         </select>
                     </div>
-
-                    {/* Estado */}
                     <div>
                         <InputLabel value="Estado" />
                         <select
@@ -236,8 +221,6 @@ export default function FormularioLote({
                             ))}
                         </select>
                     </div>
-
-                    {/* Características */}
                     <div>
                         <InputLabel value="Características" />
                         <textarea
@@ -247,8 +230,6 @@ export default function FormularioLote({
                             rows={4}
                         />
                     </div>
-
-                    {/* PH */}
                     <div className="rounded-xl border border-green-700 p-4 shadow-sm bg-white">
                         <div className="flex justify-between mb-2">
                             <span className="text-gray-700">pH del suelo</span>
@@ -256,7 +237,6 @@ export default function FormularioLote({
                                 {ph.toFixed(1)}
                             </span>
                         </div>
-
                         <input
                             type="range"
                             min="0"
@@ -267,8 +247,6 @@ export default function FormularioLote({
                             className="w-full accent-green-700"
                         />
                     </div>
-
-                    {/* NAPA */}
                     <div className="rounded-xl border border-green-700 p-4 shadow-sm bg-white">
                         <InputLabel value="Profundidad de napa (m)" />
                         <TextInput
@@ -280,8 +258,6 @@ export default function FormularioLote({
                             className="mt-2 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                         />
                     </div>
-
-                    {/* MAPA */}
                     <div>
                         <InputLabel value="Ubicación" />
                         <div className="rounded-xl overflow-hidden">
@@ -293,8 +269,6 @@ export default function FormularioLote({
                             />
                         </div>
                     </div>
-
-                    {/* SUPERFICIE */}
                     <div>
                         <InputLabel value="Superficie (Ha)" />
                         <TextInput
@@ -308,7 +282,6 @@ export default function FormularioLote({
                     </div>
                 </form>
 
-                {/* FOOTER */}
                 <div className="flex justify-end gap-3 px-6 pb-5 pt-3">
                     <button
                         type="button"
@@ -317,7 +290,6 @@ export default function FormularioLote({
                     >
                         Cancelar
                     </button>
-
                     <button
                         type="submit"
                         onClick={handleSubmit}

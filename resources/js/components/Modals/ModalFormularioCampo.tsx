@@ -1,12 +1,12 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import Modal from "@/components/Modal";
+import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
-import MapaInteractivo, { Coord } from "./MapaInteractivo";
-import type { CampoCard, CampoDraft, StatusColor } from "./types";
+import MapaInteractivo, { Coord } from "@/Pages/Campos/MapaInteractivo";
+import type { CampoCard, CampoDraft, StatusColor } from "@/Pages/Campos/types";
 import { X } from "lucide-react";
 
-interface FormularioCampoProps {
+interface ModalFormularioCampoProps {
     show: boolean;
     onClose: () => void;
     onSubmit: (campo: CampoDraft) => Promise<boolean>;
@@ -22,18 +22,15 @@ const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
 const PLACEHOLDER_IMAGE =
     "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
 
-export default function FormularioCampo({
+export default function ModalFormularioCampo({
     show,
     onClose,
     onSubmit,
     initialData,
-}: FormularioCampoProps) {
-    // --- Estado del formulario ---
+}: ModalFormularioCampoProps) {
     const [name, setName] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0].value);
-    const [statusColor, setStatusColor] = useState<StatusColor>(
-        STATUS_OPTIONS[0].color,
-    );
+    const [statusColor, setStatusColor] = useState<StatusColor>(STATUS_OPTIONS[0].color);
     const [lastCrop, setLastCrop] = useState("");
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
@@ -48,10 +45,7 @@ export default function FormularioCampo({
             setLastCrop(initialData.lastCrop);
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
-            // Convert '500 Ha' string back to number 500
-            const numericSurface = parseFloat(
-                initialData.surface.replace(/[^\d.-]/g, ""),
-            );
+            const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ""));
             setSurface(isNaN(numericSurface) ? 0 : numericSurface);
             setPolygon(initialData.polygon || []);
         } else if (show && !initialData) {
@@ -59,7 +53,6 @@ export default function FormularioCampo({
         }
     }, [show, initialData]);
 
-    // --- Handlers del mapa ---
     const handleCenterChange = useCallback((lat: number, lng: number) => {
         setLatitude(parseFloat(lat.toFixed(6)));
         setLongitude(parseFloat(lng.toFixed(6)));
@@ -75,7 +68,6 @@ export default function FormularioCampo({
         if (match) setStatusColor(match.color);
     };
 
-    // --- Reset ---
     const resetForm = () => {
         setName("");
         setStatus(STATUS_OPTIONS[0].value);
@@ -92,10 +84,8 @@ export default function FormularioCampo({
         onClose();
     };
 
-    // --- Submit ---
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-
         const nuevoCampo: CampoDraft = {
             name,
             surface: `${surface} Ha`,
@@ -107,17 +97,13 @@ export default function FormularioCampo({
             longitude,
             polygon,
         };
-
         const created = await onSubmit(nuevoCampo);
-        if (created) {
-            resetForm();
-        }
+        if (created) resetForm();
     };
 
     return (
         <Modal show={show} onClose={handleClose} maxWidth="2xl">
             <form onSubmit={handleSubmit} className="p-6">
-                {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-800">
                         {initialData ? "Editar campo" : "Registrar nuevo campo"}
@@ -132,12 +118,8 @@ export default function FormularioCampo({
                 </div>
 
                 <div className="space-y-5">
-                    {/* Nombre */}
                     <div>
-                        <InputLabel
-                            htmlFor="campo-nombre"
-                            value="Nombre del campo"
-                        />
+                        <InputLabel htmlFor="campo-nombre" value="Nombre del campo" />
                         <TextInput
                             id="campo-nombre"
                             value={name}
@@ -148,16 +130,13 @@ export default function FormularioCampo({
                         />
                     </div>
 
-                    {/* Estado y Último cultivo (side by side) */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <InputLabel htmlFor="campo-status" value="Estado" />
                             <select
                                 id="campo-status"
                                 value={status}
-                                onChange={(e) =>
-                                    handleStatusChange(e.target.value)
-                                }
+                                onChange={(e) => handleStatusChange(e.target.value)}
                                 className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 {STATUS_OPTIONS.map((opt) => (
@@ -169,12 +148,10 @@ export default function FormularioCampo({
                         </div>
                     </div>
 
-                    {/* Mapa interactivo */}
                     <div>
                         <InputLabel value="Ubicación y área del campo" />
                         <p className="mb-2 text-xs text-gray-500">
-                            Hacé clic en el mapa para dibujar el perímetro de tu
-                            campo.
+                            Hacé clic en el mapa para dibujar el perímetro de tu campo.
                         </p>
                         <MapaInteractivo
                             polygon={polygon}
@@ -184,7 +161,6 @@ export default function FormularioCampo({
                         />
                     </div>
 
-                    {/* Latitud, Longitud, Superficie (en fila) */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div>
                             <InputLabel htmlFor="campo-lat" value="Latitud" />
@@ -193,9 +169,7 @@ export default function FormularioCampo({
                                 type="number"
                                 step="any"
                                 value={latitude}
-                                onChange={(e) =>
-                                    setLatitude(parseFloat(e.target.value) || 0)
-                                }
+                                onChange={(e) => setLatitude(parseFloat(e.target.value) || 0)}
                                 className="mt-1 w-full"
                             />
                         </div>
@@ -206,35 +180,25 @@ export default function FormularioCampo({
                                 type="number"
                                 step="any"
                                 value={longitude}
-                                onChange={(e) =>
-                                    setLongitude(
-                                        parseFloat(e.target.value) || 0,
-                                    )
-                                }
+                                onChange={(e) => setLongitude(parseFloat(e.target.value) || 0)}
                                 className="mt-1 w-full"
                             />
                         </div>
                         <div>
-                            <InputLabel
-                                htmlFor="campo-superficie"
-                                value="Superficie (Ha)"
-                            />
+                            <InputLabel htmlFor="campo-superficie" value="Superficie (Ha)" />
                             <TextInput
                                 id="campo-superficie"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 value={surface}
-                                onChange={(e) =>
-                                    setSurface(parseFloat(e.target.value) || 0)
-                                }
+                                onChange={(e) => setSurface(parseFloat(e.target.value) || 0)}
                                 className="mt-1 w-full"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Botones */}
                 <div className="mt-8 flex justify-end gap-3">
                     <button
                         type="button"

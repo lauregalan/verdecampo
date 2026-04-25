@@ -41,7 +41,7 @@ class CampaniaLoteSeeder extends Seeder
                     ->firstOrFail();
 
                 $loteIds = Lote::query()
-                    ->where('id_campo', $campo->id)
+                    ->where('campo_id', $campo->id)
                     ->whereIn('nombre', $loteNombres)
                     ->pluck('id');
 

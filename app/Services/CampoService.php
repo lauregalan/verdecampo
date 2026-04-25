@@ -8,9 +8,16 @@ class CampoService
 {
     public function index()
     {
-        $campos = Campo::all();
+        $campos = Campo::with(['campanias' => function($query) {
+            $query->where('estado', 'En Curso')->with('cultivo');
+        }])->get();
 
-        return $campos;
+        return $campos->map(function($campo) {
+            $campaniaEnCurso = $campo->campanias->first();
+            $cultivo = $campaniaEnCurso ? $campaniaEnCurso->cultivo : null;
+            $campo->cultivo_actual = $cultivo ? $cultivo->tipo : 'Sin siembras';
+            return $campo;
+        });
     }
 
     public function show(Campo $campo)

@@ -10,7 +10,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import FormularioLote from "./FormularioLote";
+import ModalFormularioLote from "@/components/Modals/ModalFormularioLote";
 import LoteCard from "./LoteCard";
 import { Plus } from "lucide-react";
 import {
@@ -26,7 +26,7 @@ import {
     IdLotesPorIdCampania,
     IdCultivoPorIdCampania,
 } from "./types";
-import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
+import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 
 const mapearLote = (lote: any): Lote => ({
     id: lote.id,
@@ -36,9 +36,10 @@ const mapearLote = (lote: any): Lote => ({
     latitud: Number(lote.latitud),
     longitud: Number(lote.longitud),
     hectareas: Number(lote.hectareas),
-    idCampo: Number(lote.id_campo),
+    idCampo: Number(lote.campo_id),
     ph: Number(lote.ph),
     napa: Number(lote.napa),
+    siembras: lote.siembras ?? [],
 });
 
 export default function Lotes() {
@@ -246,7 +247,9 @@ export default function Lotes() {
             const campoIdNumerico = Number(campoId);
 
             if (!Number.isInteger(campoIdNumerico) || campoIdNumerico <= 0) {
-                setError("Selecciona un campo valido antes de guardar el lote.");
+                setError(
+                    "Selecciona un campo valido antes de guardar el lote.",
+                );
                 return false;
             }
 
@@ -257,7 +260,7 @@ export default function Lotes() {
                 latitud: Number(nuevoLote.latitude) ?? 0,
                 longitud: Number(nuevoLote.longitude) ?? 0,
                 hectareas: Number(nuevoLote.hectareas) ?? 0,
-                id_campo: campoIdNumerico,
+                campo_id: campoIdNumerico,
                 ph: Number(nuevoLote.ph) || 0,
                 napa: Number(nuevoLote.napa) || 0,
             };
@@ -354,7 +357,7 @@ export default function Lotes() {
             ph: lote.ph,
             napa: lote.napa,
             polygon: [],
-            id_campo: lote.idCampo,
+            campo_id: lote.idCampo,
         };
     };
 
@@ -609,7 +612,7 @@ export default function Lotes() {
                         ))}
                     </div>
                 </div>
-                <FormularioLote
+                <ModalFormularioLote
                     show={showFormulario}
                     onClose={() => {
                         setShowFormulario(false);

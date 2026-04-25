@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
@@ -17,6 +17,5 @@ class RoleSeeder extends Seeder
 
         Role::firstOrCreate(['name' => 'Productor']); // Crea el rol de Productor, quien gestiona todo
         Role::firstOrCreate(['name' => 'Ingeniero']); // Crea el rol de Ingeniero agronomo, quien solo consulta la informacion
-        Role::firstOrCreate(['name' => 'Empleado']); // Rol operativo para personal del establecimiento
     }
 }

@@ -80,21 +80,31 @@ export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete }: Lote
                         <Sprout className="size-4 text-stone-400" aria-hidden="true" />
                         <span className="font-semibold text-stone-800">Cultivo:</span>
                     </div>
-                    <span className="font-normal truncate text-stone-600 ml-2">{"falta-implementar"}</span>
+                    <span className="font-normal truncate text-stone-600 ml-2">
+                        {(() => {
+                            const siembrasEnCurso = lote.siembras?.filter(
+                                (s) =>
+                                    s.campania?.estado?.toLowerCase() ===
+                                    "en curso",
+                            ) || [];
+                            if (siembrasEnCurso.length > 0) {
+                                const siembraReciente = siembrasEnCurso.sort(
+                                    (a, b) =>
+                                        new Date(b.fecha_siembra).getTime() -
+                                        new Date(a.fecha_siembra).getTime(),
+                                )[0];
+                                return siembraReciente.cultivo?.tipo ||
+                                    "Sin siembras";
+                            }
+                            return "Sin siembras";
+                        })()}
+                    </span>
                 </div>
             </CardContent>
 
             <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
                 
                 {/* NUEVO: Acceso directo a Lotes */}
-                <button
-                    type="button"
-                    className="mr-auto rounded bg-transparent p-1.5 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
-                    title="Ver lotes de este campo"
-                >
-                    <Layers strokeWidth={1.5} size={16} />
-                </button>
-
                 {/* NUEVO: Registrar actividad rápida */}
                 <button
                     type="button"
@@ -112,14 +122,6 @@ export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete }: Lote
                     title="Ver detalle completo"
                 >
                     <Eye strokeWidth={1.5} size={16} />
-                </button>
-
-                <button
-                    type="button"
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Ver en mapa"
-                >
-                    <MapPin strokeWidth={1.5} size={16} />
                 </button>
 
                 <button

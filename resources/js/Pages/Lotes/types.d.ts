@@ -7,7 +7,7 @@ export type Coord = {
 
 export interface LoteCard {
     id: number;
-    id_campo: number;
+    campo_id: number;
     name: string;
     hectareas: number;
     caracteristicas: string;
@@ -45,6 +45,7 @@ export interface Lote {
     idCampo: number;
     ph: number;
     napa: number;
+    siembras?: Siembra[];
 }
 
 export interface Campo {
@@ -86,6 +87,17 @@ export interface CampaniaDB {
     fecha_inicio: string;
     fecha_fin: string;
     estado: string;
+}
+
+export interface Siembra {
+    id: number;
+    campania_id: number;
+    lote_id: number;
+    cultivo_id: number;
+    fecha_siembra: string;
+    observaciones: string | null;
+    cultivo: CultivoDB;
+    campania: CampaniaDB;
 }
 
 export interface Estado {

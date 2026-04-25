@@ -20,7 +20,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import UserModal from "@/components/ui/UserModal";
+import UserModal from "@/components/Modals/UserModal";
+import {
+    DataTable,
+    type ColumnDef,
+    type PaginationMeta,
+} from "@/components/ui/DataTable";
 import api from "@/lib/api";
 
 interface BackendUser {
@@ -47,23 +52,20 @@ const getRoleBadgeClass = (role: string) => {
     const normalized = role.toLowerCase();
     if (normalized === "productor") return "bg-blue-500";
     if (normalized === "ingeniero") return "bg-green-700";
-    if (normalized === "empleado") return "bg-orange-500";
     return "bg-gray-500";
 };
 
-const rolePriority: Record<string, number> = {
-    productor: 0,
-    ingeniero: 1,
-    empleado: 2,
-};
+const rolePriority: Record<string, number> = { productor: 0, ingeniero: 1 };
 
 const getUserRolePriority = (roles: string[]) => {
     if (!Array.isArray(roles) || roles.length === 0) return 99;
-    return roles.reduce((best, role) => {
-        const current = rolePriority[role.toLowerCase()] ?? 99;
-        return Math.min(best, current);
-    }, 99);
+    return roles.reduce(
+        (best, role) => Math.min(best, rolePriority[role.toLowerCase()] ?? 99),
+        99,
+    );
 };
+
+const PER_PAGE = 20;
 
 export default function UserManagment({ header }: UserManagmentProps) {
     const [users, setUsers] = useState<BackendUser[]>([]);
@@ -75,6 +77,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [processingUserId, setProcessingUserId] = useState<number | null>(
         null,
     );
+    const [currentPage, setCurrentPage] = useState(1);
 
     const authUser = usePage().props.auth?.user as
         | { id?: number; roles?: string[] }
@@ -85,8 +88,13 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteLoading, setInviteLoading] = useState(false);
-    const [inviteEmailError, setInviteEmailError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const [inviteEmailError, setInviteEmailError] = useState<string | null>(
+        null,
+    );
+    const [toast, setToast] = useState<{
+        type: "success" | "error";
+        message: string;
+    } | null>(null);
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const showToast = (type: "success" | "error", message: string) => {
@@ -110,30 +118,38 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const handleSendInvite = async () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!inviteEmail.trim() || !emailRegex.test(inviteEmail.trim())) {
-            setInviteEmailError("Por favor ingresa un correo electrónico válido.");
+            setInviteEmailError(
+                "Por favor ingresa un correo electrónico válido.",
+            );
             return;
         }
         setInviteEmailError(null);
         setInviteLoading(true);
         try {
-    const response = await fetch("api/invitar", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-        body: JSON.stringify({ email: inviteEmail.trim() }),
-    });
+            const response = await api.post("/api/invitar", {
+                email: inviteEmail.trim(),
+            });
 
-
-    const data = await response.json() as { status?: string; message?: string; error?: string };
+            const data = (await response.json()) as {
+                status?: string;
+                message?: string;
+                error?: string;
+            };
             if (!response.ok || data.status !== "success") {
                 throw new Error(data.error ?? "Error al enviar la invitación.");
             }
             handleCloseInvite();
-            showToast("success", "✓ Correo de invitación enviado correctamente.");
+            showToast(
+                "success",
+                "✓ Correo de invitación enviado correctamente.",
+            );
         } catch (err) {
-            showToast("error", err instanceof Error ? err.message : "Error al enviar la invitación.");
+            showToast(
+                "error",
+                err instanceof Error
+                    ? err.message
+                    : "Error al enviar la invitación.",
+            );
         } finally {
             setInviteLoading(false);
         }
@@ -143,15 +159,11 @@ export default function UserManagment({ header }: UserManagmentProps) {
         try {
             setLoading(true);
             const response = await api.get("/api/users");
-
-            if (!response.ok) {
-                throw new Error("No se pudo obtener el listado de usuarios.");
-            }
-
+            if (!response.ok) throw new Error();
             const payload = (await response.json()) as BackendUser[];
             setUsers(Array.isArray(payload) ? payload : []);
             setError(null);
-        } catch (err) {
+        } catch {
             setError("Error al cargar usuarios desde el backend.");
             setUsers([]);
         } finally {
@@ -162,39 +174,28 @@ export default function UserManagment({ header }: UserManagmentProps) {
     useEffect(() => {
         reloadUsers();
     }, []);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
 
     const toggleUserActive = async (userId: number, nextActive: boolean) => {
         if (!canManageUsers) return;
-
         setProcessingUserId(userId);
-
         try {
             await window.axios.patch(
                 `/api/users/${userId}/active`,
                 { active: nextActive },
-                {
-                    headers: {
-                        Accept: "application/json",
-                    },
-                },
+                { headers: { Accept: "application/json" } },
             );
-
             await reloadUsers();
         } catch (err) {
             const message =
                 typeof err === "object" &&
                 err !== null &&
                 "response" in err &&
-                typeof err.response === "object" &&
-                err.response !== null &&
-                "data" in err.response &&
-                typeof err.response.data === "object" &&
-                err.response.data !== null &&
-                "message" in err.response.data &&
-                typeof err.response.data.message === "string"
-                    ? err.response.data.message
+                typeof (err as any).response?.data?.message === "string"
+                    ? (err as any).response.data.message
                     : "No se pudo actualizar el estado del usuario.";
-
             alert(message);
         } finally {
             setProcessingUserId(null);
@@ -204,23 +205,35 @@ export default function UserManagment({ header }: UserManagmentProps) {
     const filteredUsers = useMemo(() => {
         const term = search.trim().toLowerCase();
         const base = term
-            ? users.filter((user) => {
-                  const primaryRole = user.roles[0] ?? "Sin rol";
+            ? users.filter((u) => {
+                  const primaryRole = u.roles[0] ?? "Sin rol";
                   return (
-                      user.name.toLowerCase().includes(term) ||
-                      user.email.toLowerCase().includes(term) ||
+                      u.name.toLowerCase().includes(term) ||
+                      u.email.toLowerCase().includes(term) ||
                       primaryRole.toLowerCase().includes(term)
                   );
               })
             : [...users];
-
         return base.sort((a, b) => {
             const byRole =
                 getUserRolePriority(a.roles) - getUserRolePriority(b.roles);
-            if (byRole !== 0) return byRole;
-            return a.name.localeCompare(b.name, "es");
+            return byRole !== 0 ? byRole : a.name.localeCompare(b.name, "es");
         });
     }, [search, users]);
+
+    const pagination: PaginationMeta = {
+        currentPage,
+        lastPage: Math.max(1, Math.ceil(filteredUsers.length / PER_PAGE)),
+        total: filteredUsers.length,
+        perPage: PER_PAGE,
+        from: filteredUsers.length === 0 ? 0 : (currentPage - 1) * PER_PAGE + 1,
+        to: Math.min(currentPage * PER_PAGE, filteredUsers.length),
+    };
+
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * PER_PAGE,
+        currentPage * PER_PAGE,
+    );
 
     const availableRoles = [
         {
@@ -232,6 +245,95 @@ export default function UserManagment({ header }: UserManagmentProps) {
             name: "Ingeniero",
             description:
                 "Accede a datos técnicos, informes y tareas de supervisión de campo.",
+        },
+    ];
+
+    const columns: ColumnDef<BackendUser>[] = [
+        {
+            id: "avatar",
+            header: "",
+            headerClassName: "w-14",
+            cell: (user) => (
+                <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
+                    <AvatarImage src="" alt={user.name} />
+                    <AvatarFallback className="bg-green-100 text-xs font-bold uppercase text-green-700">
+                        {user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)}
+                    </AvatarFallback>
+                </Avatar>
+            ),
+        },
+        {
+            id: "nombre",
+            header: "Nombre y apellido",
+            headerClassName: "w-[220px]",
+            cellClassName: "truncate font-medium",
+            cell: (user) => <span title={user.name}>{user.name}</span>,
+        },
+        {
+            id: "email",
+            header: "Correo electronico",
+            headerClassName: "w-[280px]",
+            cellClassName: "truncate",
+            cell: (user) => <span title={user.email}>{user.email}</span>,
+        },
+        {
+            id: "rol",
+            header: "Rol",
+            headerClassName: "w-[150px]",
+            cell: (user) => {
+                const primaryRole = user.roles[0] ?? "Sin rol";
+                return (
+                    <Badge
+                        className={`${getRoleBadgeClass(primaryRole)} cursor-pointer transition-opacity hover:opacity-80`}
+                        onClick={() => {
+                            setSelectedRole(primaryRole);
+                            setSelectedUserId(user.id.toString());
+                        }}
+                    >
+                        {primaryRole}
+                    </Badge>
+                );
+            },
+        },
+        {
+            id: "ultimo_acceso",
+            header: "Ultimo acceso",
+            headerClassName: "hidden w-[210px] text-center lg:table-cell",
+            cellClassName: "hidden whitespace-nowrap text-center lg:table-cell",
+            cell: (user) => formatDate(user.last_login_at),
+        },
+        {
+            id: "estado",
+            header: "Estado",
+            headerClassName: "w-[140px] text-center",
+            cellClassName: "text-center",
+            cell: (user) => (
+                <div className="flex items-center justify-center gap-2">
+                    <Switch
+                        id={`user-${user.id}`}
+                        checked={user.active}
+                        disabled={
+                            !canManageUsers ||
+                            processingUserId === user.id ||
+                            authUser?.id === user.id
+                        }
+                        onCheckedChange={(checked) =>
+                            toggleUserActive(user.id, checked)
+                        }
+                        className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
+                    />
+                    <Label
+                        htmlFor={`user-${user.id}`}
+                        className="min-w-[50px] text-xs font-medium text-gray-500"
+                    >
+                        {user.active ? "Activo" : "Inactivo"}
+                    </Label>
+                </div>
+            ),
         },
     ];
 
@@ -264,7 +366,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     <InputGroupInput
                         placeholder="Buscar por nombre, email o rol..."
                         value={search}
-                        onChange={(event) => setSearch(event.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
                     <InputGroupAddon>
                         <Search />
@@ -275,165 +377,16 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 </InputGroup>
 
                 <ScrollArea className="min-h-0 flex-1 w-full rounded-lg border border-black/10 bg-white/70 pr-1 lg:pr-3">
-                    <Table className="w-full min-w-[820px] table-fixed lg:min-w-[1040px]">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-14"></TableHead>
-                                <TableHead className="w-[220px]">
-                                    Nombre y apellido
-                                </TableHead>
-                                <TableHead className="w-[280px]">
-                                    Correo electronico
-                                </TableHead>
-                                <TableHead className="w-[150px]">Rol</TableHead>
-                                <TableHead className="hidden w-[210px] text-center lg:table-cell">
-                                    Ultimo acceso
-                                </TableHead>
-                                <TableHead className="w-[140px] text-center">
-                                    Estado
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="text-center text-sm text-gray-500"
-                                    >
-                                        Cargando usuarios...
-                                    </TableCell>
-                                </TableRow>
-                            )}
-
-                            {!loading && error && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="text-center text-sm text-red-600"
-                                    >
-                                        {error}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-
-                            {!loading &&
-                                !error &&
-                                filteredUsers.length === 0 && (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="text-center text-sm text-gray-500"
-                                        >
-                                            No hay usuarios para mostrar.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-
-                            {!loading &&
-                                !error &&
-                                filteredUsers.map((user) => {
-                                    const primaryRole =
-                                        user.roles[0] ?? "Sin rol";
-                                    const estado = user.active
-                                        ? "Activo"
-                                        : "Inactivo";
-
-                                    return (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-9 w-9 border border-black/5 shadow-sm">
-                                                        <AvatarImage
-                                                            src=""
-                                                            alt={user.name}
-                                                        />
-                                                        <AvatarFallback className="bg-green-100 text-xs font-bold uppercase text-green-700">
-                                                            {user.name
-                                                                .split(" ")
-                                                                .map(
-                                                                    (n) => n[0],
-                                                                )
-                                                                .join("")
-                                                                .substring(
-                                                                    0,
-                                                                    2,
-                                                                )}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell
-                                                className="truncate font-medium"
-                                                title={user.name}
-                                            >
-                                                {user.name}
-                                            </TableCell>
-                                            <TableCell
-                                                className="truncate"
-                                                title={user.email}
-                                            >
-                                                {user.email}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    className={`${getRoleBadgeClass(primaryRole)} cursor-pointer hover:opacity-80 transition-opacity`}
-                                                    onClick={() => {
-                                                        setSelectedRole(
-                                                            primaryRole,
-                                                        );
-                                                        setSelectedUserId(
-                                                            user.id.toString(),
-                                                        );
-                                                    }}
-                                                >
-                                                    {primaryRole}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="hidden whitespace-nowrap text-center lg:table-cell">
-                                                {formatDate(user.last_login_at)}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <div className="flex items-center justify-center">
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <Switch
-                                                                id={`user-${user.id}`}
-                                                                checked={
-                                                                    user.active
-                                                                }
-                                                                disabled={
-                                                                    !canManageUsers ||
-                                                                    processingUserId ===
-                                                                        user.id ||
-                                                                    authUser?.id ===
-                                                                        user.id
-                                                                }
-                                                                onCheckedChange={(
-                                                                    checked,
-                                                                ) =>
-                                                                    toggleUserActive(
-                                                                        user.id,
-                                                                        checked,
-                                                                    )
-                                                                }
-                                                                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300"
-                                                            />
-                                                            <Label
-                                                                htmlFor={`user-${user.id}`}
-                                                                className="min-w-[50px] text-xs font-medium text-gray-500"
-                                                            >
-                                                                {estado}
-                                                            </Label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
+                    <DataTable
+                        columns={columns}
+                        data={error ? [] : paginatedUsers}
+                        keyExtractor={(u) => u.id}
+                        loading={loading}
+                        emptyMessage={error ?? "No hay usuarios para mostrar."}
+                        pagination={pagination}
+                        onPageChange={setCurrentPage}
+                        tableClassName="w-full min-w-[820px] table-fixed lg:min-w-[1040px]"
+                    />
                 </ScrollArea>
             </div>
 
@@ -473,13 +426,20 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                 <Mail size={20} className="text-green-700" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Invitar Colaborador</h3>
-                                <p className="text-sm text-gray-500">Se enviará un enlace de acceso por correo.</p>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    Invitar Colaborador
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                    Se enviará un enlace de acceso por correo.
+                                </p>
                             </div>
                         </div>
 
                         <div className="mb-5">
-                            <label htmlFor="invite-email" className="mb-1.5 block text-sm font-semibold text-gray-700">
+                            <label
+                                htmlFor="invite-email"
+                                className="mb-1.5 block text-sm font-semibold text-gray-700"
+                            >
                                 Correo electrónico
                             </label>
                             <input
@@ -488,17 +448,24 @@ export default function UserManagment({ header }: UserManagmentProps) {
                                 value={inviteEmail}
                                 onChange={(e) => {
                                     setInviteEmail(e.target.value);
-                                    if (inviteEmailError) setInviteEmailError(null);
+                                    if (inviteEmailError)
+                                        setInviteEmailError(null);
                                 }}
-                                onKeyDown={(e) => { if (e.key === "Enter") void handleSendInvite(); }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter")
+                                        void handleSendInvite();
+                                }}
                                 placeholder="colaborador@ejemplo.com"
-                                className={`w-full rounded-xl border px-4 py-2.5 text-sm shadow-sm outline-none transition-all focus:ring-2 ${inviteEmailError
+                                className={`w-full rounded-xl border px-4 py-2.5 text-sm shadow-sm outline-none transition-all focus:ring-2 ${
+                                    inviteEmailError
                                         ? "border-red-400 focus:ring-red-200"
                                         : "border-gray-200 focus:border-green-500 focus:ring-green-100"
-                                    }`}
+                                }`}
                             />
                             {inviteEmailError && (
-                                <p className="mt-1.5 text-xs text-red-500">{inviteEmailError}</p>
+                                <p className="mt-1.5 text-xs text-red-500">
+                                    {inviteEmailError}
+                                </p>
                             )}
                         </div>
 
@@ -519,9 +486,24 @@ export default function UserManagment({ header }: UserManagmentProps) {
                             >
                                 {inviteLoading ? (
                                     <>
-                                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        <svg
+                                            className="h-4 w-4 animate-spin"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            />
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v8z"
+                                            />
                                         </svg>
                                         Enviando...
                                     </>
@@ -540,12 +522,15 @@ export default function UserManagment({ header }: UserManagmentProps) {
             {/* Toast notification */}
             {toast && (
                 <div
-                    className={`fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-lg transition-all duration-300 ${toast.type === "success"
+                    className={`fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-lg transition-all duration-300 ${
+                        toast.type === "success"
                             ? "bg-green-600 text-white"
                             : "bg-red-600 text-white"
-                        }`}
+                    }`}
                 >
-                    <span className="text-sm font-semibold">{toast.message}</span>
+                    <span className="text-sm font-semibold">
+                        {toast.message}
+                    </span>
                     <button
                         type="button"
                         onClick={() => setToast(null)}
