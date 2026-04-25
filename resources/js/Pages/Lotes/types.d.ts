@@ -45,6 +45,7 @@ export interface Lote {
     idCampo: number;
     ph: number;
     napa: number;
+    siembras?: Siembra[];
 }
 
 export interface Campo {

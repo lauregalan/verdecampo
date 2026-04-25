@@ -51,6 +51,6 @@ class LoteService
 
     public function getAll()
     {
-        return Lote::all();
+        return Lote::with('siembras.cultivo')->get();
     }
 }

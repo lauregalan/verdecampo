@@ -20,7 +20,6 @@ import {
     CampoDB,
     Cultivo,
     Campania,
-    Estado,
     CampaniaDB,
     CultivoDB,
     IdLotesPorIdCampania,

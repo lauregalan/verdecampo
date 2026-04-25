@@ -80,7 +80,13 @@ export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete }: Lote
                         <Sprout className="size-4 text-stone-400" aria-hidden="true" />
                         <span className="font-semibold text-stone-800">Cultivo:</span>
                     </div>
-                    <span className="font-normal truncate text-stone-600 ml-2">{"falta-implementar"}</span>
+                    <span className="font-normal truncate text-stone-600 ml-2">
+                        {lote.siembras && lote.siembras.length > 0
+                            ? lote.siembras
+                                .sort((a, b) => new Date(b.fecha_siembra).getTime() - new Date(a.fecha_siembra).getTime())[0]
+                                .cultivo.tipo
+                            : "Sin siembras"}
+                    </span>
                 </div>
             </CardContent>
 
