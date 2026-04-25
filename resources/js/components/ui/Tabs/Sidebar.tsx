@@ -1,5 +1,6 @@
 import {
     CalendarDays,
+    ChevronRight,
     ChevronUp,
     GroupIcon,
     LayoutDashboard,
@@ -7,6 +8,7 @@ import {
     Settings,
     Sprout,
     Wheat,
+    BugOff,
 } from "lucide-react";
 import { Link, usePage } from "@inertiajs/react";
 import {
@@ -20,12 +22,21 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
+    SidebarGroupContent,
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export default function AppSidebar() {
     const { url, props } = usePage();
@@ -155,6 +166,76 @@ export default function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                        <Collapsible
+                            key="aplicaciones"
+                            asChild
+                            className="group/collapsible"
+                            defaultOpen={
+                                currentPath === "/aplicaciones" ||
+                                currentPath === "/productos" ||
+                                currentPath === "/tipos"
+                            }
+                        >
+                            <SidebarMenuItem>
+                                <CollapsibleTrigger asChild>
+                                    <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
+                                        <BugOff size={18} />
+                                        <span>Mis Aplicaciones</span>
+                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                    </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                        <SidebarMenuSubItem>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={
+                                                    currentPath ===
+                                                    "/aplicaciones"
+                                                }
+                                            >
+                                                <Link href="/aplicaciones">
+                                                    <span className="font-medium">
+                                                        Aplicaciones
+                                                    </span>
+                                                </Link>
+                                            </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                        <SidebarMenuSubItem>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={
+                                                    currentPath === "/productos"
+                                                }
+                                            >
+                                                <Link href="/productos">
+                                                    <span className="font-medium">
+                                                        Productos
+                                                    </span>
+                                                </Link>
+                                            </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                        <SidebarMenuSubItem>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                isActive={
+                                                    currentPath === "/tipos"
+                                                }
+                                            >
+                                                <Link href="/tipos">
+                                                    <span className="font-medium">
+                                                        Tipos
+                                                    </span>
+                                                </Link>
+                                            </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
 
                         <SidebarMenuItem>
                             <SidebarMenuButton
@@ -170,12 +251,9 @@ export default function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
-
-
 
             <SidebarFooter className="p-4 mt-auto border-t border-white/10">
                 <SidebarMenu>

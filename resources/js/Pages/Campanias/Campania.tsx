@@ -310,16 +310,13 @@ export default function Campania() {
 
     return (
         <Body>
-            <div className="flex h-full min-h-0 flex-col bg-[#f9f4ea] p-8 font-sans">
+            <div className="flex h-full min-h-0 flex-col p-8 font-sans">
                 <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">
                                 Gestion de Campanias
                             </h1>
-                            <p className="mt-1 text-sm text-stone-500">
-                                Administra estados, fechas y campos asociados de cada temporada.
-                            </p>
                         </div>
                         <button
                             type="button"
@@ -333,6 +330,9 @@ export default function Campania() {
                             Nueva Campania
                         </button>
                     </div>
+                    <p className="text-sm text-stone-500">
+                                Administra estados, fechas y campos asociados de cada temporada.
+                            </p>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         {[

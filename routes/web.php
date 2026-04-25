@@ -84,6 +84,18 @@ Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
 })->middleware(['auth', 'verified'])->name('gestionarCultivos');
 
+Route::get('/aplicaciones', function () {
+    return Inertia::render('Aplicaciones/Aplicaciones');
+})->middleware(['auth', 'verified'])->name('aplicaciones');
+
+Route::get('/productos', function () {
+    return Inertia::render('Aplicaciones/Productos');
+})->middleware(['auth', 'verified'])->name('productos');
+
+Route::get('/tipos', function () {
+    return Inertia::render('Aplicaciones/Tipos');
+})->middleware(['auth', 'verified'])->name('tipos');
+
 Route::get('/siembras', function () {
     return Inertia::render('Siembras/Siembras');
 })->middleware(['auth', 'verified'])->name('gestionarSiembras');

@@ -344,27 +344,25 @@ export default function Campo() {
                         </div>
                     )}
 
-                {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
-                <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                        Gestión de Campos
-                    </h1>
-                    <button
-                        type="button"
-                        onClick={handleAbrirCreacion}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nuevo Campo
-                    </button>
-                </div>
+                    {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
+                    <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                            Gestión de Campos
+                        </h1>
+                        <button
+                            type="button"
+                            onClick={handleAbrirCreacion}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nuevo Campo
+                        </button>
+                    </div>
 
-                {/* El Summary también debe seguir el ancho máximo */}
-                <div className="mx-auto w-full max-w-[1600px] mb-8">
-                    <ProductoSumary />
-                </div>
-
-                
+                    {/* El Summary también debe seguir el ancho máximo */}
+                    <div className="mx-auto w-full max-w-[1600px] mb-8">
+                        <ProductoSumary />
+                    </div>
 
                     {/* Ajustamos el gap a 6 para que las cards no estén pegadas pero tampoco perdidas */}
                     <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -387,7 +385,9 @@ export default function Campo() {
                                     onEdit={() => handleAbrirEdicion(campo)}
                                     onDelete={() => setCampoAEliminar(campo)}
                                     onViewLotes={() =>
-                                        router.visit(`/lotes?campo=${encodeURIComponent(campo.name)}`)
+                                        router.visit(
+                                            `/lotes?campo=${encodeURIComponent(campo.name)}`,
+                                        )
                                     }
                                 />
                             ))
