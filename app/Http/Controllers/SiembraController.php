@@ -6,9 +6,6 @@ use App\Models\Siembra;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\SiembraRequest;
-use App\Http\Requests\StoreSiembraRequest;
-
-
 use App\Services\SiembraService;
 
 class SiembraController extends Controller
@@ -50,9 +47,8 @@ class SiembraController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Siembra $siembra)
+    public function show(int $id): JsonResponse
     {
-        //
         $siembra = $this->siembraService->getById($id);
         return response()->json($siembra, 200);
     }
