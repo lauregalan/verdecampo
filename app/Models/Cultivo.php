@@ -4,26 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cultivo extends Model
 {
     protected $fillable = [
-        'lote_id',
-        'campania_id',
         'tipo',
         'variedad',
-        'fecha_siembra',
-        'cultivo_antecesor',
+        'cultivo_antecesor_id',
         'notas',
     ];
 
-    public function lote(): BelongsTo
+    public function campanias(): HasMany
     {
-        return $this->belongsTo(Lote::class);
+        return $this->hasMany(Campania::class);
     }
 
-    public function campania(): BelongsTo
+    public function cultivoAntecesor(): BelongsTo
     {
-        return $this->belongsTo(Campania::class);
+        return $this->belongsTo(Cultivo::class, 'cultivo_antecesor_id');
     }
 }

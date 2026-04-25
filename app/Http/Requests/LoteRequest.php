@@ -25,14 +25,13 @@ class LoteRequest extends FormRequest
         return [
             'nombre' => ['required', 'string', 'max:50'],
             'caracteristicas' => ['required', 'string'],
-            'estado' => ['required', 'string', 'in:produccion,barbecho,preparacion'],
+            'estado' => ['required', 'string', 'in:produccion,barbecho,preparacion,disponible'],
             'longitud' => ['required', 'numeric'],
             'latitud' => ['required', 'numeric'],
+            'hectareas' => ['required', 'numeric', 'min:0'],
             'ph' => ['nullable', 'numeric', 'between:0,14'],
             'napa' => ['nullable', 'numeric', 'min:0'],
-            //'id_campania' => ['nullable', 'exists:campanias,id'],
             'id_campo' => ['required', 'exists:campos,id'],
-            'id_campania' => ['nullable', 'numeric'],
         ];
     }
 
@@ -44,9 +43,9 @@ class LoteRequest extends FormRequest
             'estado.required' => 'El estado es requerido',
             'longitud.required' => 'La longitud es requerida',
             'latitud.required' => 'La latitud es requerida',
+            'hectareas.required' => 'Las hectareas son requeridas',
             'ph.nullable' => 'El ph es requerido',
             'napa.nullable' => 'La napa es requerida',
-            'id_campania.nullable' => 'La campaña es requerida',
             'id_campo.required' => 'El campo es requerido',
         ];
     }

@@ -13,9 +13,9 @@ class Lote extends Model
         'estado',
         'longitud',
         'latitud',
+        'hectareas',
         'ph',
         'napa',
-        'id_campania',
         'id_campo',
     ];
 

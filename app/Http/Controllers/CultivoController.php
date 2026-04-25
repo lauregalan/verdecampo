@@ -11,14 +11,9 @@ class CultivoController extends Controller
 {
     public function __construct(private CultivoService $cultivoService) {}
 
-    public function getByCampania(int $campaniaId): JsonResponse
+    public function index(): JsonResponse
     {
-        return response()->json($this->cultivoService->getByCampania($campaniaId));
-    }
-
-    public function getByLote(int $loteId): JsonResponse
-    {
-        return response()->json($this->cultivoService->getByLote($loteId));
+        return response()->json($this->cultivoService->getAll());
     }
 
     public function show(Cultivo $cultivo): JsonResponse

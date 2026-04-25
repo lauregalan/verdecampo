@@ -6,6 +6,7 @@ use App\Models\Campania;
 
 class CampaniaService
 {
+
     public function index()
     {
         return Campania::all();

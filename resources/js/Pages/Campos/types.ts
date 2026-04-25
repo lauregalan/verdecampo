@@ -1,5 +1,5 @@
 export type StatusColor = "verde" | "naranja" | "violeta";
-export type Coord = [number, number];
+export type Coord = { lat: number; lng: number };
 
 export interface CampoCard {
     id: number;

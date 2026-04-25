@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -11,24 +11,20 @@ use Illuminate\Routing\Middleware\ValidateSignature;
 
 
 Route::get('/', function () {
-    if(Auth::check()){
+    if (Auth::check()) {
         return Redirect('/dashboard');
-    }
-    else{
+    } else {
         return Redirect('/login');
     }
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 Route::get('/campo', function () {
     return Inertia::render('Campos/Campo');
@@ -60,6 +56,13 @@ Route::get('/lotes/{loteId}', function (int $loteId) {
     ]);
 })->middleware(['auth', 'verified'])->whereNumber('loteId')->name('lote.detalle');
 
+Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{user}/roles', [UserController::class, 'getRoles']);
+    Route::patch('/users/{user}/active', [UserController::class, 'updateActive']);
+    Route::put('/users/{user}/roles', [UserController::class, 'modificarRoles']);
+});
+
 Route::get('/main', function () {
     return Redirect('/usuarios');
 })->middleware(['auth', 'verified'])->name('main');
@@ -78,5 +81,8 @@ Route::get('/aceptar/{email}', function (Request $request, $email) {
     ]);
 })->name('invitation.accept');
 
+Route::get('/cultivos', function () {
+    return Inertia::render('Cultivos/Cultivos');
+})->middleware(['auth', 'verified'])->name('gestionarCultivos');
 
 require __DIR__.'/auth.php';

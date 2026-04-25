@@ -1,10 +1,11 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import Modal from '@/components/Modal';
-import InputLabel from '@/components/InputLabel';
-import TextInput from '@/components/TextInput';
-import MapaInteractivo, { Coord } from '../Campos/MapaInteractivo'; // Reusing the map component
-import type { LoteCard, LoteDraft, StatusColor } from './types';
-import { X } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import Modal from "@/components/Modal";
+import InputLabel from "@/components/InputLabel";
+import TextInput from "@/components/TextInput";
+import MapaInteractivo from "../Campos/MapaInteractivo"; // Reusing the map component
+import type { Coord, LoteCard, LoteDraft, StatusColor } from "./types";
+import { X } from "lucide-react";
+import api from "@/lib/api";
 
 interface FormularioLoteProps {
     show: boolean;
@@ -16,13 +17,14 @@ interface FormularioLoteProps {
 }
 
 const STATUS_OPTIONS: { label: string; value: string; color: StatusColor }[] = [
-    { label: 'En Producción', value: 'En Produccion', color: 'verde' },
-    { label: 'En Preparación', value: 'En Preparacion', color: 'naranja' },
-    { label: 'En Barbecho', value: 'En Barbecho', color: 'violeta' },
+    { label: "En Producción", value: "produccion", color: "verde" },
+    { label: "En Preparación", value: "preparacion", color: "amarillo" },
+    { label: "En Barbecho", value: "barbecho", color: "rojo" },
+    { label: "Disponible", value: "disponible", color: "verde-claro" },
 ];
 
 const PLACEHOLDER_IMAGE =
-    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400';
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400";
 
 export default function FormularioLote({
     show,
@@ -32,21 +34,47 @@ export default function FormularioLote({
     campoId,
 }: FormularioLoteProps) {
     // --- Estado del formulario ---
-    const [name, setName] = useState('');
+    const [name, setName] = useState("");
     const [status, setStatus] = useState(STATUS_OPTIONS[0].value);
-    const [statusColor, setStatusColor] = useState<StatusColor>(STATUS_OPTIONS[0].color);
-    const [lastCrop, setLastCrop] = useState('');
+    const [statusColor, setStatusColor] = useState<StatusColor>(
+        STATUS_OPTIONS[0].color,
+    );
+    const [lastCrop, setLastCrop] = useState("");
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
-    const [surface, setSurface] = useState<number>(0);
+    const [hectareas, setHectareas] = useState<number>(0);
     const [polygon, setPolygon] = useState<Coord[]>([]);
+    const [caracteristicas, setCaracteristicas] = useState("");
+    const [ph, setPh] = useState(0);
+    const [napa, setNapa] = useState(0);
+    const [campos, setCampos] = useState<{ id: number; nombre: string }[]>([]);
+    const [campoSeleccionado, setCampoSeleccionado] = useState<number | string>(
+        campoId,
+    );
+
+    useEffect(() => {
+        const fetchCampos = async () => {
+            try {
+                const res = await api.get("/api/campos");
+
+                if (!res.ok) throw new Error();
+
+                const data = await res.json();
+                setCampos(data);
+            } catch {
+                console.error("Error al cargar campos");
+            }
+        };
+
+        if (show) fetchCampos();
+    }, [show]);
 
     useEffect(() => {
         if (show && initialData) {
             setName(initialData.name);
             setStatus(initialData.status);
-            setStatusColor(initialData.statusColor);
-            setLastCrop(initialData.lastCrop);
+            setStatusColor("verde"); // temporal
+            setLastCrop("falta implementar");
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
             const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ''));
@@ -59,6 +87,12 @@ export default function FormularioLote({
             setPolygon(formattedPolygon);
         }
 
+            setCaracteristicas(initialData.caracteristicas);
+            setPh(initialData.ph);
+            setNapa(initialData.napa);
+            setHectareas(initialData.hectareas ?? 0);
+            setPolygon(initialData.polygon || []);
+            setCampoSeleccionado(initialData.id_campo);
         } else if (show && !initialData) {
             resetForm();
         }
@@ -66,12 +100,16 @@ export default function FormularioLote({
 
     // --- Handlers del mapa ---
     const handleCenterChange = useCallback((lat: number, lng: number) => {
-        setLatitude(parseFloat(lat.toFixed(6)));
-        setLongitude(parseFloat(lng.toFixed(6)));
+        if (lat !== 0 || lng !== 0) {
+            setLatitude(parseFloat(lat.toFixed(6)));
+            setLongitude(parseFloat(lng.toFixed(6)));
+        }
     }, []);
 
     const handleAreaChange = useCallback((ha: number) => {
-        setSurface(ha);
+        if (ha > 0) {
+            setHectareas(ha);
+        }
     }, []);
 
     const handleStatusChange = (value: string) => {
@@ -82,13 +120,17 @@ export default function FormularioLote({
 
     // --- Reset ---
     const resetForm = () => {
-        setName('');
+        setName("");
         setStatus(STATUS_OPTIONS[0].value);
         setStatusColor(STATUS_OPTIONS[0].color);
-        setLastCrop('');
-        setLatitude(0);
-        setLongitude(0);
-        setSurface(0);
+        setCaracteristicas("");
+        setPh(7);
+        setNapa(0);
+        setLastCrop("");
+        setCampoSeleccionado(campoId || "");
+        //setLatitude(0);
+        //setLongitude(0);
+        setHectareas(0);
         setPolygon([]);
     };
 
@@ -103,7 +145,8 @@ export default function FormularioLote({
 
         const nuevoLote: LoteDraft = {
             name,
-            surface: `${surface} Ha`,
+            caracteristicas,
+            hectareas,
             status,
             lastCrop,
             statusColor,
@@ -114,146 +157,176 @@ export default function FormularioLote({
                         lat,
                         lng
                     })),
+            ph,
+            napa,
+            polygon,
         };
 
-        const created = await onSubmit(nuevoLote, campoId); // Pass campoId here
+        const created = await onSubmit(nuevoLote, campoSeleccionado); // Pass campoId here
         if (created) {
             resetForm();
+            onClose();
         }
     };
 
     return (
         <Modal show={show} onClose={handleClose} maxWidth="2xl">
-            <form onSubmit={handleSubmit} className="p-6">
-                {/* Header */}
-                <div className="mb-6 flex items-center justify-between">
+            <div className="flex max-h-[90vh] flex-col bg-white rounded-2xl">
+                {/* HEADER */}
+                <div className="flex items-center justify-between px-6 pt-5 pb-3">
                     <h2 className="text-2xl font-bold text-gray-800">
-                        {initialData ? 'Editar lote' : 'Registrar nuevo lote'}
+                        {initialData ? "Editar lote" : "Registrar nuevo lote"}
                     </h2>
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                        className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
-                <div className="space-y-5">
+                {/* CONTENIDO */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="flex-1 overflow-y-auto px-6 pb-6 space-y-5"
+                >
                     {/* Nombre */}
                     <div>
-                        <InputLabel htmlFor="lote-nombre" value="Nombre del lote" />
+                        <InputLabel value="Nombre del lote" />
                         <TextInput
-                            id="lote-nombre"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Ej: Lote 1 - Maiz"
-                            className="mt-1 w-full"
+                            className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                             required
                         />
                     </div>
-
-                    {/* Estado y Último cultivo (side by side) */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <InputLabel htmlFor="lote-status" value="Estado" />
-                            <select
-                                id="lote-status"
-                                value={status}
-                                onChange={(e) => handleStatusChange(e.target.value)}
-                                className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                                {STATUS_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="lote-cultivo" value="Último cultivo" />
-                            <TextInput
-                                id="lote-cultivo"
-                                value={lastCrop}
-                                onChange={(e) => setLastCrop(e.target.value)}
-                                placeholder="Ej: Soja"
-                                className="mt-1 w-full"
-                                required
-                            />
-                        </div>
+                    {/* Campo al que pertenece */}
+                    <div>
+                        <InputLabel value="Campo" />
+                        <select
+                            value={campoSeleccionado}
+                            onChange={(e) =>
+                                setCampoSeleccionado(Number(e.target.value))
+                            }
+                            className="mt-1 w-full rounded-md border-green-700 focus:border-green-800 focus:ring-green-800"
+                            required
+                        >
+                            <option value="">Seleccione un campo</option>
+                            {campos.map((campo) => (
+                                <option key={campo.id} value={campo.id}>
+                                    {campo.nombre}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Mapa interactivo */}
+                    {/* Estado */}
                     <div>
-                        <InputLabel value="Ubicación y área del lote" />
-                        <p className="mb-2 text-xs text-gray-500">
-                            Hacé clic en el mapa para dibujar el perímetro de tu lote.
-                        </p>
-                        <MapaInteractivo
-                            polygon={polygon}
-                            onPolygonChange={setPolygon}
-                            onCenterChange={handleCenterChange}
-                            onAreaChange={handleAreaChange}
+                        <InputLabel value="Estado" />
+                        <select
+                            value={status}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            className="mt-1 w-full rounded-md border-green-700 focus:border-green-800 focus:ring-green-800"
+                        >
+                            {STATUS_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Características */}
+                    <div>
+                        <InputLabel value="Características" />
+                        <textarea
+                            value={caracteristicas}
+                            onChange={(e) => setCaracteristicas(e.target.value)}
+                            className="mt-1 w-full rounded-md border-green-700 shadow-sm focus:border-green-800 focus:ring-green-800"
+                            rows={4}
                         />
                     </div>
 
-                    {/* Latitud, Longitud, Superficie (en fila) */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div>
-                            <InputLabel htmlFor="lote-lat" value="Latitud" />
-                            <TextInput
-                                id="lote-lat"
-                                type="number"
-                                step="any"
-                                value={latitude}
-                                onChange={(e) => setLatitude(parseFloat(e.target.value) || 0)}
-                                className="mt-1 w-full"
-                            />
+                    {/* PH */}
+                    <div className="rounded-xl border border-green-700 p-4 shadow-sm bg-white">
+                        <div className="flex justify-between mb-2">
+                            <span className="text-gray-700">pH del suelo</span>
+                            <span className="text-green-600 font-semibold">
+                                {ph.toFixed(1)}
+                            </span>
                         </div>
-                        <div>
-                            <InputLabel htmlFor="lote-lng" value="Longitud" />
-                            <TextInput
-                                id="lote-lng"
-                                type="number"
-                                step="any"
-                                value={longitude}
-                                onChange={(e) => setLongitude(parseFloat(e.target.value) || 0)}
-                                className="mt-1 w-full"
-                            />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="lote-superficie" value="Superficie (Ha)" />
-                            <TextInput
-                                id="lote-superficie"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={surface}
-                                onChange={(e) => setSurface(parseFloat(e.target.value) || 0)}
-                                className="mt-1 w-full"
+
+                        <input
+                            type="range"
+                            min="0"
+                            max="14"
+                            step="0.1"
+                            value={ph}
+                            onChange={(e) => setPh(parseFloat(e.target.value))}
+                            className="w-full accent-green-700"
+                        />
+                    </div>
+
+                    {/* NAPA */}
+                    <div className="rounded-xl border border-green-700 p-4 shadow-sm bg-white">
+                        <InputLabel value="Profundidad de napa (m)" />
+                        <TextInput
+                            type="number"
+                            value={napa}
+                            onChange={(e) =>
+                                setNapa(parseFloat(e.target.value) || 0)
+                            }
+                            className="mt-2 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
+                        />
+                    </div>
+
+                    {/* MAPA */}
+                    <div>
+                        <InputLabel value="Ubicación" />
+                        <div className="rounded-xl overflow-hidden">
+                            <MapaInteractivo
+                                polygon={polygon}
+                                onPolygonChange={setPolygon}
+                                onCenterChange={handleCenterChange}
+                                onAreaChange={handleAreaChange}
                             />
                         </div>
                     </div>
-                </div>
 
-                {/* Botones */}
-                <div className="mt-8 flex justify-end gap-3">
+                    {/* SUPERFICIE */}
+                    <div>
+                        <InputLabel value="Superficie (Ha)" />
+                        <TextInput
+                            type="number"
+                            value={hectareas}
+                            onChange={(e) =>
+                                setHectareas(parseFloat(e.target.value) || 0)
+                            }
+                            className="border-green-700 focus:border-green-800 focus:ring-green-800"
+                        />
+                    </div>
+                </form>
+
+                {/* FOOTER */}
+                <div className="flex justify-end gap-3 px-6 pb-5 pt-3">
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                        className="border border-green-700 px-5 py-2 rounded-lg text-green-700 hover:bg-green-50 transition"
                     >
                         Cancelar
                     </button>
+
                     <button
                         type="submit"
-                        className="rounded-lg bg-[#1d4ed8] px-5 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-700"
+                        onClick={handleSubmit}
+                        className="bg-green-700 text-white px-5 py-2 rounded-lg shadow-md hover:bg-green-800 hover:shadow-lg transition-all"
                     >
-                        {initialData ? 'Guardar cambios' : 'Registrar'}
+                        {initialData ? "Guardar cambios" : "Registrar"}
                     </button>
                 </div>
-            </form>
+            </div>
         </Modal>
     );
 }

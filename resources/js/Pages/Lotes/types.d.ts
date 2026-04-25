@@ -1,13 +1,19 @@
-export type StatusColor = 'verde' | 'naranja' | 'violeta';
+export type StatusColor = "verde" | "amarillo" | "rojo" | "verde-claro";
+
+export type Coord = {
+    lat: number;
+    lng: number;
+};
 
 export interface LoteCard {
     id: number;
+    id_campo: number;
     name: string;
-    surface: string;
+    hectareas: number;
+    caracteristicas: string;
+    ph: number;
+    napa: number;
     status: string;
-    statusColor: StatusColor;
-    lastCrop: string;
-    imageUrl: string;
     latitude: number;
     longitude: number;
     polygon: { lat: number; lng: number }[];
@@ -15,12 +21,83 @@ export interface LoteCard {
 
 export interface LoteDraft {
     name: string;
-    surface: string;
+    caracteristicas: string;
+    hectareas: number;
     status: string;
-    statusColor: StatusColor;
     lastCrop: string;
+    statusColor: StatusColor;
     imageUrl: string;
     latitude: number;
     longitude: number;
-    polygon: { lat: number; lng: number }[];
+    ph: number;
+    napa: number;
+    polygon: Coord[];
+}
+
+export interface Lote {
+    id: number;
+    nombre: string;
+    caracteristicas: string;
+    estado: string;
+    longitud: number;
+    latitud: number;
+    hectareas: number;
+    idCampo: number;
+    ph: number;
+    napa: number;
+}
+
+export interface Campo {
+    id: number;
+    nombre: string;
+}
+
+export interface CampoDB {
+    id: number;
+    nombre: string;
+    latitud: string;
+    longitud: string;
+    hectareas: number;
+}
+
+export interface Cultivo {
+    id: number;
+    nombre: string;
+}
+
+export interface CultivoDB {
+    id: number;
+    tipo: string;
+    variedad: string;
+    cultivo_antecesor_id: number | null;
+    notas: string;
+}
+
+export interface Campania {
+    id: number;
+    nombre: string;
+}
+
+export interface CampaniaDB {
+    id: number;
+    nombre: string;
+    cultivo_id: number;
+    campo_id: number;
+    fecha_inicio: string;
+    fecha_fin: string;
+    estado: string;
+}
+
+export interface Estado {
+    nombre: string;
+}
+
+export interface IdLotesPorIdCampania {
+    campaniaId: number;
+    lotesId: number[];
+}
+
+export interface IdCultivoPorIdCampania {
+    campaniaId: number;
+    cultivosId: number;
 }

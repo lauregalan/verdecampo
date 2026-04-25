@@ -21,8 +21,6 @@ return new class extends Migration
             $table->float('latitud');
             $table->float('ph');
             $table->float('napa');
-            $table->unsignedBigInteger('id_campania');
-            //$table->foreign('id_campania')->references('id')->on('campanias');
             $table->unsignedBigInteger('id_campo');
             $table->foreign('id_campo')->references('id')->on('campos');
         });

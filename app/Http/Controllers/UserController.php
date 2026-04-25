@@ -26,7 +26,9 @@ class UserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'roles' => $user->roles->pluck('name')->values(),
+                    'active' => $user->active,
                     'updated_at' => $user->updated_at?->toDateTimeString(),
+                    'last_login_at' => $user->last_login_at?->toDateTimeString(),
                     'email_verified_at' => $user->email_verified_at?->toDateTimeString(),
                 ];
             });
@@ -66,13 +68,44 @@ class UserController extends Controller
         //
     }
 
-    public function modificarRoles(RoleRequest $request, string $id)
+    public function modificarRoles(RoleRequest $request, User $user)
     {
-        $this->roleService->modificarRoles(User::findOrFail($id), $request->validated()['roles']);
+        $roles = $request->validated()['roles'];
+
+        $this->roleService->modificarRoles($user, $roles);
+
+        return response()->json([
+            'id' => $user->id,
+            'roles' => $roles,
+        ]);
     }
 
-    public function getRoles(string $id)
+    public function getRoles(User $user)
     {
-        return response()->json($this->roleService->getRolesByUserId($id));
+        return response()->json($this->roleService->getRolesByUserId((string) $user->id));
+    }
+
+    public function updateActive(Request $request, User $user)
+    {
+        $request->validate([
+            'active' => ['required', 'boolean'],
+        ]);
+
+        $currentUser = $request->user();
+
+        if (! $currentUser?->hasRole('Productor')) {
+            abort(403);
+        }
+
+        if ($currentUser->is($user)) {
+            return response()->json([
+                'message' => 'No puedes cambiar tu propio estado.',
+            ], 422);
+        }
+
+        $user->active = $request->boolean('active');
+        $user->save();
+
+        return response()->json(['id' => $user->id, 'active' => $user->active]);
     }
 }

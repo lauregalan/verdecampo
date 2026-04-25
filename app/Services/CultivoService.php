@@ -3,18 +3,15 @@
 namespace App\Services;
 
 use App\Models\Cultivo;
+use App\Models\Campania;
 use App\Models\Lote;
 
 class CultivoService
 {
-    public function getByCampania(int $campaniaId)
-    {
-        return Cultivo::where('campania_id', $campaniaId)->get();
-    }
 
-    public function getByLote(int $loteId)
+    public function getAll()
     {
-        return Cultivo::where('lote_id', $loteId)->get();
+        return Cultivo::all();
     }
 
     public function show(Cultivo $cultivo)

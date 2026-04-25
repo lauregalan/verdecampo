@@ -1,14 +1,24 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { router } from "@inertiajs/react";
-import { ClipboardPlus, Eye, Layers, MapPin, Pencil, Plus, Trash2} from "lucide-react";
+import {
+    ClipboardPlus,
+    Eye,
+    Layers,
+    MapPin,
+    Pencil,
+    Plus,
+    Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import FormularioCampo from "./FormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
+import api from "@/lib/api";
 // import Campania from "../Campanias/Campania";
-import { Maximize2, Sprout } from 'lucide-react';
-import { ProductoSumary } from './ProductoSumary';
+import { Maximize2, Sprout } from "lucide-react";
+import ModalConfirmacion from "@/components/ui/ModalConfirmacion";
+import { ProductoSumary } from "./ProductoSumary";
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
@@ -46,7 +56,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-
 
 const FieldCard = ({
     id,
@@ -94,29 +103,42 @@ const FieldCard = ({
                     className={`shrink-0 inline-flex items-center rounded-full gap-1 px-1 py-1 text-[10px] font-bold uppercase tracking-wider ${className}`}
                 >
                     <Icon className="size-3.5" aria-hidden="true" />
-                    <span>{status}</span>                
-            </span>
+                    <span>{status}</span>
+                </span>
             </CardHeader>
 
             <CardContent className="flex-grow flex flex-col justify-center gap-1.5 p-4 pt-1">
                 <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                        <Maximize2 className="size-4 text-stone-400" aria-hidden="true" />
-                        <span className="font-semibold text-stone-800">Superficie:</span>
+                        <Maximize2
+                            className="size-4 text-stone-400"
+                            aria-hidden="true"
+                        />
+                        <span className="font-semibold text-stone-800">
+                            Superficie:
+                        </span>
                     </div>
-                    <span className="font-normal text-stone-600">{surface}</span>
+                    <span className="font-normal text-stone-600">
+                        {surface}
+                    </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 overflow-hidden">
-                        <Sprout className="size-4 text-stone-400" aria-hidden="true" />
-                        <span className="font-semibold text-stone-800">Cultivo:</span>
+                        <Sprout
+                            className="size-4 text-stone-400"
+                            aria-hidden="true"
+                        />
+                        <span className="font-semibold text-stone-800">
+                            Cultivo:
+                        </span>
                     </div>
-                    <span className="font-normal truncate text-stone-600 ml-2">{lastCrop}</span>
+                    <span className="font-normal truncate text-stone-600 ml-2">
+                        {lastCrop}
+                    </span>
                 </div>
             </CardContent>
 
             <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
-                
                 {/* NUEVO: Acceso directo a Lotes */}
                 <button
                     type="button"
@@ -138,7 +160,10 @@ const FieldCard = ({
                 {/* Botones actuales mejorados */}
                 <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onOpenDetail(); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenDetail();
+                    }}
                     className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
                     title="Ver detalle completo"
                 >
@@ -155,7 +180,10 @@ const FieldCard = ({
 
                 <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit();
+                    }}
                     className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
                     title="Editar"
                 >
@@ -164,7 +192,10 @@ const FieldCard = ({
 
                 <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
                     className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
                     title="Eliminar"
                 >
@@ -174,12 +205,15 @@ const FieldCard = ({
         </Card>
     );
 };
-;export default function Campo() {
+export default function Campo() {
     const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [campoEditando, setCampoEditando] = useState<CampoCard | null>(null);
+    const [campoAEliminar, setCampoAEliminar] = useState<CampoCard | null>(
+        null,
+    );
 
     const handleAbrirCreacion = () => {
         setCampoEditando(null);
@@ -199,11 +233,7 @@ const FieldCard = ({
     const cargarCampos = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/campos", {
-                headers: {
-                    Accept: "application/json",
-                },
-            });
+            const response = await api.get("/api/campos");
 
             if (!response.ok) {
                 throw new Error("No se pudieron obtener los campos.");
@@ -227,24 +257,22 @@ const FieldCard = ({
 
     const handleAgregar = async (nuevoCampo: CampoDraft): Promise<boolean> => {
         try {
-            const hectareas = Number.isFinite(Number.parseFloat(nuevoCampo.surface))
+            const hectareas = Number.isFinite(
+                Number.parseFloat(nuevoCampo.surface),
+            )
                 ? Math.round(Number.parseFloat(nuevoCampo.surface))
                 : 0;
 
             if (campoEditando) {
-                const response = await fetch(`/api/campos/${campoEditando.id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify({
+                const response = await api.put(
+                    `/api/campos/${campoEditando.id}`,
+                    {
                         nombre: nuevoCampo.name,
                         latitud: String(nuevoCampo.latitude),
                         longitud: String(nuevoCampo.longitude),
                         hectareas,
-                    }),
-                });
+                    },
+                );
 
                 if (!response.ok) {
                     throw new Error("No se pudo actualizar el campo.");
@@ -254,7 +282,9 @@ const FieldCard = ({
                 const updatedCard = toCampoCard(updatedCampo);
 
                 setCampos((prev) =>
-                    prev.map((c) => (c.id === updatedCard.id ? updatedCard : c))
+                    prev.map((c) =>
+                        c.id === updatedCard.id ? updatedCard : c,
+                    ),
                 );
                 setShowFormulario(false);
                 setCampoEditando(null);
@@ -262,18 +292,11 @@ const FieldCard = ({
                 return true;
             }
 
-            const response = await fetch("/api/campos", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({
-                    nombre: nuevoCampo.name,
-                    latitud: String(nuevoCampo.latitude),
-                    longitud: String(nuevoCampo.longitude),
-                    hectareas,
-                }),
+            const response = await api.post("/api/campos", {
+                nombre: nuevoCampo.name,
+                latitud: String(nuevoCampo.latitude),
+                longitud: String(nuevoCampo.longitude),
+                hectareas,
             });
 
             if (!response.ok) {
@@ -286,19 +309,18 @@ const FieldCard = ({
             setError(null);
             return true;
         } catch {
-            setError(campoEditando ? "Error al actualizar el campo." : "Error al crear el campo.");
+            setError(
+                campoEditando
+                    ? "Error al actualizar el campo."
+                    : "Error al crear el campo.",
+            );
             return false;
         }
     };
 
     const handleEliminar = async (id: number) => {
         try {
-            const response = await fetch(`/api/campos/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Accept: "application/json",
-                },
-            });
+            const response = await api.delete(`/api/campos/${id}`);
 
             if (!response.ok) {
                 throw new Error("No se pudo eliminar el campo.");
@@ -308,72 +330,86 @@ const FieldCard = ({
             setError(null);
         } catch {
             setError("Error al eliminar el campo.");
+        } finally {
+            setCampoAEliminar(null);
         }
     };
 
-
-return (
-    <Body>
-        {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
-        <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
-            
-            {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
-            <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    Gestión de Campos
-                </h1>
-                <button
-                    type="button"
-                    onClick={handleAbrirCreacion}
-                    className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                >
-                    <Plus size={20} strokeWidth={2.5} />
-                    Nuevo Campo
-                </button>
-            </div>
-
-            {/* El Summary también debe seguir el ancho máximo */}
-            <div className="mx-auto w-full max-w-[1600px] mb-8">
-                <ProductoSumary />
-            </div>
-
-            {/* Quitamos pr-4 para que la grid esté centrada perfectamente */}
-            <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-[1600px]">
-                {error && (
-                    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {error}
-                    </div>
-                )}
-
-                {/* Ajustamos el gap a 6 para que las cards no estén pegadas pero tampoco perdidas */}
-                <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {loading ? (
-                        <p className="col-span-full text-center py-10 text-stone-500">Cargando campos...</p>
-                    ) : campos.length === 0 ? (
-                        <div className="col-span-full flex flex-col items-center py-20 text-stone-400">
-                            <p>No hay campos registrados aún.</p>
-                        </div>
-                    ) : (
-                        campos.map((campo) => (
-                            <FieldCard
-                                key={campo.id}
-                                {...campo}
-                                onOpenDetail={() => router.visit(`/campo/${campo.id}`)}
-                                onEdit={() => handleAbrirEdicion(campo)}
-                                onDelete={() => handleEliminar(campo.id)}
-                            />
-                        ))
-                    )}
+    return (
+        <Body>
+            {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
+            <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
+                {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
+                <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        Gestión de Campos
+                    </h1>
+                    <button
+                        type="button"
+                        onClick={handleAbrirCreacion}
+                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                    >
+                        <Plus size={20} strokeWidth={2.5} />
+                        Nuevo Campo
+                    </button>
                 </div>
-            </ScrollArea>
-        </div>
 
-        <FormularioCampo
-            show={showFormulario}
-            onClose={handleCerrarFormulario}
-            onSubmit={handleAgregar}
-            initialData={campoEditando}
-        />
-    </Body>
-);
+                {/* El Summary también debe seguir el ancho máximo */}
+                <div className="mx-auto w-full max-w-[1600px] mb-8">
+                    <ProductoSumary />
+                </div>
+
+                {/* Quitamos pr-4 para que la grid esté centrada perfectamente */}
+                <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-[1600px]">
+                    {error && (
+                        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Ajustamos el gap a 6 para que las cards no estén pegadas pero tampoco perdidas */}
+                    <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {loading ? (
+                            <p className="col-span-full text-center py-10 text-stone-500">
+                                Cargando campos...
+                            </p>
+                        ) : campos.length === 0 ? (
+                            <div className="col-span-full flex flex-col items-center py-20 text-stone-400">
+                                <p>No hay campos registrados aún.</p>
+                            </div>
+                        ) : (
+                            campos.map((campo) => (
+                                <FieldCard
+                                    key={campo.id}
+                                    {...campo}
+                                    onOpenDetail={() =>
+                                        router.visit(`/campo/${campo.id}`)
+                                    }
+                                    onEdit={() => handleAbrirEdicion(campo)}
+                                    onDelete={() => setCampoAEliminar(campo)}
+                                />
+                            ))
+                        )}
+                    </div>
+                </ScrollArea>
+            </div>
+
+            <FormularioCampo
+                show={showFormulario}
+                onClose={handleCerrarFormulario}
+                onSubmit={handleAgregar}
+                initialData={campoEditando}
+            />
+
+            <ModalConfirmacion
+                show={campoAEliminar !== null}
+                titulo="Eliminar campo"
+                mensaje={`¿Estás seguro de que querés eliminar el campo "${campoAEliminar?.name}"? Esta acción no se puede deshacer.`}
+                onConfirmar={() =>
+                    campoAEliminar && handleEliminar(campoAEliminar.id)
+                }
+                onCancelar={() => setCampoAEliminar(null)}
+            />
+        </Body>
+    );
 }
