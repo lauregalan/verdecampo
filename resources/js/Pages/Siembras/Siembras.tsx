@@ -65,7 +65,7 @@ interface SiembraRow {
     campania_id: number;
     lote_id: number;
     cultivo_id: number;
-    fecha: string;
+    fecha_siembra: string;
     observaciones: string | null;
     // Resolved display names
     campania_nombre: string;
@@ -197,7 +197,7 @@ export default function Siembras() {
             headerClassName:
                 "px-6 py-4 text-left text-sm font-semibold text-gray-900",
             cellClassName: "px-6 py-4 text-sm text-gray-700 tabular-nums",
-            cell: (s) => formatFecha(s.fecha),
+            cell: (s) => formatFecha(s.fecha_siembra),
         },
         {
             id: "cultivo",
@@ -257,7 +257,7 @@ export default function Siembras() {
                                 campania_id: s.campania_id,
                                 lote_id: s.lote_id,
                                 cultivo_id: s.cultivo_id,
-                                fecha: s.fecha,
+                                fecha: s.fecha_siembra,
                                 observaciones: s.observaciones,
                             });
                             setShowFormulario(true);

@@ -25,7 +25,7 @@ interface SiembraDraft {
     campania_id: number;
     lote_id: number;
     cultivo_id: number;
-    fecha: string;
+    fecha_siembra: string;
     observaciones: string;
 }
 
