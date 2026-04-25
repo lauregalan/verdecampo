@@ -6,6 +6,9 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ValidateSignature;
+
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -70,7 +73,13 @@ Route::get('/campanias', function () {
 
 Route::get('/campania', function () {
     return Redirect('/campanias');
-})->middleware(['auth', 'verified'])->name('gestionarCampañas');
+})->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
+
+Route::get('/aceptar/{email}', function (Request $request, $email) {
+    return Inertia::render('Auth/Register', [
+        'emailInvitado' => $email 
+    ]);
+})->name('invitation.accept');
 
 Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
