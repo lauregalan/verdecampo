@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
@@ -19,6 +19,12 @@ interface BackendCultivo {
     tipo: string;
 }
 
+interface BackendLote {
+    id: number;
+    nombre: string;
+    campo_id: number;
+}
+
 interface BackendCampania {
     id: number;
     campo_id: number | null;
@@ -35,6 +41,7 @@ interface ModalFormularioCampaniaProps {
     editingCampaniaId: number | null;
     campos: BackendCampo[];
     cultivos: BackendCultivo[];
+    lotes: BackendLote[];
     onSaved: () => void;
 }
 
@@ -44,6 +51,7 @@ export default function ModalFormularioCampania({
     editingCampaniaId,
     campos,
     cultivos,
+    lotes,
     onSaved,
 }: ModalFormularioCampaniaProps) {
     const [nombre, setNombre] = useState("");
@@ -52,8 +60,13 @@ export default function ModalFormularioCampania({
     const [campoId, setCampoId] = useState("");
     const [cultivoId, setCultivoId] = useState("");
     const [estado, setEstado] = useState<CampaignStatus>("Planificada");
+    const [selectedLotes, setSelectedLotes] = useState<number[]>([]);
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
+
+    const lotesFiltrados = useMemo(() => {
+        return lotes.filter(lote => lote.campo_id === Number(campoId));
+    }, [lotes, campoId]);
 
     useEffect(() => {
         if (!show) return;
@@ -71,6 +84,14 @@ export default function ModalFormularioCampania({
                     setFormError(null);
                 })
                 .catch(() => setFormError("Error al cargar la campania."));
+            
+            // Cargar lotes asociados
+            api.get(`/api/campanias/${editingCampaniaId}/lotes`)
+                .then((res) => res.json())
+                .then((data: {id: number}[]) => {
+                    setSelectedLotes(data.map(l => l.id));
+                })
+                .catch(() => setFormError("Error al cargar los lotes asociados."));
         } else {
             setNombre("");
             setFechaInicio("");
@@ -78,9 +99,10 @@ export default function ModalFormularioCampania({
             setCampoId(campos[0] ? String(campos[0].id) : "");
             setCultivoId("");
             setEstado("Planificada");
+            setSelectedLotes([]);
             setFormError(null);
         }
-    }, [show, editingCampaniaId]);
+    }, [show, editingCampaniaId, campos]);
 
     const handleClose = () => {
         setFormError(null);
@@ -113,6 +135,7 @@ export default function ModalFormularioCampania({
             fecha_inicio: fechaInicio,
             fecha_fin: fechaFin || null,
             estado,
+            lote_ids: selectedLotes,
         };
 
         try {
@@ -199,6 +222,32 @@ export default function ModalFormularioCampania({
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    <div>
+                        <InputLabel value="Lotes asociados" />
+                        <div className="mt-2 max-h-32 overflow-y-auto rounded-2xl border border-stone-300 bg-stone-50 p-4">
+                            {lotesFiltrados.length === 0 ? (
+                                <p className="text-sm text-stone-500">No hay lotes disponibles para este campo.</p>
+                            ) : (
+                                lotesFiltrados.map((lote) => (
+                                    <label key={lote.id} className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedLotes.includes(lote.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedLotes(prev => [...prev, lote.id]);
+                                                } else {
+                                                    setSelectedLotes(prev => prev.filter(id => id !== lote.id));
+                                                }
+                                            }}
+                                            className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
+                                        />
+                                        <span className="text-sm text-stone-800">{lote.nombre}</span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>

@@ -23,6 +23,7 @@ interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
     onEdit: () => void;
+    onViewLotes: () => void;
 }
 
 interface BackendCampo {
@@ -31,6 +32,7 @@ interface BackendCampo {
     latitud: string;
     longitud: string;
     hectareas: number;
+    cultivo_actual?: string;
 }
 
 const PLACEHOLDER_IMAGE =
@@ -41,7 +43,7 @@ const toCampoCard = (campo: BackendCampo): CampoCard => ({
     name: campo.nombre,
     surface: `${campo.hectareas} Ha`,
     status: "En Produccion",
-    lastCrop: "Sin dato",
+    lastCrop: campo.cultivo_actual || "Sin siembras",
     statusColor: "verde",
     imageUrl: PLACEHOLDER_IMAGE,
     latitude: Number.parseFloat(campo.latitud) || 0,
@@ -68,6 +70,7 @@ const FieldCard = ({
     onOpenDetail,
     onDelete,
     onEdit,
+    onViewLotes,
 }: FieldCardProps) => {
     const config = statusStyles[statusColor];
     const { className, Icon } = config;
@@ -142,19 +145,14 @@ const FieldCard = ({
                 {/* NUEVO: Acceso directo a Lotes */}
                 <button
                     type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onViewLotes();
+                    }}
                     className="mr-auto rounded bg-transparent p-1.5 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                     title="Ver lotes de este campo"
                 >
                     <Layers strokeWidth={1.5} size={16} />
-                </button>
-
-                {/* NUEVO: Registrar actividad rápida */}
-                <button
-                    type="button"
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-blue-50 hover:text-blue-700"
-                    title="Registrar labor/actividad"
-                >
-                    <ClipboardPlus strokeWidth={1.5} size={16} />
                 </button>
 
                 {/* Botones actuales mejorados */}
@@ -337,34 +335,34 @@ export default function Campo() {
 
     return (
         <Body>
-            {/* Elimine el px-4 py-6 y lo reemplace con un p-8 para que quede alineado y acorde al resto de las tabs :)*/}
-            <div className="flex h-full min-h-0 flex-col p-8 font-sans lg:px-8">
-                <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                        Gestión de Campos
-                    </h1>
-                    <button
-                        type="button"
-                        onClick={handleAbrirCreacion}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nuevo Campo
-                    </button>
-                </div>
-
-                {/* El Summary también debe seguir el ancho máximo */}
-                <div className="mx-auto w-full max-w-[1600px] mb-8">
-                    <ProductoSumary />
-                </div>
-
-                {/* Quitamos pr-4 para que la grid esté centrada perfectamente */}
+            {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
+            <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
                 <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-[1600px]">
                     {error && (
                         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                             {error}
                         </div>
                     )}
+
+                    {/* Expandimos el ancho máximo para aprovechar pantallas grandes */}
+                    <div className="mx-auto mb-8 flex w-full max-w-[1600px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                            Gestión de Campos
+                        </h1>
+                        <button
+                            type="button"
+                            onClick={handleAbrirCreacion}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nuevo Campo
+                        </button>
+                    </div>
+
+                    {/* El Summary también debe seguir el ancho máximo */}
+                    <div className="mx-auto w-full max-w-[1600px] mb-8">
+                        <ProductoSumary />
+                    </div>
 
                     {/* Ajustamos el gap a 6 para que las cards no estén pegadas pero tampoco perdidas */}
                     <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -386,6 +384,11 @@ export default function Campo() {
                                     }
                                     onEdit={() => handleAbrirEdicion(campo)}
                                     onDelete={() => setCampoAEliminar(campo)}
+                                    onViewLotes={() =>
+                                        router.visit(
+                                            `/lotes?campo=${encodeURIComponent(campo.name)}`,
+                                        )
+                                    }
                                 />
                             ))
                         )}

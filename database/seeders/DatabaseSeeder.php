@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             TipoAplicacionSeeder::class,
             ProductoAplicacionSeeder::class,
             AplicacionSeeder::class,
+            SiembraSeeder::class,
         ]);
     }
 }

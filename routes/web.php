@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AceptarInvitacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -70,7 +71,14 @@ Route::get('/campanias', function () {
 
 Route::get('/campania', function () {
     return Redirect('/campanias');
-})->middleware(['auth', 'verified'])->name('gestionarCampañas');
+})->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
+
+Route::get('/aceptar/{email}', [AceptarInvitacionController::class, 'show'])
+    ->middleware('signed')
+    ->name('invitation.accept');
+
+Route::post('/aceptar', [AceptarInvitacionController::class, 'store'])
+    ->name('invitation.set-password');
 
 Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
@@ -88,5 +96,8 @@ Route::get('/tipos', function () {
     return Inertia::render('Aplicaciones/Tipos');
 })->middleware(['auth', 'verified'])->name('tipos');
 
+Route::get('/siembras', function () {
+    return Inertia::render('Siembras/Siembras');
+})->middleware(['auth', 'verified'])->name('gestionarSiembras');
 
 require __DIR__.'/auth.php';

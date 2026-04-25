@@ -38,6 +38,12 @@ interface BackendCultivo {
     tipo: string;
 }
 
+interface BackendLote {
+    id: number;
+    nombre: string;
+    campo_id: number;
+}
+
 const statuses: CampaignStatus[] = ["Planificada", "En Curso", "Finalizada", "Cancelada"];
 
 const statusTone: Record<CampaignStatus, string> = {
@@ -170,6 +176,7 @@ export default function Campania() {
     const [campanias, setCampanias] = useState<BackendCampania[]>([]);
     const [campos, setCampos] = useState<BackendCampo[]>([]);
     const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
+    const [lotes, setLotes] = useState<BackendLote[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailCampania, setDetailCampania] = useState<BackendCampania | null>(null);
@@ -218,11 +225,23 @@ export default function Campania() {
         }
     }, []);
 
+    const cargarLotes = useCallback(async () => {
+        try {
+            const response = await api.get("/api/lotes");
+            if (!response.ok) throw new Error();
+            const payload = (await response.json()) as BackendLote[];
+            setLotes(Array.isArray(payload) ? payload : []);
+        } catch {
+            setLotes([]);
+        }
+    }, []);
+
     useEffect(() => {
         void cargarCampanias();
         void cargarCampos();
         void cargarCultivos();
-    }, [cargarCampanias, cargarCampos, cargarCultivos]);
+        void cargarLotes();
+    }, [cargarCampanias, cargarCampos, cargarCultivos, cargarLotes]);
 
     const fieldById = useMemo(
         () => Object.fromEntries(campos.map((campo) => [campo.id, campo.nombre])) as Record<number, string>,
@@ -462,6 +481,7 @@ export default function Campania() {
                 editingCampaniaId={editingCampaniaId}
                 campos={campos}
                 cultivos={cultivos}
+                lotes={lotes}
                 onSaved={() => void cargarCampanias()}
             />
         </Body>

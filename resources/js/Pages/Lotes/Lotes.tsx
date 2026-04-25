@@ -39,6 +39,7 @@ const mapearLote = (lote: any): Lote => ({
     idCampo: Number(lote.campo_id),
     ph: Number(lote.ph),
     napa: Number(lote.napa),
+    siembras: lote.siembras ?? [],
 });
 
 export default function Lotes() {

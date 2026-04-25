@@ -170,17 +170,18 @@ export default function AppSidebar() {
                             key="aplicaciones"
                             asChild
                             className="group/collapsible"
-                            defaultOpen={currentPath === "/aplicaciones" || currentPath === "/productos" || currentPath === "/tipos"}
+                            defaultOpen={
+                                currentPath === "/aplicaciones" ||
+                                currentPath === "/productos" ||
+                                currentPath === "/tipos"
+                            }
                         >
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton
-                                        className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                                    >
+                                    <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
                                         <BugOff size={18} />
                                         <span>Mis Aplicaciones</span>
                                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
@@ -189,7 +190,10 @@ export default function AppSidebar() {
                                             <SidebarMenuSubButton
                                                 asChild
                                                 className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                                                isActive={currentPath === "/aplicaciones"}
+                                                isActive={
+                                                    currentPath ===
+                                                    "/aplicaciones"
+                                                }
                                             >
                                                 <Link href="/aplicaciones">
                                                     <span className="font-medium">
@@ -202,7 +206,9 @@ export default function AppSidebar() {
                                             <SidebarMenuSubButton
                                                 asChild
                                                 className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                                                isActive={currentPath === "/productos"}
+                                                isActive={
+                                                    currentPath === "/productos"
+                                                }
                                             >
                                                 <Link href="/productos">
                                                     <span className="font-medium">
@@ -215,7 +221,9 @@ export default function AppSidebar() {
                                             <SidebarMenuSubButton
                                                 asChild
                                                 className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                                                isActive={currentPath === "/tipos"}
+                                                isActive={
+                                                    currentPath === "/tipos"
+                                                }
                                             >
                                                 <Link href="/tipos">
                                                     <span className="font-medium">
@@ -228,6 +236,21 @@ export default function AppSidebar() {
                                 </CollapsibleContent>
                             </SidebarMenuItem>
                         </Collapsible>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={currentPath.startsWith("/siembras")}
+                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                            >
+                                <Link href="/siembras">
+                                    <Sprout size={18} />
+                                    <span className="font-medium">
+                                        Siembras
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
