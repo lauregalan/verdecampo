@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
-import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api";
 import type {
     AplicacionDraft,
@@ -38,7 +37,7 @@ const EMPTY_FORM: FormState = {
     campania_id: "",
     lote_id: "",
     cantidad: "",
-    unidad: "",
+    unidad: "l/ha",
     fecha: "",
     precio_labor: "",
     moneda_precio_labor: "ARS",
@@ -61,8 +60,7 @@ export default function ModalFormularioAplicacion({
     const [loadingCatalogs, setLoadingCatalogs] = useState(false);
     const [loadingLotes, setLoadingLotes] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [catalogError, setCatalogError] = useState<string | null>(null);
-    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const selectedCampaniaId = useMemo(
         () => Number(form.campania_id) || null,
@@ -75,7 +73,9 @@ export default function ModalFormularioAplicacion({
         setForm(
             aplicacion
                 ? {
-                      producto_aplicacion_id: String(aplicacion.productoId ?? ""),
+                      producto_aplicacion_id: String(
+                          aplicacion.productoId ?? "",
+                      ),
                       tipo_aplicacion_id: String(aplicacion.tipoId ?? ""),
                       campania_id: String(aplicacion.campaniaId ?? ""),
                       lote_id: String(aplicacion.loteId ?? ""),
@@ -88,8 +88,7 @@ export default function ModalFormularioAplicacion({
                   }
                 : EMPTY_FORM,
         );
-        setSubmitError(null);
-        setCatalogError(null);
+        setError(null);
     }, [show, aplicacion]);
 
     useEffect(() => {
@@ -113,7 +112,9 @@ export default function ModalFormularioAplicacion({
                     !tiposResponse.ok ||
                     !campaniasResponse.ok
                 ) {
-                    throw new Error("No se pudieron cargar los datos del formulario.");
+                    throw new Error(
+                        "No se pudieron cargar los datos del formulario.",
+                    );
                 }
 
                 const [productosData, tiposData, campaniasData] =
@@ -126,20 +127,25 @@ export default function ModalFormularioAplicacion({
                 if (!isMounted) return;
 
                 setProductos(
-                    Array.isArray(productosData) ? (productosData as CatalogOption[]) : [],
+                    Array.isArray(productosData)
+                        ? (productosData as CatalogOption[])
+                        : [],
                 );
-                setTipos(Array.isArray(tiposData) ? (tiposData as CatalogOption[]) : []);
+                setTipos(
+                    Array.isArray(tiposData)
+                        ? (tiposData as CatalogOption[])
+                        : [],
+                );
                 setCampanias(
                     Array.isArray(campaniasData)
                         ? (campaniasData as CatalogOption[])
                         : [],
                 );
-                setCatalogError(null);
-            } catch (error) {
+            } catch (err) {
                 if (!isMounted) return;
-                setCatalogError(
-                    error instanceof Error
-                        ? error.message
+                setError(
+                    err instanceof Error
+                        ? err.message
                         : "No se pudieron cargar los datos del formulario.",
                 );
                 setProductos([]);
@@ -178,13 +184,17 @@ export default function ModalFormularioAplicacion({
                 );
 
                 if (!response.ok) {
-                    throw new Error("No se pudieron cargar los lotes de la campaña.");
+                    throw new Error(
+                        "No se pudieron cargar los lotes de la campaña.",
+                    );
                 }
 
                 const payload = await response.json();
                 if (!isMounted) return;
 
-                const nextLotes = Array.isArray(payload) ? (payload as LoteOption[]) : [];
+                const nextLotes = Array.isArray(payload)
+                    ? (payload as LoteOption[])
+                    : [];
                 setLotes(nextLotes);
                 setForm((current) => ({
                     ...current,
@@ -194,13 +204,12 @@ export default function ModalFormularioAplicacion({
                         ? current.lote_id
                         : "",
                 }));
-                setSubmitError(null);
-            } catch (error) {
+            } catch (err) {
                 if (!isMounted) return;
                 setLotes([]);
-                setSubmitError(
-                    error instanceof Error
-                        ? error.message
+                setError(
+                    err instanceof Error
+                        ? err.message
                         : "No se pudieron cargar los lotes de la campaña.",
                 );
             } finally {
@@ -218,15 +227,13 @@ export default function ModalFormularioAplicacion({
     }, [show, selectedCampaniaId]);
 
     const handleClose = () => {
-        setSubmitError(null);
+        setError(null);
         onClose();
     };
 
     const updateField = (field: keyof FormState, value: string) => {
         setForm((current) => ({ ...current, [field]: value }));
-        if (submitError) {
-            setSubmitError(null);
-        }
+        if (error) setError(null);
     };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -243,22 +250,22 @@ export default function ModalFormularioAplicacion({
             !form.precio_labor ||
             !form.moneda_precio_labor
         ) {
-            setSubmitError("Completá todos los campos obligatorios.");
+            setError("Completá todos los campos obligatorios.");
             return;
         }
 
         if (Number(form.cantidad) <= 0) {
-            setSubmitError("La cantidad debe ser mayor a cero.");
+            setError("La cantidad debe ser mayor a cero.");
             return;
         }
 
         if (Number(form.precio_labor) < 0) {
-            setSubmitError("El precio de labor no puede ser negativo.");
+            setError("El precio de labor no puede ser negativo.");
             return;
         }
 
         setSaving(true);
-        setSubmitError(null);
+        setError(null);
 
         const payload: AplicacionDraft = {
             producto_aplicacion_id: Number(form.producto_aplicacion_id),
@@ -277,7 +284,7 @@ export default function ModalFormularioAplicacion({
         if (!errorMessage) {
             handleClose();
         } else {
-            setSubmitError(errorMessage);
+            setError(errorMessage);
         }
 
         setSaving(false);
@@ -286,27 +293,24 @@ export default function ModalFormularioAplicacion({
     const canSubmit =
         !saving &&
         !loadingCatalogs &&
-        !catalogError &&
+        !error &&
         productos.length > 0 &&
         tipos.length > 0 &&
         campanias.length > 0;
 
     return (
-        <Modal show={show} onClose={handleClose} maxWidth="xl">
-            <div className="flex max-h-[90vh] flex-col rounded-2xl bg-white">
-                <div className="flex items-center justify-between border-b border-stone-200 px-6 pb-4 pt-5">
-                    <div>
-                        <h2 className="text-2xl font-bold text-stone-900">
-                            {aplicacion ? "Editar aplicación" : "Registrar aplicación"}
-                        </h2>
-                        <p className="mt-1 text-sm text-stone-500">
-                            Cargá producto, campaña, lote y costo operativo.
-                        </p>
-                    </div>
+        <Modal show={show} onClose={handleClose} maxWidth="2xl">
+            <div className="flex max-h-[90vh] flex-col bg-white rounded-2xl">
+                <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                        {aplicacion
+                            ? "Editar aplicación"
+                            : "Registrar nueva aplicación"}
+                    </h2>
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="rounded-lg p-1 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
+                        className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
                     >
                         <X size={20} />
                     </button>
@@ -315,8 +319,14 @@ export default function ModalFormularioAplicacion({
                 <form
                     id="aplicacion-form"
                     onSubmit={handleSubmit}
-                    className="flex-1 space-y-5 overflow-y-auto px-6 py-6"
+                    className="flex-1 space-y-5 overflow-y-auto px-6 py-5"
                 >
+                    {error && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
+
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
                             <InputLabel
@@ -332,13 +342,16 @@ export default function ModalFormularioAplicacion({
                                         event.target.value,
                                     )
                                 }
-                                className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={loadingCatalogs}
                                 required
                             >
                                 <option value="">Seleccioná un producto</option>
                                 {productos.map((producto) => (
-                                    <option key={producto.id} value={String(producto.id)}>
+                                    <option
+                                        key={producto.id}
+                                        value={String(producto.id)}
+                                    >
                                         {producto.nombre}
                                     </option>
                                 ))}
@@ -346,20 +359,29 @@ export default function ModalFormularioAplicacion({
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="aplicacion-tipo" value="Tipo *" />
+                            <InputLabel
+                                htmlFor="aplicacion-tipo"
+                                value="Tipo *"
+                            />
                             <select
                                 id="aplicacion-tipo"
                                 value={form.tipo_aplicacion_id}
                                 onChange={(event) =>
-                                    updateField("tipo_aplicacion_id", event.target.value)
+                                    updateField(
+                                        "tipo_aplicacion_id",
+                                        event.target.value,
+                                    )
                                 }
-                                className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={loadingCatalogs}
                                 required
                             >
                                 <option value="">Seleccioná un tipo</option>
                                 {tipos.map((tipo) => (
-                                    <option key={tipo.id} value={String(tipo.id)}>
+                                    <option
+                                        key={tipo.id}
+                                        value={String(tipo.id)}
+                                    >
                                         {tipo.nombre}
                                     </option>
                                 ))}
@@ -375,15 +397,21 @@ export default function ModalFormularioAplicacion({
                                 id="aplicacion-campania"
                                 value={form.campania_id}
                                 onChange={(event) =>
-                                    updateField("campania_id", event.target.value)
+                                    updateField(
+                                        "campania_id",
+                                        event.target.value,
+                                    )
                                 }
-                                className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={loadingCatalogs}
                                 required
                             >
                                 <option value="">Seleccioná una campaña</option>
                                 {campanias.map((campania) => (
-                                    <option key={campania.id} value={String(campania.id)}>
+                                    <option
+                                        key={campania.id}
+                                        value={String(campania.id)}
+                                    >
                                         {campania.nombre}
                                     </option>
                                 ))}
@@ -391,14 +419,17 @@ export default function ModalFormularioAplicacion({
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="aplicacion-lote" value="Lote *" />
+                            <InputLabel
+                                htmlFor="aplicacion-lote"
+                                value="Lote *"
+                            />
                             <select
                                 id="aplicacion-lote"
                                 value={form.lote_id}
                                 onChange={(event) =>
                                     updateField("lote_id", event.target.value)
                                 }
-                                className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={!selectedCampaniaId || loadingLotes}
                                 required
                             >
@@ -410,20 +441,29 @@ export default function ModalFormularioAplicacion({
                                           : "Seleccioná un lote"}
                                 </option>
                                 {lotes.map((lote) => (
-                                    <option key={lote.id} value={String(lote.id)}>
+                                    <option
+                                        key={lote.id}
+                                        value={String(lote.id)}
+                                    >
                                         {lote.nombre}
                                     </option>
                                 ))}
                             </select>
-                            {selectedCampaniaId && !loadingLotes && lotes.length === 0 && (
-                                <p className="mt-2 text-xs text-amber-700">
-                                    La campaña seleccionada no tiene lotes asociados.
-                                </p>
-                            )}
+                            {selectedCampaniaId &&
+                                !loadingLotes &&
+                                lotes.length === 0 && (
+                                    <p className="mt-1 text-xs text-amber-600">
+                                        La campaña seleccionada no tiene lotes
+                                        asociados.
+                                    </p>
+                                )}
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="aplicacion-cantidad" value="Cantidad *" />
+                            <InputLabel
+                                htmlFor="aplicacion-cantidad"
+                                value="Cantidad *"
+                            />
                             <TextInput
                                 id="aplicacion-cantidad"
                                 type="number"
@@ -433,13 +473,16 @@ export default function ModalFormularioAplicacion({
                                 onChange={(event) =>
                                     updateField("cantidad", event.target.value)
                                 }
-                                className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50 px-4 py-3"
+                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                                 required
                             />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="aplicacion-unidad" value="Unidad *" />
+                            <InputLabel
+                                htmlFor="aplicacion-unidad"
+                                value="Unidad *"
+                            />
                             <TextInput
                                 id="aplicacion-unidad"
                                 value={form.unidad}
@@ -447,13 +490,16 @@ export default function ModalFormularioAplicacion({
                                     updateField("unidad", event.target.value)
                                 }
                                 placeholder="Ej: l/ha"
-                                className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50 px-4 py-3"
+                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                                 required
                             />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="aplicacion-fecha" value="Fecha *" />
+                            <InputLabel
+                                htmlFor="aplicacion-fecha"
+                                value="Fecha *"
+                            />
                             <TextInput
                                 id="aplicacion-fecha"
                                 type="date"
@@ -461,7 +507,7 @@ export default function ModalFormularioAplicacion({
                                 onChange={(event) =>
                                     updateField("fecha", event.target.value)
                                 }
-                                className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50 px-4 py-3"
+                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                                 required
                             />
                         </div>
@@ -479,9 +525,12 @@ export default function ModalFormularioAplicacion({
                                     step="0.01"
                                     value={form.precio_labor}
                                     onChange={(event) =>
-                                        updateField("precio_labor", event.target.value)
+                                        updateField(
+                                            "precio_labor",
+                                            event.target.value,
+                                        )
                                     }
-                                    className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50 px-4 py-3"
+                                    className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
                                     required
                                 />
                             </div>
@@ -500,7 +549,7 @@ export default function ModalFormularioAplicacion({
                                             event.target.value,
                                         )
                                     }
-                                    className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                    className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800"
                                     required
                                 >
                                     <option value="ARS">ARS</option>
@@ -515,7 +564,7 @@ export default function ModalFormularioAplicacion({
                             htmlFor="aplicacion-observaciones"
                             value="Observaciones"
                         />
-                        <Textarea
+                        <textarea
                             id="aplicacion-observaciones"
                             value={form.observaciones}
                             onChange={(event) =>
@@ -523,28 +572,17 @@ export default function ModalFormularioAplicacion({
                             }
                             rows={4}
                             placeholder="Detalle operativo, condiciones o notas relevantes..."
-                            className="mt-2 rounded-2xl border-stone-300 bg-stone-50 px-4 py-3"
+                            className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800"
                         />
                     </div>
-
-                    {catalogError && (
-                        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {catalogError}
-                        </div>
-                    )}
-
-                    {submitError && (
-                        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {submitError}
-                        </div>
-                    )}
                 </form>
 
-                <div className="flex justify-end gap-3 border-t border-stone-200 px-6 pb-5 pt-4">
+                <div className="flex justify-end gap-3 px-6 pb-5 pt-3 border-t border-gray-100">
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
+                        disabled={saving}
+                        className="border border-green-700 px-5 py-2 rounded-lg text-green-700 hover:bg-green-50 transition disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -552,7 +590,7 @@ export default function ModalFormularioAplicacion({
                         type="submit"
                         form="aplicacion-form"
                         disabled={!canSubmit}
-                        className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-stone-300"
+                        className="bg-green-700 text-white px-5 py-2 rounded-lg shadow-md hover:bg-green-800 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving
                             ? "Guardando..."
