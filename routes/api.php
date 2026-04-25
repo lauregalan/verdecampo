@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\CultivoController;
+use App\Http\Controllers\InvitarController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
@@ -32,9 +33,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/campanias/{campania}/lotes', [App\Http\Controllers\CampaniaController::class, 'asignarLotes']);
     Route::delete('/campanias/{campania}/lotes/{loteId}', [App\Http\Controllers\CampaniaController::class, 'quitarLote']);
 
+
+    //usuarios
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
+    Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);
+
+  
+    Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);
     // Cultivos
     Route::apiResource('cultivos', CultivoController::class);
-
+    Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
+    Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
     // Roles
     Route::get('/roles', [RoleController::class, 'index']);
 
