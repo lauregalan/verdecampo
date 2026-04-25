@@ -34,7 +34,7 @@ class Siembra extends Model
     }
 
     //Attribute: último cultivo que tuvo el lote ---
-    public function getUltimoCultivoAttribute()
+    /*public function getUltimoCultivoAttribute()
     {
         return Attribute::make(
             get: function () {
@@ -49,5 +49,18 @@ class Siembra extends Model
 
             }
         );
-    }
+    }*/
+
+        
+        public function getUltimoCultivoAttribute()
+{
+    
+        $siembraAnterior = Siembra::where('lote_id', $this->lote_id)
+    ->where('fecha_siembra', '<', $this->fecha_siembra)
+    ->orderBy('fecha_siembra', 'desc')
+    ->with('cultivo')
+    ->first();
+
+    return $siembraAnterior?->cultivo ?? null;
+}
 }
