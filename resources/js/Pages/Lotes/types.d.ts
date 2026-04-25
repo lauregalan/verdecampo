@@ -89,6 +89,17 @@ export interface CampaniaDB {
     estado: string;
 }
 
+export interface Siembra {
+    id: number;
+    campania_id: number;
+    lote_id: number;
+    cultivo_id: number;
+    fecha_siembra: string;
+    observaciones: string | null;
+    cultivo: CultivoDB;
+    campania: CampaniaDB;
+}
+
 export interface Estado {
     nombre: string;
 }

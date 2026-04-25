@@ -51,6 +51,6 @@ class LoteService
 
     public function getAll()
     {
-        return Lote::with('siembras.cultivo')->get();
+        return Lote::with(['siembras.cultivo', 'siembras.campania'])->get();
     }
 }
