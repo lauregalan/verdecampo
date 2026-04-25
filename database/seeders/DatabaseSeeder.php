@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             LoteSeeder::class,
             CampaniaLoteSeeder::class,
             CultivoSeeder::class,
+            SiembraSeeder::class,
         ]);
     }
 }

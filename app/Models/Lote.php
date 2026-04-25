@@ -35,4 +35,9 @@ class Lote extends Model
     {
         return $this->hasMany(Cultivo::class);
     }
+
+    public function siembras()
+    {
+        return $this->hasMany(Siembra::class);
+    }
 }

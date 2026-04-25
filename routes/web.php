@@ -7,9 +7,6 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Middleware\ValidateSignature;
-
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -86,5 +83,9 @@ Route::post('/aceptar', [AceptarInvitacionController::class, 'store'])
 Route::get('/cultivos', function () {
     return Inertia::render('Cultivos/Cultivos');
 })->middleware(['auth', 'verified'])->name('gestionarCultivos');
+
+Route::get('/siembras', function () {
+    return Inertia::render('Siembras/Siembras');
+})->middleware(['auth', 'verified'])->name('gestionarSiembras');
 
 require __DIR__.'/auth.php';
