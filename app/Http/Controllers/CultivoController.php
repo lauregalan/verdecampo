@@ -41,4 +41,9 @@ class CultivoController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function getByLote(int $loteId): JsonResponse
+    {
+        return response()->json($this->cultivoService->getByLote($loteId));
+    }
 }
