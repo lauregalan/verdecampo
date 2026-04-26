@@ -29,6 +29,7 @@ class SiembraService
     public function getAll()
     {
         return Siembra::with(['campania', 'lote', 'cultivo'])
+            ->orderBy('fecha_siembra', 'desc')
             ->get()
             ->map(fn($siembra) => $this->formatSiembra($siembra));
     }
@@ -37,6 +38,7 @@ class SiembraService
     {
         return Siembra::with(['campania', 'lote', 'cultivo'])
             ->where('campania_id', $id_campania)
+            ->orderBy('fecha_siembra', 'desc')
             ->get()
             ->map(fn($siembra) => $this->formatSiembra($siembra));
     }
