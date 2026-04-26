@@ -18,6 +18,11 @@ class Lote extends Model
         'ph',
         'napa',
         'campo_id',
+        'polygon',
+    ];
+
+    protected $casts = [
+        'polygon' => 'array',
     ];
 
     public function campo()
@@ -34,6 +39,11 @@ class Lote extends Model
     public function cultivos()
     {
         return $this->hasMany(Cultivo::class);
+    }
+
+    public function cosechas()
+    {
+        return $this->hasMany(Cosecha::class);
     }
 
     public function aplicaciones()

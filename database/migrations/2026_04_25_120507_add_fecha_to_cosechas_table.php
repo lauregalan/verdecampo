@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('lotes', function (Blueprint $table) {
-            $table->decimal('hectareas', 8, 2)->nullable()->after('latitud');
+        Schema::table('cosechas', function (Blueprint $table) {
+            $table->date('fecha')->nullable()->after('lote_id');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('lotes', function (Blueprint $table) {
-            $table->dropColumn('hectareas');
+        Schema::table('cosechas', function (Blueprint $table) {
+            $table->dropColumn('fecha');
         });
     }
 };

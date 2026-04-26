@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Campania extends Model
 {
@@ -30,6 +31,11 @@ class Campania extends Model
     public function cultivo(): BelongsTo
     {
         return $this->belongsTo(Cultivo::class);
+    }
+
+    public function cosechas(): HasMany
+    {
+        return $this->hasMany(Cosecha::class);
     }
 
     public function aplicaciones()

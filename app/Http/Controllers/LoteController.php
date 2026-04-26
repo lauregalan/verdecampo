@@ -39,6 +39,7 @@ class LoteController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
+
         $lote = $this->loteService->delete($id);
         return response()->json($lote, 200);
     }

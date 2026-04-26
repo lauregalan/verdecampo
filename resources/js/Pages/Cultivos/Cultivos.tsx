@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
@@ -24,6 +24,9 @@ interface Cultivo {
 const PER_PAGE = 2;
 
 export default function Cultivos() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [cultivos, setcultivos] = useState<Cultivo[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFormulario, setShowFormulario] = useState(false);
@@ -150,13 +153,13 @@ export default function Cultivos() {
                     <span className="italic text-gray-400">Sin notas</span>
                 ),
         },
-        {
+        ...(isProductor ? [{
             id: "acciones",
             header: "Acciones",
             headerClassName:
                 "px-6 py-4 text-right text-sm font-semibold text-gray-900",
             cellClassName: "px-6 py-4 text-right",
-            cell: (c) => (
+            cell: (c: Cultivo) => (
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={() => handleAbrirFormulario(c)}
@@ -174,7 +177,7 @@ export default function Cultivos() {
                     </button>
                 </div>
             ),
-        },
+        } as ColumnDef<Cultivo>] : []),
     ];
 
     return (
@@ -185,14 +188,16 @@ export default function Cultivos() {
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">
                         Gestión de Cultivos
                     </h1>
-                    <button
-                        type="button"
-                        onClick={() => handleAbrirFormulario()}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nuevo Cultivo
-                    </button>
+                    {isProductor && (
+                        <button
+                            type="button"
+                            onClick={() => handleAbrirFormulario()}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nuevo Cultivo
+                        </button>
+                    )}
                 </div>
 
                 {error && (

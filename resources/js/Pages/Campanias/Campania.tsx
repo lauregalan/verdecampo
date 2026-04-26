@@ -98,11 +98,13 @@ function CampaignCard({
     fieldName,
     onView,
     onEdit,
+    isProductor,
 }: {
     campaign: BackendCampania;
     fieldName: string;
     onView: () => void;
     onEdit: () => void;
+    isProductor: boolean;
 }) {
     const span = daysBetween(campaign.fecha_inicio, campaign.fecha_fin);
 
@@ -337,17 +339,19 @@ export default function Campania() {
                                 Gestion de Campanias
                             </h1>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setEditingCampaniaId(null);
-                                setShowModal(true);
-                            }}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nueva Campania
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditingCampaniaId(null);
+                                    setShowModal(true);
+                                }}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nueva Campania
+                            </button>
+                        )}
                     </div>
                     <p className="text-sm text-stone-500">
                                 Administra estados, fechas y campos asociados de cada temporada.
@@ -464,6 +468,7 @@ export default function Campania() {
                                     <CampaignCard
                                         key={campaign.id}
                                         campaign={campaign}
+                                        isProductor={isProductor}
                                         fieldName={
                                             campaign.campo_id !== null
                                                 ? (fieldById[campaign.campo_id] ?? "Sin campo")

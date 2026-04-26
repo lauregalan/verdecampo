@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
@@ -95,11 +95,13 @@ function AplicacionCard({
     onView,
     onEdit,
     onDelete,
+    isProductor,
 }: {
     aplicacion: AplicacionRecord;
     onView: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    isProductor: boolean;
 }) {
     return (
         <ItemCard
@@ -142,6 +144,9 @@ function AplicacionCard({
 }
 
 export default function Aplicaciones() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [aplicaciones, setAplicaciones] = useState<AplicacionRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -350,14 +355,16 @@ export default function Aplicaciones() {
                                 con el mismo flujo del resto del tablero.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={abrirCreacion}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nueva aplicación
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={abrirCreacion}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nueva aplicación
+                            </button>
+                        )}
                     </div>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -494,6 +501,7 @@ export default function Aplicaciones() {
                                     <AplicacionCard
                                         key={aplicacion.id}
                                         aplicacion={aplicacion}
+                                        isProductor={isProductor}
                                         onView={() => setAplicacionDetalle(aplicacion)}
                                         onEdit={() => abrirEdicion(aplicacion)}
                                         onDelete={() => setAplicacionAEliminar(aplicacion)}

@@ -37,6 +37,7 @@ class CultivoController extends Controller
 
     public function destroy(Cultivo $cultivo): JsonResponse
     {
+
         $this->cultivoService->destroy($cultivo);
 
         return response()->json(null, 204);

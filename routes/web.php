@@ -69,6 +69,10 @@ Route::get('/campanias', function () {
     return Inertia::render('Campanias/Campania');
 })->middleware(['auth', 'verified'])->name('gestionarCampanias');
 
+Route::get('/cosechas', function () {
+    return Inertia::render('Cosechas/Cosechas');
+})->middleware(['auth', 'verified'])->name('cosechas');
+
 Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');

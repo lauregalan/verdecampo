@@ -14,6 +14,7 @@ interface LoteCardProps {
     onOpenDetail: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    isProductor: boolean;
 }
 
 const statusTone: Record<string, string> = {

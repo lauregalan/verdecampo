@@ -6,23 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('lotes', function (Blueprint $table) {
-            $table->decimal('hectareas', 8, 2)->nullable()->after('latitud');
+            $table->json('polygon')->nullable()->after('napa');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('lotes', function (Blueprint $table) {
-            $table->dropColumn('hectareas');
+            $table->dropColumn('polygon');
         });
     }
 };

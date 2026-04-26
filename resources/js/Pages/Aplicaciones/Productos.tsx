@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, Droplets, Filter, Package2, Plus, Search } from "lucide-react";
 import Body from "@/components/ui/Tabs/Body";
@@ -44,6 +44,9 @@ const FORM_FIELDS = [
 ];
 
 export default function Productos() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [productos, setProductos] = useState<ProductoAplicacion[]>([]);
     const [applications, setApplications] = useState<BackendAplicacion[]>([]);
     const [loading, setLoading] = useState(true);
@@ -257,14 +260,16 @@ export default function Productos() {
                                 visual del módulo de aplicaciones.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={abrirCreacion}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nuevo producto
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={abrirCreacion}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nuevo producto
+                            </button>
+                        )}
                     </div>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -406,8 +411,8 @@ export default function Productos() {
                                         }}
                                         note="Disponible para ser seleccionado en nuevas aplicaciones."
                                         onView={() => setProductoDetalle(producto)}
-                                        onEdit={() => abrirEdicion(producto)}
-                                        onDelete={() => setProductoAEliminar(producto)}
+                                        onEdit={isProductor ? () => abrirEdicion(producto) : undefined}
+                                        onDelete={isProductor ? () => setProductoAEliminar(producto) : undefined}
                                     />
                                 ))
                             )}

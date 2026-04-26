@@ -38,6 +38,7 @@ class CampaniaController extends Controller
 
     public function destroy(Campania $campania): JsonResponse
     {
+
         $this->campaniaService->destroy($campania);
 
         return response()->json(null, 204);
@@ -50,6 +51,7 @@ class CampaniaController extends Controller
 
     public function asignarLotes(Request $request, Campania $campania): JsonResponse
     {
+
         $request->validate([
             'lote_ids' => ['required', 'array'],
             'lote_ids.*' => ['integer', 'exists:lotes,id'],
@@ -62,6 +64,7 @@ class CampaniaController extends Controller
 
     public function quitarLote(Campania $campania, int $loteId): JsonResponse
     {
+
         $this->campaniaService->quitarLote($campania, $loteId);
 
         return response()->json(['message' => 'Lote removido correctamente']);

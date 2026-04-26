@@ -32,6 +32,9 @@ class LoteRequest extends FormRequest
             'ph' => ['nullable', 'numeric', 'between:0,14'],
             'napa' => ['nullable', 'numeric', 'min:0'],
             'campo_id' => ['required', 'exists:campos,id'],
+            'polygon' => ['nullable', 'array'],
+            'polygon.*.lat' => ['required_with:polygon', 'numeric'],
+            'polygon.*.lng' => ['required_with:polygon', 'numeric'],
         ];
     }
 
