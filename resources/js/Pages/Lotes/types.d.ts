@@ -45,6 +45,7 @@ export interface Lote {
     idCampo: number;
     ph: number;
     napa: number;
+    polygon: { lat: number; lng: number }[];
     siembras?: Siembra[];
 }
 

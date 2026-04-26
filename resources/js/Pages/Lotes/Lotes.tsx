@@ -39,6 +39,7 @@ const mapearLote = (lote: any): Lote => ({
     idCampo: Number(lote.campo_id),
     ph: Number(lote.ph),
     napa: Number(lote.napa),
+    polygon: lote.polygon ?? [],
     siembras: lote.siembras ?? [],
 });
 
@@ -263,6 +264,7 @@ export default function Lotes() {
                 campo_id: campoIdNumerico,
                 ph: Number(nuevoLote.ph) || 0,
                 napa: Number(nuevoLote.napa) || 0,
+                polygon: nuevoLote.polygon ?? [],
             };
 
             console.log("📤 Enviando payload:", payload);
@@ -356,7 +358,7 @@ export default function Lotes() {
             caracteristicas: lote.caracteristicas,
             ph: lote.ph,
             napa: lote.napa,
-            polygon: [],
+            polygon: lote.polygon ?? [],
             campo_id: lote.idCampo,
         };
     };

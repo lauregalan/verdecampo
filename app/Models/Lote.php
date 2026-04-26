@@ -18,6 +18,11 @@ class Lote extends Model
         'ph',
         'napa',
         'campo_id',
+        'polygon',
+    ];
+
+    protected $casts = [
+        'polygon' => 'array',
     ];
 
     public function campo()

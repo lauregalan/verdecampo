@@ -77,21 +77,11 @@ export default function ModalFormularioLote({
             setLastCrop("falta implementar");
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
-            const numericSurface = parseFloat(initialData.surface.replace(/[^\d.-]/g, ''));
-            setSurface(isNaN(numericSurface) ? 0 : numericSurface);
-
-        if (initialData.polygon) {
-            const formattedPolygon: Coord[] = initialData.polygon.map(
-                point => [point.lat, point.lng] as Coord
-            );
-            setPolygon(formattedPolygon);
-        }
-
+            setHectareas(initialData.hectareas ?? 0);
+            setPolygon(initialData.polygon || []);
             setCaracteristicas(initialData.caracteristicas);
             setPh(initialData.ph);
             setNapa(initialData.napa);
-            setHectareas(initialData.hectareas ?? 0);
-            setPolygon(initialData.polygon || []);
             setCampoSeleccionado(initialData.campo_id);
         } else if (show && !initialData) {
             resetForm();
@@ -145,13 +135,9 @@ export default function ModalFormularioLote({
             imageUrl: PLACEHOLDER_IMAGE,
             latitude,
             longitude,
-            polygon: polygon.map(([lat, lng]) => ({
-                        lat,
-                        lng
-                    })),
+            polygon,
             ph,
             napa,
-            polygon,
         };
         const created = await onSubmit(nuevoLote, campoSeleccionado);
         if (created) {
