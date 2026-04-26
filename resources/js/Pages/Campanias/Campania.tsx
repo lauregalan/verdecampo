@@ -38,6 +38,12 @@ interface BackendCultivo {
     tipo: string;
 }
 
+interface BackendLote {
+    id: number;
+    nombre: string;
+    campo_id: number;
+}
+
 const statuses: CampaignStatus[] = ["Planificada", "En Curso", "Finalizada", "Cancelada"];
 
 const statusTone: Record<CampaignStatus, string> = {
@@ -170,6 +176,7 @@ export default function Campania() {
     const [campanias, setCampanias] = useState<BackendCampania[]>([]);
     const [campos, setCampos] = useState<BackendCampo[]>([]);
     const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
+    const [lotes, setLotes] = useState<BackendLote[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailCampania, setDetailCampania] = useState<BackendCampania | null>(null);
@@ -218,11 +225,23 @@ export default function Campania() {
         }
     }, []);
 
+    const cargarLotes = useCallback(async () => {
+        try {
+            const response = await api.get("/api/lotes");
+            if (!response.ok) throw new Error();
+            const payload = (await response.json()) as BackendLote[];
+            setLotes(Array.isArray(payload) ? payload : []);
+        } catch {
+            setLotes([]);
+        }
+    }, []);
+
     useEffect(() => {
         void cargarCampanias();
         void cargarCampos();
         void cargarCultivos();
-    }, [cargarCampanias, cargarCampos, cargarCultivos]);
+        void cargarLotes();
+    }, [cargarCampanias, cargarCampos, cargarCultivos, cargarLotes]);
 
     const fieldById = useMemo(
         () => Object.fromEntries(campos.map((campo) => [campo.id, campo.nombre])) as Record<number, string>,
@@ -291,16 +310,13 @@ export default function Campania() {
 
     return (
         <Body>
-            <div className="flex h-full min-h-0 flex-col bg-[#f9f4ea] p-8 font-sans">
+            <div className="flex h-full min-h-0 flex-col p-8 font-sans">
                 <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">
                                 Gestion de Campanias
                             </h1>
-                            <p className="mt-1 text-sm text-stone-500">
-                                Administra estados, fechas y campos asociados de cada temporada.
-                            </p>
                         </div>
                         <button
                             type="button"
@@ -314,6 +330,9 @@ export default function Campania() {
                             Nueva Campania
                         </button>
                     </div>
+                    <p className="text-sm text-stone-500">
+                                Administra estados, fechas y campos asociados de cada temporada.
+                            </p>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         {[
@@ -462,6 +481,7 @@ export default function Campania() {
                 editingCampaniaId={editingCampaniaId}
                 campos={campos}
                 cultivos={cultivos}
+                lotes={lotes}
                 onSaved={() => void cargarCampanias()}
             />
         </Body>

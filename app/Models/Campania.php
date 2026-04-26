@@ -37,4 +37,9 @@ class Campania extends Model
     {
         return $this->hasMany(Cosecha::class);
     }
+
+    public function aplicaciones()
+    {
+        return $this->hasMany(Aplicacion::class);
+    }
 }

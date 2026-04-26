@@ -19,13 +19,23 @@ class CampaniaService
 
     public function store(array $data)
     {
-        return Campania::create($data);
+        $campania = Campania::create($data);
+        
+        if (isset($data['lote_ids'])) {
+            $campania->lotes()->sync($data['lote_ids']);
+        }
+        
+        return $campania;
     }
 
     public function update(Campania $campania, array $data)
     {
         $campania->update($data);
-
+        
+        if (isset($data['lote_ids'])) {
+            $campania->lotes()->sync($data['lote_ids']);
+        }
+        
         return $campania;
     }
 
