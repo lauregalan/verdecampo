@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);
     // Cultivos
     Route::apiResource('cultivos', CultivoController::class);
+    Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
     Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
     Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
     // Roles
@@ -82,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/aplicaciones', [AplicacionController::class, 'store']);
     Route::put('/aplicaciones/{id}', [AplicacionController::class, 'update']);
     Route::delete('/aplicaciones/{id}', [AplicacionController::class, 'destroy']);
+    Route::get('/aplicaciones/lote/{loteId}', [AplicacionController::class, 'getByLote']);
 
     // Siembras
     Route::get('/siembras', [SiembraController::class, 'showAll']);
