@@ -49,6 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('cultivos', CultivoController::class);
     Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
     Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
+
+    // Cosechas
+    Route::apiResource('cosechas', App\Http\Controllers\CosechaController::class);
+    Route::get('/cosechas/campania/{campaniaId}', [App\Http\Controllers\CosechaController::class, 'getByCampania']);
+    Route::get('/cosechas/lote/{loteId}', [App\Http\Controllers\CosechaController::class, 'getByLote']);
     // Roles
     Route::get('/roles', [RoleController::class, 'index']);
 

@@ -7,6 +7,7 @@ import {
     LogOut,
     Settings,
     Sprout,
+    Tractor,
     Wheat,
     BugOff,
 } from "lucide-react";
@@ -236,6 +237,21 @@ export default function AppSidebar() {
                                 </CollapsibleContent>
                             </SidebarMenuItem>
                         </Collapsible>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={currentPath.startsWith("/cosechas")}
+                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                            >
+                                <Link href="/cosechas">
+                                    <Tractor size={18} />
+                                    <span className="font-medium">
+                                        Cosechas
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
 
                         <SidebarMenuItem>
                             <SidebarMenuButton
