@@ -1,5 +1,6 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ItemCard from "@/components/ui/ItemCard";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
@@ -82,6 +83,16 @@ const daysBetween = (start: string | null, end: string | null) => {
     return Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 };
 
+const parseFieldFilter = (value: string | null) => {
+    if (!value) return "Todos";
+
+    const parsedValue = Number(value);
+
+    return Number.isInteger(parsedValue) && parsedValue > 0
+        ? String(parsedValue)
+        : "Todos";
+};
+
 function CampaignCard({
     campaign,
     fieldName,
@@ -96,83 +107,63 @@ function CampaignCard({
     const span = daysBetween(campaign.fecha_inicio, campaign.fecha_fin);
 
     return (
-        <article className="group flex h-full flex-col rounded-3xl border border-stone-300 bg-[#FCFBF8] p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between gap-3">
-                <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-400">
-                        Campania
-                    </p>
-                    <h3 className="mt-2 text-xl font-black tracking-tight text-stone-900">
-                        {campaign.nombre}
-                    </h3>
-                    <p className="mt-2 text-sm text-stone-500">
-                        Campo:{" "}
-                        <span className="font-semibold text-stone-800">{fieldName}</span>
-                    </p>
-                </div>
-                <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ring-1 ${statusTone[campaign.estado]}`}
-                >
-                    {campaign.estado}
-                </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5">
-                    <div className="flex items-center gap-2 text-stone-500">
-                        <CalendarDays size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">Inicio</span>
-                    </div>
-                    <div className="mt-2 text-sm font-semibold text-stone-900">
-                        {formatDate(campaign.fecha_inicio)}
-                    </div>
-                </div>
-                <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5">
-                    <div className="flex items-center gap-2 text-stone-500">
-                        <Clock3 size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">Duracion</span>
-                    </div>
-                    <div className="mt-2 text-sm font-semibold text-stone-900">
-                        {span === null ? "Abierta" : `${span + 1} dias`}
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-stone-200 bg-[#f7f2e9] px-4 py-3">
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-stone-500">
-                        Fecha de cierre
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-stone-900">
-                        {formatDate(campaign.fecha_fin)}
-                    </div>
-                </div>
-                <CalendarDays className="size-5 text-stone-400" />
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-2 border-t border-stone-200 pt-4">
-                <button
-                    type="button"
-                    onClick={onView}
-                    className="inline-flex items-center gap-2 rounded-full border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
-                >
-                    <Eye size={16} />
-                    Ver
-                </button>
-                <button
-                    type="button"
-                    onClick={onEdit}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                >
-                    <Pencil size={16} />
-                    Editar
-                </button>
-            </div>
-        </article>
+        <ItemCard
+            eyebrow="Campania"
+            title={campaign.nombre}
+            subtitle={`Campo: ${fieldName}`}
+            badge={{
+                label: campaign.estado,
+                className: statusTone[campaign.estado]
+            }}
+            stats={[
+                {
+                    icon: <CalendarDays size={16} />,
+                    label: "Inicio",
+                    value: formatDate(campaign.fecha_inicio)
+                },
+                {
+                    icon: <Clock3 size={16} />,
+                    label: "Duracion",
+                    value: span === null ? "Abierta" : `${span + 1} dias`
+                }
+            ]}
+            footers={[
+                {
+                    label: "Fecha de cierre",
+                    value: formatDate(campaign.fecha_fin),
+                    icon: <CalendarDays className="size-5 text-stone-400" />
+                }
+            ]}
+            onView={onView}
+            onEdit={onEdit}
+        />
     );
 }
 
 export default function Campania() {
+    const filtrosIniciales = useMemo(() => {
+        if (typeof window === "undefined") {
+            return {
+                busqueda: "",
+                estado: "Todas" as CampaignStatus | "Todas",
+                campo: "Todos",
+            };
+        }
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const estado = searchParams.get("estado");
+
+        return {
+            busqueda: searchParams.get("q") ?? "",
+            estado:
+                estado &&
+                ["Todas", ...statuses].includes(estado as CampaignStatus | "Todas")
+                    ? (estado as CampaignStatus | "Todas")
+                    : "Todas",
+            campo: parseFieldFilter(searchParams.get("campoId")),
+        };
+    }, []);
+
     const [campanias, setCampanias] = useState<BackendCampania[]>([]);
     const [campos, setCampos] = useState<BackendCampo[]>([]);
     const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
@@ -181,9 +172,11 @@ export default function Campania() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailCampania, setDetailCampania] = useState<BackendCampania | null>(null);
     const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(null);
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">("Todas");
-    const [fieldFilter, setFieldFilter] = useState("Todos");
+    const [search, setSearch] = useState(filtrosIniciales.busqueda);
+    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">(
+        filtrosIniciales.estado,
+    );
+    const [fieldFilter, setFieldFilter] = useState(filtrosIniciales.campo);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -242,6 +235,32 @@ export default function Campania() {
         void cargarCultivos();
         void cargarLotes();
     }, [cargarCampanias, cargarCampos, cargarCultivos, cargarLotes]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const searchParams = new URLSearchParams();
+        const busqueda = search.trim();
+
+        if (busqueda) {
+            searchParams.set("q", busqueda);
+        }
+        if (statusFilter !== "Todas") {
+            searchParams.set("estado", statusFilter);
+        }
+        if (fieldFilter !== "Todos") {
+            searchParams.set("campoId", fieldFilter);
+        }
+
+        const queryString = searchParams.toString();
+        const nextUrl = queryString
+            ? `${window.location.pathname}?${queryString}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, "", nextUrl);
+    }, [fieldFilter, search, statusFilter]);
 
     const fieldById = useMemo(
         () => Object.fromEntries(campos.map((campo) => [campo.id, campo.nombre])) as Record<number, string>,
