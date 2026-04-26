@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, Filter, Layers3, Plus, Search, Sparkles } from "lucide-react";
 import Body from "@/components/ui/Tabs/Body";
@@ -20,6 +20,9 @@ const FORM_FIELDS = [
 ];
 
 export default function Tipos() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [tipos, setTipos] = useState<TipoAplicacion[]>([]);
     const [applications, setApplications] = useState<BackendAplicacion[]>([]);
     const [loading, setLoading] = useState(true);
@@ -225,14 +228,16 @@ export default function Tipos() {
                                 aplicaciones quede consistente.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={abrirCreacion}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nuevo tipo
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={abrirCreacion}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nuevo tipo
+                            </button>
+                        )}
                     </div>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -378,8 +383,8 @@ export default function Tipos() {
                                             }}
                                             note="Disponible para clasificar nuevas labores dentro del módulo."
                                             onView={() => setTipoDetalle(tipo)}
-                                            onEdit={() => abrirEdicion(tipo)}
-                                            onDelete={() => setTipoAEliminar(tipo)}
+                                            onEdit={isProductor ? () => abrirEdicion(tipo) : undefined}
+                                            onDelete={isProductor ? () => setTipoAEliminar(tipo) : undefined}
                                         />
                                     );
                                 })

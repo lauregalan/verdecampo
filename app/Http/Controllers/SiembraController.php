@@ -39,7 +39,6 @@ class SiembraController extends Controller
      */
     public function store(SiembraRequest $request)
     {
-        //
         $siembra = $this->siembraService->create($request->validated());
         return response()->json($siembra, 201);
     }
@@ -66,7 +65,6 @@ class SiembraController extends Controller
      */
     public function update(SiembraRequest $request, int $id): JsonResponse
     {
-        //
         $siembra = $this->siembraService->update($id, $request->validated());
         return response()->json($siembra, 200);
     }
@@ -76,7 +74,7 @@ class SiembraController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        //
+
         $siembra = $this->siembraService->delete($id);
         return response()->json($siembra, 200);
     }

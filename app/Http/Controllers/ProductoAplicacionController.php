@@ -38,6 +38,7 @@ class ProductoAplicacionController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
+
         $this->productoAplicacionService->delete($id);
 
         return response()->json(null, 204);

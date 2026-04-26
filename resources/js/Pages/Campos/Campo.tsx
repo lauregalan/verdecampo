@@ -1,6 +1,6 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import {
     ClipboardPlus,
     Eye,
@@ -24,6 +24,7 @@ interface FieldCardProps extends CampoCard {
     onDelete: () => void;
     onEdit: () => void;
     onViewLotes: () => void;
+    isProductor: boolean;
 }
 
 interface BackendCampo {
@@ -71,6 +72,7 @@ const FieldCard = ({
     onDelete,
     onEdit,
     onViewLotes,
+    isProductor,
 }: FieldCardProps) => {
     const config = statusStyles[statusColor];
     const { className, Icon } = config;
@@ -176,34 +178,41 @@ const FieldCard = ({
                     <MapPin strokeWidth={1.5} size={16} />
                 </button>
 
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Editar"
-                >
-                    <Pencil strokeWidth={1.5} size={16} />
-                </button>
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                        title="Editar"
+                    >
+                        <Pencil strokeWidth={1.5} size={16} />
+                    </button>
+                )}
 
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
-                    title="Eliminar"
-                >
-                    <Trash2 strokeWidth={1.5} size={16} />
-                </button>
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
+                        title="Eliminar"
+                    >
+                        <Trash2 strokeWidth={1.5} size={16} />
+                    </button>
+                )}
             </CardFooter>
         </Card>
     );
 };
 export default function Campo() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -349,14 +358,16 @@ export default function Campo() {
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                             Gestión de Campos
                         </h1>
-                        <button
-                            type="button"
-                            onClick={handleAbrirCreacion}
-                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} strokeWidth={2.5} />
-                            Nuevo Campo
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={handleAbrirCreacion}
+                                className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} strokeWidth={2.5} />
+                                Nuevo Campo
+                            </button>
+                        )}
                     </div>
 
                     {/* El Summary también debe seguir el ancho máximo */}
@@ -379,6 +390,7 @@ export default function Campo() {
                                 <FieldCard
                                     key={campo.id}
                                     {...campo}
+                                    isProductor={isProductor}
                                     onOpenDetail={() =>
                                         router.visit(`/campo/${campo.id}`)
                                     }

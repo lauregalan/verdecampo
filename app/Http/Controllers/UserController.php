@@ -93,10 +93,6 @@ class UserController extends Controller
 
         $currentUser = $request->user();
 
-        if (! $currentUser?->hasRole('Productor')) {
-            abort(403);
-        }
-
         if ($currentUser->is($user)) {
             return response()->json([
                 'message' => 'No puedes cambiar tu propio estado.',

@@ -38,6 +38,7 @@ class TipoAplicacionController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
+
         $this->tipoAplicacionService->delete($id);
 
         return response()->json(null, 204);

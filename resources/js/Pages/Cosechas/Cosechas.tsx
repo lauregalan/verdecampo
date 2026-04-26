@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
@@ -35,6 +35,9 @@ const formatDate = (value: string | null) => {
 };
 
 export default function Cosechas() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [cosechas, setCosechas] = useState<Cosecha[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -167,12 +170,12 @@ export default function Cosechas() {
                     <span className="italic text-gray-400">—</span>
                 ),
         },
-        {
+        ...(isProductor ? [{
             id: "acciones",
             header: "Acciones",
             headerClassName: "px-6 py-4 text-right text-sm font-semibold text-gray-900",
             cellClassName: "px-6 py-4 text-right",
-            cell: (c) => (
+            cell: (c: Cosecha) => (
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={() => handleAbrirFormulario(c)}
@@ -190,7 +193,7 @@ export default function Cosechas() {
                     </button>
                 </div>
             ),
-        },
+        } as ColumnDef<Cosecha>] : []),
     ];
 
     return (
@@ -207,14 +210,16 @@ export default function Cosechas() {
                             Registro de rendimientos por campaña y lote
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => handleAbrirFormulario()}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nueva Cosecha
-                    </button>
+                    {isProductor && (
+                        <button
+                            type="button"
+                            onClick={() => handleAbrirFormulario()}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nueva Cosecha
+                        </button>
+                    )}
                 </div>
 
                 {error && (

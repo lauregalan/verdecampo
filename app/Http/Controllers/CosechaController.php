@@ -37,6 +37,7 @@ class CosechaController extends Controller
 
     public function destroy(Cosecha $cosecha): JsonResponse
     {
+
         $this->cosechaService->destroy($cosecha);
 
         return response()->json(null, 204);

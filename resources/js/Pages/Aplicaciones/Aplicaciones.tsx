@@ -1,4 +1,4 @@
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
@@ -94,11 +94,13 @@ function AplicacionCard({
     onView,
     onEdit,
     onDelete,
+    isProductor,
 }: {
     aplicacion: AplicacionRecord;
     onView: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    isProductor: boolean;
 }) {
     return (
         <article className="group flex h-full flex-col rounded-3xl border border-stone-200/80 bg-[#FCFBF8]/78 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
@@ -183,28 +185,35 @@ function AplicacionCard({
                     <Eye size={16} />
                     Ver
                 </button>
-                <button
-                    type="button"
-                    onClick={onEdit}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                >
-                    <Pencil size={16} />
-                    Editar
-                </button>
-                <button
-                    type="button"
-                    onClick={onDelete}
-                    className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
-                >
-                    <Trash2 size={16} />
-                    Eliminar
-                </button>
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={onEdit}
+                        className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    >
+                        <Pencil size={16} />
+                        Editar
+                    </button>
+                )}
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={onDelete}
+                        className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                    >
+                        <Trash2 size={16} />
+                        Eliminar
+                    </button>
+                )}
             </div>
         </article>
     );
 }
 
 export default function Aplicaciones() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [aplicaciones, setAplicaciones] = useState<AplicacionRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -413,14 +422,16 @@ export default function Aplicaciones() {
                                 con el mismo flujo del resto del tablero.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={abrirCreacion}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nueva aplicación
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={abrirCreacion}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nueva aplicación
+                            </button>
+                        )}
                     </div>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -557,6 +568,7 @@ export default function Aplicaciones() {
                                     <AplicacionCard
                                         key={aplicacion.id}
                                         aplicacion={aplicacion}
+                                        isProductor={isProductor}
                                         onView={() => setAplicacionDetalle(aplicacion)}
                                         onEdit={() => abrirEdicion(aplicacion)}
                                         onDelete={() => setAplicacionAEliminar(aplicacion)}

@@ -41,6 +41,7 @@ class CampoController extends Controller
 
     public function destroy(Campo $campo): JsonResponse
     {
+
         $this->campoService->destroy($campo);
 
         return response()->json(null, 204);

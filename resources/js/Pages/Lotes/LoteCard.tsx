@@ -9,9 +9,10 @@ interface LoteCardProps {
     onOpenDetail: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    isProductor: boolean;
 }
 
-export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete }: LoteCardProps) {
+export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete, isProductor }: LoteCardProps) {
     const config = statusStyles["verde"];
     const { className, Icon } = config;
 
@@ -124,23 +125,27 @@ export default function LoteCard ({ lote, onOpenDetail, onEdit, onDelete }: Lote
                     <Eye strokeWidth={1.5} size={16} />
                 </button>
 
-                <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Editar"
-                >
-                    <Pencil strokeWidth={1.5} size={16} />
-                </button>
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                        title="Editar"
+                    >
+                        <Pencil strokeWidth={1.5} size={16} />
+                    </button>
+                )}
 
-                <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
-                    title="Eliminar"
-                >
-                    <Trash2 strokeWidth={1.5} size={16} />
-                </button>
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
+                        title="Eliminar"
+                    >
+                        <Trash2 strokeWidth={1.5} size={16} />
+                    </button>
+                )}
             </CardFooter>
         </Card>
     );

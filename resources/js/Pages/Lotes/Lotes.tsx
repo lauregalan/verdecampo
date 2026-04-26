@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
@@ -44,6 +44,9 @@ const mapearLote = (lote: any): Lote => ({
 });
 
 export default function Lotes() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [lotes, setLotes] = useState<Lote[]>([]);
     const [lotesFiltrados, setLotesFiltrados] = useState<Lote[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
@@ -371,14 +374,16 @@ export default function Lotes() {
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
                         Gestión de Lotes
                     </h1>
-                    <button
-                        type="button"
-                        onClick={handleAbrirCreacion}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nuevo Lote
-                    </button>
+                    {isProductor && (
+                        <button
+                            type="button"
+                            onClick={handleAbrirCreacion}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nuevo Lote
+                        </button>
+                    )}
                 </div>
 
                 <div className="mx-auto max-w-7xl">
@@ -602,6 +607,7 @@ export default function Lotes() {
                             <LoteCard
                                 key={lote.id}
                                 lote={lote}
+                                isProductor={isProductor}
                                 onOpenDetail={() => {
                                     router.visit(`/lotes/${lote.id}`);
                                 }}

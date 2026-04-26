@@ -17,8 +17,8 @@ interface CatalogItemCardProps {
     };
     note?: string;
     onView: () => void;
-    onEdit: () => void;
-    onDelete: () => void;
+    onEdit?: () => void;
+    onDelete?: () => void;
 }
 
 export default function CatalogItemCard({
@@ -94,22 +94,26 @@ export default function CatalogItemCard({
                     <Eye size={16} />
                     Ver
                 </button>
-                <button
-                    type="button"
-                    onClick={onEdit}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                >
-                    <Pencil size={16} />
-                    Editar
-                </button>
-                <button
-                    type="button"
-                    onClick={onDelete}
-                    className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
-                >
-                    <Trash2 size={16} />
-                    Eliminar
-                </button>
+                {onEdit && (
+                    <button
+                        type="button"
+                        onClick={onEdit}
+                        className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    >
+                        <Pencil size={16} />
+                        Editar
+                    </button>
+                )}
+                {onDelete && (
+                    <button
+                        type="button"
+                        onClick={onDelete}
+                        className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                    >
+                        <Trash2 size={16} />
+                        Eliminar
+                    </button>
+                )}
             </div>
         </article>
     );

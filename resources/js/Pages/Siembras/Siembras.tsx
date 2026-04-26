@@ -38,7 +38,7 @@ export default function Siembras() {
 
 
 }*/
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
@@ -77,6 +77,9 @@ interface SiembraRow {
 const PER_PAGE = 10;
 
 export default function Siembras() {
+    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
+    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+
     const [siembras, setSiembras] = useState<SiembraRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFormulario, setShowFormulario] = useState(false);
@@ -242,13 +245,13 @@ export default function Siembras() {
                     <span className="italic text-gray-400">—</span>
                 ),
         },
-        {
+        ...(isProductor ? [{
             id: "acciones",
             header: "Acciones",
             headerClassName:
                 "px-6 py-4 text-right text-sm font-semibold text-gray-900",
             cellClassName: "px-6 py-4 text-right",
-            cell: (s) => (
+            cell: (s: SiembraRow) => (
                 <div className="flex justify-end gap-2">
                     <button
                         onClick={() => {
@@ -276,7 +279,7 @@ export default function Siembras() {
                     </button>
                 </div>
             ),
-        },
+        } as ColumnDef<SiembraRow>] : []),
     ];
 
     return (
@@ -293,17 +296,19 @@ export default function Siembras() {
                             Registrá las siembras por campaña y lote
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSiembraEditando(null);
-                            setShowFormulario(true);
-                        }}
-                        className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                    >
-                        <Plus size={20} strokeWidth={2.5} />
-                        Nueva Siembra
-                    </button>
+                    {isProductor && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSiembraEditando(null);
+                                setShowFormulario(true);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                        >
+                            <Plus size={20} strokeWidth={2.5} />
+                            Nueva Siembra
+                        </button>
+                    )}
                 </div>
 
                 {/* Error */}
