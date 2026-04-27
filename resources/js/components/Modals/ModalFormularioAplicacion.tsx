@@ -37,7 +37,7 @@ const EMPTY_FORM: FormState = {
     campania_id: "",
     lote_id: "",
     cantidad: "",
-    unidad: "l/ha",
+    unidad: "L/ha",
     fecha: "",
     precio_labor: "",
     moneda_precio_labor: "ARS",
@@ -483,16 +483,20 @@ export default function ModalFormularioAplicacion({
                                 htmlFor="aplicacion-unidad"
                                 value="Unidad *"
                             />
-                            <TextInput
+                            <select
                                 id="aplicacion-unidad"
                                 value={form.unidad}
                                 onChange={(event) =>
                                     updateField("unidad", event.target.value)
                                 }
-                                placeholder="Ej: l/ha"
-                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
+                                className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800"
                                 required
-                            />
+                            >
+                                <option value="L/ha">L/ha</option>
+                                <option value="kg/ha">kg/ha</option>
+                                <option value="gr/ha">gr/ha</option>
+                                <option value="ml/ha">ml/ha</option>
+                            </select>
                         </div>
 
                         <div>
