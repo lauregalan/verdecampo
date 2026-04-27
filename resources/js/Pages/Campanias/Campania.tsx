@@ -1,6 +1,6 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
@@ -352,6 +352,7 @@ export default function Campania() {
 
     return (
         <Body>
+            <Head title="Campañas" />
             <div className="flex h-full min-h-0 flex-col p-8 font-sans">
                 <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

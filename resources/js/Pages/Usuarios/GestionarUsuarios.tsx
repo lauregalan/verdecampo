@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { Mail, Plus, Search, X } from "lucide-react";
 import {
@@ -339,6 +339,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
 
     return (
         <Body>
+            <Head title="Gestión de Usuarios" />
             <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col gap-4">
                 {header && (
                     <header className="border-b border-black/5 pb-4">

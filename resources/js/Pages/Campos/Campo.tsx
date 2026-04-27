@@ -1,6 +1,6 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { router, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
     ClipboardPlus,
     Eye,
@@ -345,7 +345,7 @@ export default function Campo() {
 
     return (
         <Body>
-            {/* Eliminamos el p-2 si Body ya tiene padding, o usamos px-6 para balancear */}
+            <Head title="Campos" />
             <div className="flex h-full min-h-0 flex-col px-4 py-6 font-sans lg:px-8">
                 <ScrollArea className="mx-auto min-h-0 flex-1 w-full max-w-[1600px]">
                     {error && (
