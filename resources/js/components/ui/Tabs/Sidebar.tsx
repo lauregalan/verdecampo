@@ -78,7 +78,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/dashboard")}
-                                className="hover:bg-[#1a4030] text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-[#1a4030] hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/dashboard">
                                     <LayoutDashboard size={18} />
@@ -96,7 +96,7 @@ export default function AppSidebar() {
                                     isActive={currentPath.startsWith(
                                         "/usuarios",
                                     )}
-                                    className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                    className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                 >
                                     <Link href="/usuarios">
                                         <GroupIcon size={18} />
@@ -112,7 +112,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/campo")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/campo">
                                     <Sprout size={18} />
@@ -127,7 +127,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/lotes")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/lotes">
                                     <Sprout size={18} />
@@ -142,7 +142,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/cultivos")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/cultivos">
                                     <Wheat size={18} />
@@ -157,7 +157,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/campania")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/campania">
                                     <CalendarDays size={18} />
@@ -179,7 +179,7 @@ export default function AppSidebar() {
                         >
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
+                                    <SidebarMenuButton className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200">
                                         <BugOff size={18} />
                                         <span>Mis Aplicaciones</span>
                                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -190,7 +190,7 @@ export default function AppSidebar() {
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton
                                                 asChild
-                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                                 isActive={
                                                     currentPath ===
                                                     "/aplicaciones"
@@ -206,7 +206,7 @@ export default function AppSidebar() {
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton
                                                 asChild
-                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                                 isActive={
                                                     currentPath === "/productos"
                                                 }
@@ -221,7 +221,7 @@ export default function AppSidebar() {
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton
                                                 asChild
-                                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                                 isActive={
                                                     currentPath === "/tipos"
                                                 }
@@ -242,7 +242,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/cosechas")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/cosechas">
                                     <Tractor size={18} />
@@ -257,7 +257,7 @@ export default function AppSidebar() {
                             <SidebarMenuButton
                                 asChild
                                 isActive={currentPath.startsWith("/siembras")}
-                                className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/siembras">
                                     <Sprout size={18} />
@@ -276,7 +276,7 @@ export default function AppSidebar() {
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton className="h-12 hover:bg-white/10 w-full flex items-center gap-3 p-2 rounded-xl transition">
+                                <SidebarMenuButton className="h-12 hover:bg-white/10 hover:text-white w-full flex items-center gap-3 p-2 rounded-xl transition">
                                     <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-xs font-bold">
                                         {user?.name?.[0]?.toUpperCase() || "U"}
                                     </div>

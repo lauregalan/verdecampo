@@ -64,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Escritura (solo Productor)
     Route::middleware('productor')->group(function () {
-        Route::put('/users/{id}/roles', [UserController::class, 'modificarRoles']);
+        Route::put('/users/{user}/roles', [UserController::class, 'modificarRoles']);
         Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);
 
         Route::apiResource('campos', CampoController::class)->only(['store', 'update', 'destroy']);
