@@ -45,7 +45,12 @@ interface BackendLote {
     campo_id: number;
 }
 
-const statuses: CampaignStatus[] = ["Planificada", "En Curso", "Finalizada", "Cancelada"];
+const statuses: CampaignStatus[] = [
+    "Planificada",
+    "En Curso",
+    "Finalizada",
+    "Cancelada",
+];
 
 const statusTone: Record<CampaignStatus, string> = {
     Planificada: "bg-amber-100 text-amber-700 ring-amber-200",
@@ -103,14 +108,16 @@ function CampaignCard({
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-400">
-                        Campania
+                        Campaña
                     </p>
                     <h3 className="mt-2 text-xl font-black tracking-tight text-stone-900">
                         {campaign.nombre}
                     </h3>
                     <p className="mt-2 text-sm text-stone-500">
                         Campo:{" "}
-                        <span className="font-semibold text-stone-800">{fieldName}</span>
+                        <span className="font-semibold text-stone-800">
+                            {fieldName}
+                        </span>
                     </p>
                 </div>
                 <span
@@ -124,7 +131,9 @@ function CampaignCard({
                 <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5">
                     <div className="flex items-center gap-2 text-stone-500">
                         <CalendarDays size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">Inicio</span>
+                        <span className="text-xs font-bold uppercase tracking-wide">
+                            Inicio
+                        </span>
                     </div>
                     <div className="mt-2 text-sm font-semibold text-stone-900">
                         {formatDate(campaign.fecha_inicio)}
@@ -133,7 +142,9 @@ function CampaignCard({
                 <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5">
                     <div className="flex items-center gap-2 text-stone-500">
                         <Clock3 size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">Duracion</span>
+                        <span className="text-xs font-bold uppercase tracking-wide">
+                            Duracion
+                        </span>
                     </div>
                     <div className="mt-2 text-sm font-semibold text-stone-900">
                         {span === null ? "Abierta" : `${span + 1} dias`}
@@ -178,8 +189,10 @@ function CampaignCard({
 }
 
 export default function Campania() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [campanias, setCampanias] = useState<BackendCampania[]>([]);
     const [campos, setCampos] = useState<BackendCampo[]>([]);
@@ -187,10 +200,15 @@ export default function Campania() {
     const [lotes, setLotes] = useState<BackendLote[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [detailCampania, setDetailCampania] = useState<BackendCampania | null>(null);
-    const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(null);
+    const [detailCampania, setDetailCampania] =
+        useState<BackendCampania | null>(null);
+    const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(
+        null,
+    );
     const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">("Todas");
+    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">(
+        "Todas",
+    );
     const [fieldFilter, setFieldFilter] = useState("Todos");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -205,7 +223,7 @@ export default function Campania() {
             setError(null);
         } catch {
             setCampanias([]);
-            setError("Error al cargar campanias desde el backend.");
+            setError("Error al cargar campañas desde el backend.");
         } finally {
             setLoading(false);
         }
@@ -252,12 +270,18 @@ export default function Campania() {
     }, [cargarCampanias, cargarCampos, cargarCultivos, cargarLotes]);
 
     const fieldById = useMemo(
-        () => Object.fromEntries(campos.map((campo) => [campo.id, campo.nombre])) as Record<number, string>,
+        () =>
+            Object.fromEntries(
+                campos.map((campo) => [campo.id, campo.nombre]),
+            ) as Record<number, string>,
         [campos],
     );
 
     const cultivoById = useMemo(
-        () => Object.fromEntries(cultivos.map((cultivo) => [cultivo.id, cultivo.tipo])) as Record<number, string>,
+        () =>
+            Object.fromEntries(
+                cultivos.map((cultivo) => [cultivo.id, cultivo.tipo]),
+            ) as Record<number, string>,
         [cultivos],
     );
 
@@ -274,10 +298,12 @@ export default function Campania() {
                     campania.nombre.toLowerCase().includes(normalizedSearch) ||
                     fieldName.toLowerCase().includes(normalizedSearch);
                 const matchesStatus =
-                    statusFilter === "Todas" || campania.estado === statusFilter;
+                    statusFilter === "Todas" ||
+                    campania.estado === statusFilter;
                 const matchesField =
                     fieldFilter === "Todos" ||
-                    (campania.campo_id !== null && String(campania.campo_id) === fieldFilter);
+                    (campania.campo_id !== null &&
+                        String(campania.campo_id) === fieldFilter);
                 return matchesSearch && matchesStatus && matchesField;
             })
             .sort((a, b) => {
@@ -291,9 +317,12 @@ export default function Campania() {
         () => ({
             total: campanias.length,
             enCurso: campanias.filter((c) => c.estado === "En Curso").length,
-            planificadas: campanias.filter((c) => c.estado === "Planificada").length,
+            planificadas: campanias.filter((c) => c.estado === "Planificada")
+                .length,
             fields: new Set(
-                campanias.map((c) => c.campo_id).filter((id): id is number => id !== null),
+                campanias
+                    .map((c) => c.campo_id)
+                    .filter((id): id is number => id !== null),
             ).size,
         }),
         [campanias],
@@ -302,12 +331,17 @@ export default function Campania() {
     const openDetailModal = async (campaniaId: number) => {
         try {
             const response = await api.get(`/api/campanias/${campaniaId}`);
-            if (!response.ok) throw new Error("No se pudo obtener la campania.");
+            if (!response.ok)
+                throw new Error("No se pudo obtener la campania.");
             const data = (await response.json()) as BackendCampania;
             setDetailCampania(data);
             setShowDetailModal(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error al cargar la campania.");
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Error al cargar la campaña.",
+            );
         }
     };
 
@@ -323,7 +357,7 @@ export default function Campania() {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">
-                                Gestion de Campanias
+                                Gestion de campañas
                             </h1>
                         </div>
                         {isProductor && (
@@ -336,30 +370,51 @@ export default function Campania() {
                                 className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
                             >
                                 <Plus size={20} />
-                                Nueva Campania
+                                Nueva campaña
                             </button>
                         )}
                     </div>
                     <p className="text-sm text-stone-500">
-                                Administra estados, fechas y campos asociados de cada temporada.
-                            </p>
+                        Administra estados, fechas y campos asociados de cada
+                        temporada.
+                    </p>
 
                     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         {[
-                            { label: "Total", value: summary.total, detail: "Campanias registradas" },
-                            { label: "En curso", value: summary.enCurso, detail: "Seguimiento activo" },
-                            { label: "Planificadas", value: summary.planificadas, detail: "Pendientes de inicio" },
-                            { label: "Campos", value: summary.fields, detail: "Con campanias asociadas" },
+                            {
+                                label: "Total",
+                                value: summary.total,
+                                detail: "Campañas registradas",
+                            },
+                            {
+                                label: "En curso",
+                                value: summary.enCurso,
+                                detail: "Seguimiento activo",
+                            },
+                            {
+                                label: "Planificadas",
+                                value: summary.planificadas,
+                                detail: "Pendientes de inicio",
+                            },
+                            {
+                                label: "Campos",
+                                value: summary.fields,
+                                detail: "Con campañas asociadas",
+                            },
                         ].map((item) => (
                             <article
                                 key={item.label}
                                 className="rounded-2xl border border-stone-200 bg-[#FCFBF8] p-5 shadow-sm"
                             >
-                                <div className="text-sm font-semibold text-stone-500">{item.label}</div>
+                                <div className="text-sm font-semibold text-stone-500">
+                                    {item.label}
+                                </div>
                                 <div className="mt-4 text-4xl font-black tracking-tight text-stone-900">
                                     {item.value}
                                 </div>
-                                <p className="mt-2 text-sm text-stone-500">{item.detail}</p>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    {item.detail}
+                                </p>
                             </article>
                         ))}
                     </section>
@@ -375,7 +430,9 @@ export default function Campania() {
                                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
                                     <input
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         placeholder="Nombre o campo..."
                                         className="w-full rounded-2xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
                                     />
@@ -389,11 +446,17 @@ export default function Campania() {
                                 <select
                                     value={statusFilter}
                                     onChange={(e) =>
-                                        setStatusFilter(e.target.value as CampaignStatus | "Todas")
+                                        setStatusFilter(
+                                            e.target.value as
+                                                | CampaignStatus
+                                                | "Todas",
+                                        )
                                     }
                                     className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
                                 >
-                                    <option value="Todas">Todos los estados</option>
+                                    <option value="Todas">
+                                        Todos los estados
+                                    </option>
                                     {statuses.map((status) => (
                                         <option key={status} value={status}>
                                             {status}
@@ -408,12 +471,19 @@ export default function Campania() {
                                 </span>
                                 <select
                                     value={fieldFilter}
-                                    onChange={(e) => setFieldFilter(e.target.value)}
+                                    onChange={(e) =>
+                                        setFieldFilter(e.target.value)
+                                    }
                                     className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
                                 >
-                                    <option value="Todos">Todos los campos</option>
+                                    <option value="Todos">
+                                        Todos los campos
+                                    </option>
                                     {campos.map((field) => (
-                                        <option key={field.id} value={String(field.id)}>
+                                        <option
+                                            key={field.id}
+                                            value={String(field.id)}
+                                        >
                                             {field.nombre}
                                         </option>
                                     ))}
@@ -447,7 +517,8 @@ export default function Campania() {
                                         No hay campanias para mostrar
                                     </h2>
                                     <p className="mt-2 text-sm text-stone-500">
-                                        Ajusta los filtros o crea una nueva campania para empezar.
+                                        Ajusta los filtros o crea una nueva
+                                        campania para empezar.
                                     </p>
                                 </div>
                             ) : (
@@ -458,11 +529,17 @@ export default function Campania() {
                                         isProductor={isProductor}
                                         fieldName={
                                             campaign.campo_id !== null
-                                                ? (fieldById[campaign.campo_id] ?? "Sin campo")
+                                                ? (fieldById[
+                                                      campaign.campo_id
+                                                  ] ?? "Sin campo")
                                                 : "Sin campo"
                                         }
-                                        onView={() => void openDetailModal(campaign.id)}
-                                        onEdit={() => openEditModal(campaign.id)}
+                                        onView={() =>
+                                            void openDetailModal(campaign.id)
+                                        }
+                                        onEdit={() =>
+                                            openEditModal(campaign.id)
+                                        }
                                     />
                                 ))
                             )}

@@ -43,7 +43,9 @@ export default function ModalDetalleCampania({
         <Modal show={show} onClose={onClose} maxWidth="lg">
             <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold text-gray-900">Detalle de campania</h2>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                        Detalle de campaña
+                    </h2>
                     <button
                         type="button"
                         onClick={onClose}
@@ -60,20 +62,24 @@ export default function ModalDetalleCampania({
                         <p>
                             <strong>Campo:</strong>{" "}
                             {campania.campo_id !== null
-                                ? (fieldById[campania.campo_id] ?? "Campo desconocido")
+                                ? (fieldById[campania.campo_id] ??
+                                  "Campo desconocido")
                                 : "N/A"}
                         </p>
                         <p>
                             <strong>Cultivo:</strong>{" "}
                             {campania.cultivo_id !== null
-                                ? (cultivoById[campania.cultivo_id] ?? "Cultivo desconocido")
+                                ? (cultivoById[campania.cultivo_id] ??
+                                  "Cultivo desconocido")
                                 : "N/A"}
                         </p>
                         <p>
-                            <strong>Fecha inicio:</strong> {formatDate(campania.fecha_inicio)}
+                            <strong>Fecha inicio:</strong>{" "}
+                            {formatDate(campania.fecha_inicio)}
                         </p>
                         <p>
-                            <strong>Fecha fin:</strong> {formatDate(campania.fecha_fin)}
+                            <strong>Fecha fin:</strong>{" "}
+                            {formatDate(campania.fecha_fin)}
                         </p>
                         <p>
                             <strong>Estado:</strong> {campania.estado}

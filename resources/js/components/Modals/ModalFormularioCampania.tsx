@@ -7,7 +7,12 @@ import api from "@/lib/api";
 
 type CampaignStatus = "Planificada" | "En Curso" | "Finalizada" | "Cancelada";
 
-const statuses: CampaignStatus[] = ["Planificada", "En Curso", "Finalizada", "Cancelada"];
+const statuses: CampaignStatus[] = [
+    "Planificada",
+    "En Curso",
+    "Finalizada",
+    "Cancelada",
+];
 
 interface BackendCampo {
     id: number;
@@ -65,7 +70,7 @@ export default function ModalFormularioCampania({
     const [formError, setFormError] = useState<string | null>(null);
 
     const lotesFiltrados = useMemo(() => {
-        return lotes.filter(lote => lote.campo_id === Number(campoId));
+        return lotes.filter((lote) => lote.campo_id === Number(campoId));
     }, [lotes, campoId]);
 
     useEffect(() => {
@@ -78,20 +83,26 @@ export default function ModalFormularioCampania({
                     setNombre(data.nombre);
                     setFechaInicio(data.fecha_inicio ?? "");
                     setFechaFin(data.fecha_fin ?? "");
-                    setCampoId(data.campo_id !== null ? String(data.campo_id) : "");
-                    setCultivoId(data.cultivo_id !== null ? String(data.cultivo_id) : "");
+                    setCampoId(
+                        data.campo_id !== null ? String(data.campo_id) : "",
+                    );
+                    setCultivoId(
+                        data.cultivo_id !== null ? String(data.cultivo_id) : "",
+                    );
                     setEstado(data.estado);
                     setFormError(null);
                 })
-                .catch(() => setFormError("Error al cargar la campania."));
-            
+                .catch(() => setFormError("Error al cargar la campaña."));
+
             // Cargar lotes asociados
             api.get(`/api/campanias/${editingCampaniaId}/lotes`)
                 .then((res) => res.json())
-                .then((data: {id: number}[]) => {
-                    setSelectedLotes(data.map(l => l.id));
+                .then((data: { id: number }[]) => {
+                    setSelectedLotes(data.map((l) => l.id));
                 })
-                .catch(() => setFormError("Error al cargar los lotes asociados."));
+                .catch(() =>
+                    setFormError("Error al cargar los lotes asociados."),
+                );
         } else {
             setNombre("");
             setFechaInicio("");
@@ -117,11 +128,13 @@ export default function ModalFormularioCampania({
             return;
         }
         if (!campoId) {
-            setFormError("Debes seleccionar un campo para crear la campania.");
+            setFormError("Debes seleccionar un campo para crear la campaña.");
             return;
         }
         if (fechaFin && fechaFin < fechaInicio) {
-            setFormError("La fecha de fin no puede ser anterior a la fecha de inicio.");
+            setFormError(
+                "La fecha de fin no puede ser anterior a la fecha de inicio.",
+            );
             return;
         }
 
@@ -148,8 +161,8 @@ export default function ModalFormularioCampania({
                 throw new Error(
                     data?.message ??
                         (editingCampaniaId
-                            ? "Error al actualizar la campania."
-                            : "Error al crear la campania."),
+                            ? "Error al actualizar la campaña."
+                            : "Error al crear la campaña."),
                 );
             }
 
@@ -157,7 +170,9 @@ export default function ModalFormularioCampania({
             handleClose();
         } catch (err) {
             setFormError(
-                err instanceof Error ? err.message : "No se pudo guardar la campania.",
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo guardar la campaña.",
             );
         } finally {
             setSaving(false);
@@ -169,7 +184,9 @@ export default function ModalFormularioCampania({
             <form onSubmit={handleSubmit} className="p-6">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-2xl font-semibold text-gray-900">
-                        {editingCampaniaId ? "Editar campania" : "Crear nueva campania"}
+                        {editingCampaniaId
+                            ? "Editar campaña"
+                            : "Crear nueva campaña"}
                     </h2>
                     <button
                         type="button"
@@ -181,18 +198,24 @@ export default function ModalFormularioCampania({
                 </div>
                 <div className="space-y-4">
                     <div>
-                        <InputLabel htmlFor="campania-nombre" value="Nombre de la campania" />
+                        <InputLabel
+                            htmlFor="campania-nombre"
+                            value="Nombre de la campaña"
+                        />
                         <TextInput
                             id="campania-nombre"
                             value={nombre}
                             onChange={(e) => setNombre(e.target.value)}
-                            placeholder="Ej: Campania fina 2026"
+                            placeholder="Ej: campaña fina 2026"
                             className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50"
                             required
                         />
                     </div>
                     <div>
-                        <InputLabel htmlFor="campania-campo" value="Campo asociado" />
+                        <InputLabel
+                            htmlFor="campania-campo"
+                            value="Campo asociado"
+                        />
                         <select
                             id="campania-campo"
                             value={campoId}
@@ -208,7 +231,10 @@ export default function ModalFormularioCampania({
                         </select>
                     </div>
                     <div>
-                        <InputLabel htmlFor="campania-cultivo" value="Cultivo asociado" />
+                        <InputLabel
+                            htmlFor="campania-cultivo"
+                            value="Cultivo asociado"
+                        />
                         <select
                             id="campania-cultivo"
                             value={cultivoId}
@@ -217,7 +243,10 @@ export default function ModalFormularioCampania({
                         >
                             <option value="">Selecciona un cultivo</option>
                             {cultivos.map((cultivo) => (
-                                <option key={cultivo.id} value={String(cultivo.id)}>
+                                <option
+                                    key={cultivo.id}
+                                    value={String(cultivo.id)}
+                                >
                                     {cultivo.tipo}
                                 </option>
                             ))}
@@ -227,23 +256,40 @@ export default function ModalFormularioCampania({
                         <InputLabel value="Lotes asociados" />
                         <div className="mt-2 max-h-32 overflow-y-auto rounded-2xl border border-stone-300 bg-stone-50 p-4">
                             {lotesFiltrados.length === 0 ? (
-                                <p className="text-sm text-stone-500">No hay lotes disponibles para este campo.</p>
+                                <p className="text-sm text-stone-500">
+                                    No hay lotes disponibles para este campo.
+                                </p>
                             ) : (
                                 lotesFiltrados.map((lote) => (
-                                    <label key={lote.id} className="flex items-center gap-2">
+                                    <label
+                                        key={lote.id}
+                                        className="flex items-center gap-2"
+                                    >
                                         <input
                                             type="checkbox"
-                                            checked={selectedLotes.includes(lote.id)}
+                                            checked={selectedLotes.includes(
+                                                lote.id,
+                                            )}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    setSelectedLotes(prev => [...prev, lote.id]);
+                                                    setSelectedLotes((prev) => [
+                                                        ...prev,
+                                                        lote.id,
+                                                    ]);
                                                 } else {
-                                                    setSelectedLotes(prev => prev.filter(id => id !== lote.id));
+                                                    setSelectedLotes((prev) =>
+                                                        prev.filter(
+                                                            (id) =>
+                                                                id !== lote.id,
+                                                        ),
+                                                    );
                                                 }
                                             }}
                                             className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
                                         />
-                                        <span className="text-sm text-stone-800">{lote.nombre}</span>
+                                        <span className="text-sm text-stone-800">
+                                            {lote.nombre}
+                                        </span>
                                     </label>
                                 ))
                             )}
@@ -251,7 +297,10 @@ export default function ModalFormularioCampania({
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <InputLabel htmlFor="campania-fecha-inicio" value="Fecha de inicio" />
+                            <InputLabel
+                                htmlFor="campania-fecha-inicio"
+                                value="Fecha de inicio"
+                            />
                             <TextInput
                                 id="campania-fecha-inicio"
                                 type="date"
@@ -262,7 +311,10 @@ export default function ModalFormularioCampania({
                             />
                         </div>
                         <div>
-                            <InputLabel htmlFor="campania-fecha-fin" value="Fecha de fin" />
+                            <InputLabel
+                                htmlFor="campania-fecha-fin"
+                                value="Fecha de fin"
+                            />
                             <TextInput
                                 id="campania-fecha-fin"
                                 type="date"
@@ -277,7 +329,9 @@ export default function ModalFormularioCampania({
                         <select
                             id="campania-estado"
                             value={estado}
-                            onChange={(e) => setEstado(e.target.value as CampaignStatus)}
+                            onChange={(e) =>
+                                setEstado(e.target.value as CampaignStatus)
+                            }
                             className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
                         >
                             {statuses.map((s) => (
@@ -309,8 +363,8 @@ export default function ModalFormularioCampania({
                         {saving
                             ? "Guardando..."
                             : editingCampaniaId
-                              ? "Actualizar campania"
-                              : "Crear campania"}
+                              ? "Actualizar campaña"
+                              : "Crear campaña"}
                     </button>
                 </div>
             </form>

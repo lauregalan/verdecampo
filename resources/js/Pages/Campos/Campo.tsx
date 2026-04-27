@@ -15,7 +15,6 @@ import ModalFormularioCampo from "@/components/Modals/ModalFormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
 import api from "@/lib/api";
-// import Campania from "../Campanias/Campania";
 import { Maximize2, Sprout } from "lucide-react";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import { ProductoSumary } from "./ProductoSumary";
@@ -210,8 +209,10 @@ const FieldCard = ({
     );
 };
 export default function Campo() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
