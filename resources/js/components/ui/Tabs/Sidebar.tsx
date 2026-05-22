@@ -10,7 +10,6 @@ import {
     Tractor,
     Wheat,
     BugOff,
-    Tractor,
 } from "lucide-react";
 import { Link, usePage } from "@inertiajs/react";
 import {
@@ -131,7 +130,7 @@ export default function AppSidebar() {
                                 className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/lotes">
-                                    <Sprout size={18} />
+                                    <Tractor size={18} />
                                     <span className="font-medium">
                                         Mis Lotes
                                     </span>
@@ -157,10 +156,13 @@ export default function AppSidebar() {
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 asChild
-                                isActive={currentPath.startsWith("/campania")}
+                                isActive={
+                                    currentPath.startsWith("/campania") ||
+                                    currentPath.startsWith("/campanias")
+                                }
                                 className="hover:bg-white/10 text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
-                                <Link href="/campania">
+                                <Link href="/campanias">
                                     <CalendarDays size={18} />
                                     <span className="font-medium">
                                         Campañas

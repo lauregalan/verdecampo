@@ -1,14 +1,13 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ItemCard from "@/components/ui/ItemCard";
+import { usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
     CalendarDays,
     Clock3,
-    Eye,
     Filter,
-    Pencil,
     Plus,
     Search,
     Sprout,
@@ -137,12 +136,17 @@ function CampaignCard({
                 }
             ]}
             onView={onView}
-            onEdit={onEdit}
+            onEdit={isProductor ? onEdit : undefined}
         />
     );
 }
 
 export default function Campania() {
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
+
     const filtrosIniciales = useMemo(() => {
         if (typeof window === "undefined") {
             return {

@@ -1,6 +1,6 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
@@ -76,6 +76,11 @@ const estadoLabels: Record<string, string> = {
 };
 
 export default function Lotes() {
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
+
     const filtrosIniciales = useMemo(() => {
         if (typeof window === "undefined") {
             return {
@@ -539,14 +544,16 @@ export default function Lotes() {
                                 Gestion de Lotes
                             </h1>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setShowFormulario(true)}
-                            className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
-                        >
-                            <Plus size={20} />
-                            Nuevo Lote
-                        </button>
+                        {isProductor && (
+                            <button
+                                type="button"
+                                onClick={() => setShowFormulario(true)}
+                                className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Plus size={20} />
+                                Nuevo Lote
+                            </button>
+                        )}
                     </div>
                     <p className="text-sm text-stone-500">
                         Gestiona la superficie, el estado y la trazabilidad de cada lote.
@@ -826,6 +833,7 @@ export default function Lotes() {
                                     <LoteCard
                                         key={lote.id}
                                         lote={lote}
+                                        isProductor={isProductor}
                                         fieldName={fieldById[lote.idCampo] ?? "Sin campo"}
                                         onOpenDetail={() => {
                                             const returnTo =

@@ -37,6 +37,7 @@ export default function LoteCard({
     onOpenDetail,
     onEdit,
     onDelete,
+    isProductor,
 }: LoteCardProps) {
     const renderImage = () => {
         switch (lote.estado) {
@@ -131,8 +132,8 @@ export default function LoteCard({
             image={renderImage()}
             onClick={onOpenDetail}
             onView={onOpenDetail}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onEdit={isProductor ? onEdit : undefined}
+            onDelete={isProductor ? onDelete : undefined}
         />
     );
 }

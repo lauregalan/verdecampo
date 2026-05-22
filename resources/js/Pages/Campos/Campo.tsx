@@ -1,22 +1,13 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ItemCard from "@/components/ui/ItemCard";
-import { router } from "@inertiajs/react";
-import {
-    ClipboardPlus,
-    Eye,
-    Layers,
-    MapPin,
-    Pencil,
-    Plus,
-    Trash2,
-} from "lucide-react";
+import { router, usePage } from "@inertiajs/react";
+import { Layers, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ModalFormularioCampo from "@/components/Modals/ModalFormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
 import api from "@/lib/api";
-// import Campania from "../Campanias/Campania";
 import { Maximize2, Sprout } from "lucide-react";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import { ProductoSumary } from "./ProductoSumary";
@@ -52,17 +43,7 @@ const toCampoCard = (campo: BackendCampo): CampoCard => ({
     longitude: Number.parseFloat(campo.longitud) || 0,
     polygon: [],
 });
-
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-
 const FieldCard = ({
-    id,
     name,
     surface,
     status,
@@ -76,7 +57,7 @@ const FieldCard = ({
     isProductor,
 }: FieldCardProps) => {
     const config = statusStyles[statusColor];
-    const { className, Icon } = config;
+    const { className } = config;
 
     return (
         <ItemCard
@@ -107,8 +88,8 @@ const FieldCard = ({
             }
             onClick={onOpenDetail}
             onView={onOpenDetail}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onEdit={isProductor ? onEdit : undefined}
+            onDelete={isProductor ? onDelete : undefined}
             additionalButtons={
                 <button
                     type="button"
@@ -126,8 +107,10 @@ const FieldCard = ({
     );
 };
 export default function Campo() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [campos, setCampos] = useState<CampoCard[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
