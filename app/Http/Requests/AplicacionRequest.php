@@ -25,8 +25,8 @@ class AplicacionRequest extends FormRequest
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     $campania = Campania::find($value);
 
-                    if ($campania?->estado === 'Finalizada') {
-                        $fail('No se puede registrar una aplicacion en una campania finalizada.');
+                    if (in_array($campania?->estado, ['Planificada', 'Finalizada', 'Cancelada'], true)) {
+                        $fail('Solo se pueden registrar aplicaciones en campanias en curso.');
                     }
                 },
             ],
