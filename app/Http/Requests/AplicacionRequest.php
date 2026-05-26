@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Campania;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,18 @@ class AplicacionRequest extends FormRequest
         return [
             'producto_aplicacion_id' => ['required', 'integer', 'exists:productos_aplicaciones,id'],
             'tipo_aplicacion_id' => ['required', 'integer', 'exists:tipos_aplicaciones,id'],
-            'campania_id' => ['required', 'integer', 'exists:campanias,id'],
+            'campania_id' => [
+                'required',
+                'integer',
+                'exists:campanias,id',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $campania = Campania::find($value);
+
+                    if ($campania?->estado === 'Finalizada') {
+                        $fail('No se puede registrar una aplicacion en una campania finalizada.');
+                    }
+                },
+            ],
             'lote_id' => [
                 'required',
                 'integer',
