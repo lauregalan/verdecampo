@@ -9,15 +9,23 @@ class SiembraService
     private function formatSiembra(Siembra $siembra): array
     {
         $antecesor = $siembra->ultimo_cultivo;
+        $cultivoNombre = trim(
+            implode(' ', array_filter([
+                $siembra->cultivo?->tipo,
+                $siembra->cultivo?->variedad,
+            ]))
+        );
 
         return [
             'id' => $siembra->id,
             'campania_id' => $siembra->campania_id,
-            'campania_nombre' => $siembra->campania->nombre,
+            'campania_nombre' => $siembra->campania?->nombre ?? "Campania #{$siembra->campania_id}",
             'lote_id' => $siembra->lote_id,
-            'lote_nombre' => $siembra->lote->nombre,
+            'lote_nombre' => $siembra->lote?->nombre ?? "Lote #{$siembra->lote_id}",
             'cultivo_id' => $siembra->cultivo_id,
-            'cultivo_nombre' => $siembra->cultivo->tipo . ' ' . $siembra->cultivo->variedad,
+            'cultivo_nombre' => $cultivoNombre !== ''
+                ? $cultivoNombre
+                : "Cultivo #{$siembra->cultivo_id}",
             'cultivo_antecesor_nombre' => $antecesor
                 ? $antecesor->tipo . ' ' . $antecesor->variedad
                 : null,
@@ -29,6 +37,7 @@ class SiembraService
     public function getAll()
     {
         return Siembra::with(['campania', 'lote', 'cultivo'])
+            ->orderByDesc('fecha_siembra')
             ->get()
             ->map(fn($siembra) => $this->formatSiembra($siembra));
     }
@@ -37,6 +46,7 @@ class SiembraService
     {
         return Siembra::with(['campania', 'lote', 'cultivo'])
             ->where('campania_id', $id_campania)
+            ->orderByDesc('fecha_siembra')
             ->get()
             ->map(fn($siembra) => $this->formatSiembra($siembra));
     }
