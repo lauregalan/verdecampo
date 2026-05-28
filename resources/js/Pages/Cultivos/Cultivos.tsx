@@ -21,11 +21,13 @@ interface Cultivo {
     updated_at?: string;
 }
 
-const PER_PAGE = 2;
+const PER_PAGE = 25;
 
 export default function Cultivos() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [cultivos, setcultivos] = useState<Cultivo[]>([]);
     const [loading, setLoading] = useState(true);
@@ -153,31 +155,35 @@ export default function Cultivos() {
                     <span className="italic text-gray-400">Sin notas</span>
                 ),
         },
-        ...(isProductor ? [{
-            id: "acciones",
-            header: "Acciones",
-            headerClassName:
-                "px-6 py-4 text-right text-sm font-semibold text-gray-900",
-            cellClassName: "px-6 py-4 text-right",
-            cell: (c: Cultivo) => (
-                <div className="flex justify-end gap-2">
-                    <button
-                        onClick={() => handleAbrirFormulario(c)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
-                    >
-                        <Edit2 size={14} />
-                        Editar
-                    </button>
-                    <button
-                        onClick={() => setcultivoAEliminar(c)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
-                    >
-                        <Trash2 size={14} />
-                        Eliminar
-                    </button>
-                </div>
-            ),
-        } as ColumnDef<Cultivo>] : []),
+        ...(isProductor
+            ? [
+                  {
+                      id: "acciones",
+                      header: "Acciones",
+                      headerClassName:
+                          "px-6 py-4 text-right text-sm font-semibold text-gray-900",
+                      cellClassName: "px-6 py-4 text-right",
+                      cell: (c: Cultivo) => (
+                          <div className="flex justify-end gap-2">
+                              <button
+                                  onClick={() => handleAbrirFormulario(c)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
+                              >
+                                  <Edit2 size={14} />
+                                  Editar
+                              </button>
+                              <button
+                                  onClick={() => setcultivoAEliminar(c)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+                              >
+                                  <Trash2 size={14} />
+                                  Eliminar
+                              </button>
+                          </div>
+                      ),
+                  } as ColumnDef<Cultivo>,
+              ]
+            : []),
     ];
 
     return (
