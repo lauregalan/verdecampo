@@ -8,7 +8,7 @@ class CosechaService
 {
     public function index()
     {
-        return Cosecha::with(['campania', 'lote'])->get();
+        return Cosecha::with(['campania', 'lote'])->orderByDesc('fecha')->get();
     }
 
     public function show(Cosecha $cosecha)

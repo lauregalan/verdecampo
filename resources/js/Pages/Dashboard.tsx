@@ -99,8 +99,10 @@ export default function Dashboard({
 
     const quickActions = [
         { href: "/campo", label: "Ver campos" },
-        { href: "/campanias", label: "Ver campanias" },
-        ...(is_productor ? [{ href: "/usuarios", label: "Gestionar usuarios" }] : []),
+        { href: "/campanias", label: "Ver campañas" },
+        ...(is_productor
+            ? [{ href: "/usuarios", label: "Gestionar usuarios" }]
+            : []),
     ];
 
     const campaignStatusMax = maxCount(campaign_status);
@@ -121,11 +123,16 @@ export default function Dashboard({
                                 </div>
 
                                 <h1 className="max-w-2xl text-3xl font-black tracking-tight text-white md:text-4xl">
-                                    Hola{authUser?.name ? `, ${authUser.name}` : ""}. Este es el estado general de Verdecampo.
+                                    Hola
+                                    {authUser?.name ? `, ${authUser.name}` : ""}
+                                    . Este es el estado general de Verdecampo.
                                 </h1>
 
                                 <p className="mt-3 max-w-2xl text-sm text-green-100/85 md:text-base">
-                                    Tenes {summary.campos_count} campos, {summary.lotes_count} lotes y {summary.active_campaigns_count} campanias en curso.
+                                    Tenes {summary.campos_count} campos,{" "}
+                                    {summary.lotes_count} lotes y{" "}
+                                    {summary.active_campaigns_count} campanias
+                                    en curso.
                                     {is_productor
                                         ? ` Ademas, hay ${summary.pending_users_count} usuarios pendientes de revision.`
                                         : ` Tu rol actual es ${roleLabel}.`}
@@ -150,9 +157,12 @@ export default function Dashboard({
                                         Superficie cargada
                                     </div>
                                     <div className="mt-2 text-4xl font-black text-white">
-                                        {summary.surface_hectares.toLocaleString("es-AR", {
-                                            maximumFractionDigits: 1,
-                                        })}
+                                        {summary.surface_hectares.toLocaleString(
+                                            "es-AR",
+                                            {
+                                                maximumFractionDigits: 1,
+                                            },
+                                        )}
                                     </div>
                                     <div className="mt-1 text-sm text-green-100/80">
                                         Hectareas entre todos los campos
@@ -180,30 +190,53 @@ export default function Dashboard({
                                 label: "Campos",
                                 value: summary.campos_count,
                                 detail: "Unidades productivas cargadas",
-                                icon: <Sprout size={18} className="text-emerald-700" />,
+                                icon: (
+                                    <Sprout
+                                        size={18}
+                                        className="text-emerald-700"
+                                    />
+                                ),
                             },
                             {
                                 label: "Lotes",
                                 value: summary.lotes_count,
                                 detail: "Sectores operativos registrados",
-                                icon: <Target size={18} className="text-emerald-700" />,
+                                icon: (
+                                    <Target
+                                        size={18}
+                                        className="text-emerald-700"
+                                    />
+                                ),
                             },
                             {
-                                label: "Campanias activas",
+                                label: "Campañas activas",
                                 value: summary.active_campaigns_count,
-                                detail: "Campanias en estado En Curso",
-                                icon: <CalendarDays size={18} className="text-emerald-700" />,
+                                detail: "Campañas en estado En Curso",
+                                icon: (
+                                    <CalendarDays
+                                        size={18}
+                                        className="text-emerald-700"
+                                    />
+                                ),
                             },
                             {
                                 label: "Pendientes",
-                                value: is_productor ? summary.pending_users_count : summary.cultivos_count,
+                                value: is_productor
+                                    ? summary.pending_users_count
+                                    : summary.cultivos_count,
                                 detail: is_productor
                                     ? "Usuarios sin activar o sin rol"
                                     : "Cultivos disponibles para seguimiento",
                                 icon: is_productor ? (
-                                    <GroupIcon size={18} className="text-emerald-700" />
+                                    <GroupIcon
+                                        size={18}
+                                        className="text-emerald-700"
+                                    />
                                 ) : (
-                                    <TrendingUp size={18} className="text-emerald-700" />
+                                    <TrendingUp
+                                        size={18}
+                                        className="text-emerald-700"
+                                    />
                                 ),
                             },
                         ].map((card) => (
@@ -222,7 +255,9 @@ export default function Dashboard({
                                 <div className="mt-4 text-4xl font-black tracking-tight text-stone-900">
                                     {card.value}
                                 </div>
-                                <p className="mt-2 text-sm text-stone-500">{card.detail}</p>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    {card.detail}
+                                </p>
                             </article>
                         ))}
                     </section>
@@ -232,10 +267,11 @@ export default function Dashboard({
                             <div className="mb-6 flex items-center justify-between gap-4">
                                 <div>
                                     <h2 className="text-2xl font-black tracking-tight text-stone-900">
-                                        Campanias activas y planificadas
+                                        Campañas activas y planificadas
                                     </h2>
                                     <p className="text-sm text-stone-500">
-                                        Lo mas importante para seguir durante esta etapa.
+                                        Lo mas importante para seguir durante
+                                        esta etapa.
                                     </p>
                                 </div>
                                 <Link
@@ -249,7 +285,8 @@ export default function Dashboard({
                             <div className="space-y-3">
                                 {campaign_highlights.length === 0 ? (
                                     <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-5 py-10 text-center text-sm text-stone-500">
-                                        Todavia no hay campanias activas ni planificadas.
+                                        Todavia no hay campañas activas ni
+                                        planificadas.
                                     </div>
                                 ) : (
                                     campaign_highlights.map((campaign) => (
@@ -269,10 +306,20 @@ export default function Dashboard({
                                                     </span>
                                                 </div>
                                                 <p className="mt-2 text-sm text-stone-600">
-                                                    Campo: <span className="font-semibold text-stone-800">{campaign.campo_nombre}</span>
+                                                    Campo:{" "}
+                                                    <span className="font-semibold text-stone-800">
+                                                        {campaign.campo_nombre}
+                                                    </span>
                                                 </p>
                                                 <p className="mt-1 text-sm text-stone-500">
-                                                    Inicio {formatDate(campaign.fecha_inicio)} | Fin {formatDate(campaign.fecha_fin)}
+                                                    Inicio{" "}
+                                                    {formatDate(
+                                                        campaign.fecha_inicio,
+                                                    )}{" "}
+                                                    | Fin{" "}
+                                                    {formatDate(
+                                                        campaign.fecha_fin,
+                                                    )}
                                                 </p>
                                             </div>
 
@@ -295,7 +342,9 @@ export default function Dashboard({
                         <article className="rounded-[26px] border border-black/5 bg-white p-6 shadow-sm">
                             <div className="mb-6">
                                 <h2 className="text-2xl font-black tracking-tight text-stone-900">
-                                    {is_productor ? "Pendientes de usuarios" : "Resumen del equipo"}
+                                    {is_productor
+                                        ? "Pendientes de usuarios"
+                                        : "Resumen del equipo"}
                                 </h2>
                                 <p className="text-sm text-stone-500">
                                     {is_productor
@@ -308,7 +357,8 @@ export default function Dashboard({
                                 <div className="space-y-3">
                                     {pending_users.length === 0 ? (
                                         <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-5 py-10 text-center text-sm text-stone-500">
-                                            No hay usuarios pendientes. Buen trabajo.
+                                            No hay usuarios pendientes. Buen
+                                            trabajo.
                                         </div>
                                     ) : (
                                         pending_users.map((pendingUser) => (
@@ -326,7 +376,9 @@ export default function Dashboard({
                                                         </div>
                                                     </div>
                                                     <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
-                                                        {pendingUser.active ? "Sin rol" : "Pendiente"}
+                                                        {pendingUser.active
+                                                            ? "Sin rol"
+                                                            : "Pendiente"}
                                                     </span>
                                                 </div>
                                                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-stone-500">
@@ -334,7 +386,10 @@ export default function Dashboard({
                                                         {pendingUser.reason}
                                                     </span>
                                                     <span>
-                                                        Registrado el {formatDate(pendingUser.created_at)}
+                                                        Registrado el{" "}
+                                                        {formatDate(
+                                                            pendingUser.created_at,
+                                                        )}
                                                     </span>
                                                 </div>
                                             </div>
@@ -358,7 +413,9 @@ export default function Dashboard({
                                             {roleLabel}
                                         </div>
                                         <p className="mt-2 text-sm text-stone-500">
-                                            Usa este panel para ubicar rapido campanias, campos y el estado general de la operacion.
+                                            Usa este panel para ubicar rapido
+                                            campañas, campos y el estado general
+                                            de la operacion.
                                         </p>
                                     </div>
 
@@ -367,7 +424,9 @@ export default function Dashboard({
                                             Proximo paso recomendado
                                         </div>
                                         <p className="mt-2 text-sm text-emerald-900">
-                                            Revisa los campos y las campanias activas para mantener al dia la informacion del lote y del cultivo.
+                                            Revisa los campos y las campañas
+                                            activas para mantener al dia la
+                                            informacion del lote y del cultivo.
                                         </p>
                                     </div>
                                 </div>
@@ -379,10 +438,11 @@ export default function Dashboard({
                         <article className="rounded-[26px] border border-black/5 bg-white p-6 shadow-sm">
                             <div className="mb-5">
                                 <h2 className="text-2xl font-black tracking-tight text-stone-900">
-                                    Estado de campanias
+                                    Estado de campañas
                                 </h2>
                                 <p className="text-sm text-stone-500">
-                                    Distribucion por etapa para ver rapido la carga de trabajo.
+                                    Distribucion por etapa para ver rapido la
+                                    carga de trabajo.
                                 </p>
                             </div>
 
@@ -390,8 +450,12 @@ export default function Dashboard({
                                 {campaign_status.map((item) => (
                                     <div key={item.label}>
                                         <div className="mb-1 flex items-center justify-between text-sm">
-                                            <span className="font-semibold text-stone-700">{item.label}</span>
-                                            <span className="font-bold text-stone-900">{item.count}</span>
+                                            <span className="font-semibold text-stone-700">
+                                                {item.label}
+                                            </span>
+                                            <span className="font-bold text-stone-900">
+                                                {item.count}
+                                            </span>
                                         </div>
                                         <div className="h-3 overflow-hidden rounded-full bg-stone-100">
                                             <div
@@ -412,7 +476,8 @@ export default function Dashboard({
                                     Estado de lotes
                                 </h2>
                                 <p className="text-sm text-stone-500">
-                                    Lectura rapida de la situacion operativa actual.
+                                    Lectura rapida de la situacion operativa
+                                    actual.
                                 </p>
                             </div>
 
@@ -420,8 +485,12 @@ export default function Dashboard({
                                 {lote_status.map((item) => (
                                     <div key={item.label}>
                                         <div className="mb-1 flex items-center justify-between text-sm">
-                                            <span className="font-semibold text-stone-700">{item.label}</span>
-                                            <span className="font-bold text-stone-900">{item.count}</span>
+                                            <span className="font-semibold text-stone-700">
+                                                {item.label}
+                                            </span>
+                                            <span className="font-bold text-stone-900">
+                                                {item.count}
+                                            </span>
                                         </div>
                                         <div className="h-3 overflow-hidden rounded-full bg-stone-100">
                                             <div
