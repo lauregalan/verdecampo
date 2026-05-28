@@ -301,11 +301,6 @@ export default function CampoDetalle() {
                                     <Button asChild variant="default">
                                         <Link href="/clutivos">Ver cultivos</Link>
                                     </Button>
-                                    <Button asChild variant="default">
-                                        <Link href={`/campo/${campo.id}/lotes`}>
-                                            Ver informes
-                                        </Link>
-                                    </Button>
                                 </div>
                             </div>
                         </div>
