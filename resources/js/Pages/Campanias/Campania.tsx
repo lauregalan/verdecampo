@@ -92,6 +92,9 @@ const parseFieldFilter = (value: string | null) => {
         : "Todos";
 };
 
+const parseLoteFilter = (searchParams: URLSearchParams) =>
+    parseFieldFilter(searchParams.get("loteId") ?? searchParams.get("lote_id"));
+
 function CampaignCard({
     campaign,
     fieldName,
@@ -153,6 +156,7 @@ export default function Campania() {
                 busqueda: "",
                 estado: "Todas" as CampaignStatus | "Todas",
                 campo: "Todos",
+                lote: "Todos",
             };
         }
 
@@ -167,6 +171,7 @@ export default function Campania() {
                     ? (estado as CampaignStatus | "Todas")
                     : "Todas",
             campo: parseFieldFilter(searchParams.get("campoId")),
+            lote: parseLoteFilter(searchParams),
         };
     }, []);
 
@@ -183,6 +188,10 @@ export default function Campania() {
         filtrosIniciales.estado,
     );
     const [fieldFilter, setFieldFilter] = useState(filtrosIniciales.campo);
+    const [loteFilter, setLoteFilter] = useState(filtrosIniciales.lote);
+    const [lotesPorCampania, setLotesPorCampania] = useState<
+        Record<number, number[]>
+    >({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -192,10 +201,38 @@ export default function Campania() {
             const response = await api.get("/api/campanias");
             if (!response.ok) throw new Error();
             const payload = (await response.json()) as BackendCampania[];
-            setCampanias(Array.isArray(payload) ? payload : []);
+            const campaniasData = Array.isArray(payload) ? payload : [];
+            setCampanias(campaniasData);
+
+            const lotesEntries = await Promise.all(
+                campaniasData.map(async (campania) => {
+                    try {
+                        const lotesResponse = await api.get(
+                            `/api/campanias/${campania.id}/lotes`,
+                        );
+
+                        if (!lotesResponse.ok) {
+                            return [campania.id, []] as const;
+                        }
+
+                        const lotesPayload =
+                            (await lotesResponse.json()) as BackendLote[];
+                        const loteIds = Array.isArray(lotesPayload)
+                            ? lotesPayload.map((lote) => lote.id)
+                            : [];
+
+                        return [campania.id, loteIds] as const;
+                    } catch {
+                        return [campania.id, []] as const;
+                    }
+                }),
+            );
+
+            setLotesPorCampania(Object.fromEntries(lotesEntries));
             setError(null);
         } catch {
             setCampanias([]);
+            setLotesPorCampania({});
             setError("Error al cargar campanias desde el backend.");
         } finally {
             setLoading(false);
@@ -259,6 +296,9 @@ export default function Campania() {
         if (fieldFilter !== "Todos") {
             searchParams.set("campoId", fieldFilter);
         }
+        if (loteFilter !== "Todos") {
+            searchParams.set("loteId", loteFilter);
+        }
 
         const queryString = searchParams.toString();
         const nextUrl = queryString
@@ -266,7 +306,7 @@ export default function Campania() {
             : window.location.pathname;
 
         window.history.replaceState({}, "", nextUrl);
-    }, [fieldFilter, search, statusFilter]);
+    }, [fieldFilter, loteFilter, search, statusFilter]);
 
     const fieldById = useMemo(
         () => Object.fromEntries(campos.map((campo) => [campo.id, campo.nombre])) as Record<number, string>,
@@ -295,14 +335,28 @@ export default function Campania() {
                 const matchesField =
                     fieldFilter === "Todos" ||
                     (campania.campo_id !== null && String(campania.campo_id) === fieldFilter);
-                return matchesSearch && matchesStatus && matchesField;
+                const matchesLote =
+                    loteFilter === "Todos" ||
+                    (lotesPorCampania[campania.id] ?? []).includes(
+                        Number(loteFilter),
+                    );
+
+                return matchesSearch && matchesStatus && matchesField && matchesLote;
             })
             .sort((a, b) => {
                 const byStatus = statusOrder[a.estado] - statusOrder[b.estado];
                 if (byStatus !== 0) return byStatus;
                 return a.nombre.localeCompare(b.nombre, "es");
             });
-    }, [campanias, fieldById, fieldFilter, search, statusFilter]);
+    }, [
+        campanias,
+        fieldById,
+        fieldFilter,
+        loteFilter,
+        lotesPorCampania,
+        search,
+        statusFilter,
+    ]);
 
     const summary = useMemo(
         () => ({
@@ -382,7 +436,7 @@ export default function Campania() {
                     </section>
 
                     <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
-                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
+                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_auto]">
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                                     <Search size={14} />
@@ -432,6 +486,24 @@ export default function Campania() {
                                     {campos.map((field) => (
                                         <option key={field.id} value={String(field.id)}>
                                             {field.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label className="block">
+                                <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
+                                    <Sprout size={14} />
+                                    Lote
+                                </span>
+                                <select
+                                    value={loteFilter}
+                                    onChange={(e) => setLoteFilter(e.target.value)}
+                                    className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                >
+                                    <option value="Todos">Todos los lotes</option>
+                                    {lotes.map((lote) => (
+                                        <option key={lote.id} value={String(lote.id)}>
+                                            {lote.nombre}
                                         </option>
                                     ))}
                                 </select>

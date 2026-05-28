@@ -32,6 +32,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
 
     Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);
+
+    Route::apiResource('campos', CampoController::class)->only(['index', 'show']);
+
+    Route::apiResource('campanias', CampaniaController::class)->only(['index', 'show']);
+    Route::get('/campanias/{campania}/lotes', [CampaniaController::class, 'getLotes']);
+
     // Cultivos
     Route::apiResource('cultivos', CultivoController::class);
     Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);

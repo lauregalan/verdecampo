@@ -62,6 +62,8 @@ interface LoteSummary {
     siembras?: SiembraSummary[];
 }
 
+const asArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? value : []);
+
 export const ProductoSumary: React.FC = () => {
     const [campos, setCampos] = useState<CampoSummary[]>([]);
     const [lotes, setLotes] = useState<LoteSummary[]>([]);
@@ -82,8 +84,12 @@ export const ProductoSumary: React.FC = () => {
                     throw new Error("Error al cargar estadisticas");
                 }
 
-                const camposData = (await camposResponse.json()) as CampoSummary[];
-                const lotesData = (await lotesResponse.json()) as LoteSummary[];
+                const camposData = asArray<CampoSummary>(
+                    await camposResponse.json(),
+                );
+                const lotesData = asArray<LoteSummary>(
+                    await lotesResponse.json(),
+                );
 
                 setCampos(camposData);
                 setLotes(lotesData);
@@ -295,7 +301,7 @@ export const ProductoSumary: React.FC = () => {
                 <div className="mb-5 flex items-center gap-2">
                     <SproutIcon className="size-5 text-emerald-700" />
                     <h3 className="text-lg font-semibold text-stone-900">
-                        Cultivos en campana
+                        Cultivos en campaña
                     </h3>
                 </div>
                 <div className="h-72 flex-1">
@@ -333,7 +339,7 @@ export const ProductoSumary: React.FC = () => {
                         </ResponsiveContainer>
                     ) : (
                         <div className="flex h-full items-center justify-center text-sm text-stone-500">
-                            No hay cultivos activos en campanas en curso.
+                            No hay cultivos activos en campañas en curso.
                         </div>
                     )}
                 </div>

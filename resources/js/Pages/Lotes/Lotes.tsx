@@ -75,6 +75,8 @@ const estadoLabels: Record<string, string> = {
     disponible: "Disponibles",
 };
 
+const asArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? value : []);
+
 export default function Lotes() {
     const authUser = usePage().props.auth?.user as
         | { roles?: string[] }
@@ -149,7 +151,11 @@ export default function Lotes() {
     const GetLotes = useCallback(async () => {
         try {
             const response = await api.get("/api/lotes");
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener los lotes.");
+            }
+
+            const data = asArray<any>(await response.json());
             setLotes(data.map(mapearLote));
         } catch (fetchError) {
             console.error("Error fetching lots:", fetchError);
@@ -161,9 +167,13 @@ export default function Lotes() {
     const getCampos = useCallback(async () => {
         try {
             const response = await api.get("/api/campos");
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener los campos.");
+            }
+
+            const data = asArray<CampoDB>(await response.json());
             setCampos(
-                data.map((campo: CampoDB) => ({
+                data.map((campo) => ({
                     id: campo.id,
                     nombre: campo.nombre,
                 })),
@@ -179,10 +189,14 @@ export default function Lotes() {
             const resultLotes: IdLotesPorIdCampania[] = [];
             const resultCultivos: IdCultivoPorIdCampania[] = [];
             const response = await api.get("/api/campanias");
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener las campanias.");
+            }
+
+            const data = asArray<CampaniaDB>(await response.json());
 
             setCampanias(
-                data.map((campania: CampaniaDB) => ({
+                data.map((campania) => ({
                     id: campania.id,
                     nombre: campania.nombre,
                 })),
@@ -192,7 +206,11 @@ export default function Lotes() {
                 const responseLotes = await api.get(
                     `/api/campanias/${campania.id}/lotes`,
                 );
-                const dataLotes = await responseLotes.json();
+                if (!responseLotes.ok) {
+                    throw new Error("No se pudieron obtener los lotes de la campania.");
+                }
+
+                const dataLotes = asArray<any>(await responseLotes.json());
 
                 resultLotes.push({
                     campaniaId: campania.id,
@@ -220,9 +238,13 @@ export default function Lotes() {
     const getCultivos = useCallback(async () => {
         try {
             const response = await api.get("/api/cultivos");
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener los cultivos.");
+            }
+
+            const data = asArray<CultivoDB>(await response.json());
             setCultivos(
-                data.map((cultivo: CultivoDB) => ({
+                data.map((cultivo) => ({
                     id: cultivo.id,
                     nombre: cultivo.tipo,
                 })),

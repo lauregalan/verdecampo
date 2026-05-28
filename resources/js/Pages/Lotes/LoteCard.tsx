@@ -1,12 +1,23 @@
-import ItemCard from "@/components/ui/ItemCard";
 import { Lote } from "./types";
 import {
-    CheckCircle2,
-    Clock3,
+    Check,
+    ClipboardPlus,
+    Eye,
     Maximize2,
+    Pencil,
     Sprout,
+    Timer,
+    Trash2,
     Tractor,
 } from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { statusStyles } from "../Campos/mockCampos";
 
 interface LoteCardProps {
     lote: Lote;
@@ -17,72 +28,60 @@ interface LoteCardProps {
     isProductor: boolean;
 }
 
-const statusTone: Record<string, string> = {
-    produccion: "bg-emerald-100 text-emerald-700 ring-emerald-200",
-    barbecho: "bg-rose-100 text-rose-700 ring-rose-200",
-    preparacion: "bg-amber-100 text-amber-700 ring-amber-200",
-    disponible: "bg-sky-100 text-sky-700 ring-sky-200",
-};
-
-const statusLabel: Record<string, string> = {
-    produccion: "Produccion",
-    barbecho: "Barbecho",
-    preparacion: "Preparacion",
-    disponible: "Disponible",
-};
-
 export default function LoteCard({
     lote,
-    fieldName,
     onOpenDetail,
     onEdit,
     onDelete,
     isProductor,
 }: LoteCardProps) {
+    const config = statusStyles["verde"];
+    const { className, Icon } = config;
+
     const renderImage = () => {
         switch (lote.estado) {
             case "produccion":
                 return (
-                    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#0f7a48,#6ecf8b)]">
+                    <div className="h-full w-full bg-cover bg-center bg-green-500 flex items-center justify-center">
                         <Sprout
-                            size={50}
-                            className="text-white/90"
+                            size={48}
+                            className="text-white opacity-80"
                             aria-hidden="true"
                         />
                     </div>
                 );
             case "barbecho":
                 return (
-                    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#9f3c2e,#d78d69)]">
-                        <Clock3
-                            size={50}
-                            className="text-white/90"
+                    <div className="h-full w-full bg-cover bg-center bg-red-500 flex items-center justify-center">
+                        <Timer
+                            size={48}
+                            className="text-white opacity-80"
                             aria-hidden="true"
                         />
                     </div>
                 );
             case "preparacion":
                 return (
-                    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#af6b13,#f2c165)]">
+                    <div className="h-full w-full bg-cover bg-center bg-yellow-500 flex items-center justify-center">
                         <Tractor
-                            size={50}
-                            className="text-white/90"
+                            size={48}
+                            className="text-white opacity-80"
                             aria-hidden="true"
                         />
                     </div>
                 );
             case "disponible":
                 return (
-                    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#2563eb,#7dd3fc)]">
-                        <CheckCircle2
-                            size={50}
-                            className="text-white/90"
+                    <div className="h-full w-full bg-cover bg-center bg-green-200 flex items-center justify-center">
+                        <Check
+                            size={48}
+                            className="text-white opacity-80"
                             aria-hidden="true"
                         />
                     </div>
                 );
             default:
-                return <div className="h-full w-full bg-stone-300" />;
+                return <div className="h-full w-full bg-cover bg-center bg-gray-500" />;
         }
     };
 
@@ -107,33 +106,108 @@ export default function LoteCard({
     };
 
     return (
-        <ItemCard
-            eyebrow="Lote"
-            title={lote.nombre}
-            subtitle={`Campo: ${fieldName}`}
-            badge={{
-                label: statusLabel[lote.estado] ?? lote.estado,
-                className:
-                    statusTone[lote.estado] ??
-                    "bg-stone-100 text-stone-700 ring-stone-200",
-            }}
-            stats={[
-                {
-                    icon: <Maximize2 size={16} />,
-                    label: "Superficie",
-                    value: `${lote.hectareas} Ha`,
-                },
-                {
-                    icon: <Sprout size={16} />,
-                    label: "Cultivo",
-                    value: getCultivoActual(),
-                },
-            ]}
-            image={renderImage()}
+        <Card
+            role="button"
+            tabIndex={0}
             onClick={onOpenDetail}
-            onView={onOpenDetail}
-            onEdit={isProductor ? onEdit : undefined}
-            onDelete={isProductor ? onDelete : undefined}
-        />
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpenDetail();
+                }
+            }}
+            className="group flex h-full cursor-pointer flex-col overflow-hidden border-stone-300 bg-[#FCFBF8] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/50"
+            aria-label={`Abrir detalle de ${lote.nombre}`}
+            data-lote-id={lote.id}
+        >
+            <div className="h-60 w-full shrink-0 overflow-hidden border-b border-stone-200 bg-stone-100">
+                {renderImage()}
+            </div>
+
+            <CardHeader className="flex flex-row items-start justify-between gap-2 p-4 pb-2 space-y-0">
+                <CardTitle className="text-base font-bold uppercase tracking-wide text-stone-800 line-clamp-1">
+                    {lote.nombre}
+                </CardTitle>
+                <span
+                    className={`shrink-0 inline-flex items-center rounded-full gap-1 px-1 py-1 text-[10px] font-bold uppercase tracking-wider ${className}`}
+                >
+                    <Icon className="size-3.5" aria-hidden="true" />
+                    <span>{lote.estado}</span>
+                </span>
+            </CardHeader>
+
+            <CardContent className="flex-grow flex flex-col justify-center gap-1.5 p-4 pt-1">
+                <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                        <Maximize2
+                            className="size-4 text-stone-400"
+                            aria-hidden="true"
+                        />
+                        <span className="font-semibold text-stone-800">
+                            Superficie:
+                        </span>
+                    </div>
+                    <span className="font-normal text-stone-600">
+                        {lote.hectareas}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <Sprout
+                            className="size-4 text-stone-400"
+                            aria-hidden="true"
+                        />
+                        <span className="font-semibold text-stone-800">
+                            Cultivo:
+                        </span>
+                    </div>
+                    <span className="font-normal truncate text-stone-600 ml-2">
+                        {getCultivoActual()}
+                    </span>
+                </div>
+            </CardContent>
+
+            <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenDetail();
+                    }}
+                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                    title="Ver detalle completo"
+                >
+                    <Eye strokeWidth={1.5} size={16} />
+                </button>
+
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
+                        title="Editar"
+                    >
+                        <Pencil strokeWidth={1.5} size={16} />
+                    </button>
+                )}
+
+                {isProductor && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        className="rounded bg-transparent p-1.5 transition-colors hover:bg-red-50 hover:text-red-700"
+                        title="Eliminar"
+                    >
+                        <Trash2 strokeWidth={1.5} size={16} />
+                    </button>
+                )}
+            </CardFooter>
+        </Card>
     );
 }
