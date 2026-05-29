@@ -14,7 +14,7 @@ class CampaniaService
 
     public function show(Campania $campania)
     {
-        return $campania;
+        return $campania->load('lotes');
     }
 
     public function store(array $data)
@@ -30,11 +30,11 @@ class CampaniaService
 
     public function update(Campania $campania, array $data)
     {
-        $campania->update($data);
-        
         if (isset($data['lote_ids'])) {
             $campania->lotes()->sync($data['lote_ids']);
         }
+
+        $campania->update($data);
         
         return $campania;
     }

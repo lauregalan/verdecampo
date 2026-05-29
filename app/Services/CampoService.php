@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Campo;
+use Illuminate\Support\Facades\DB;
 
 class CampoService
 {
@@ -41,6 +42,9 @@ class CampoService
 
     public function destroy(Campo $campo)
     {
-        $campo->delete();
+        DB::transaction(function () use ($campo) {
+            $campo->lotes()->delete();
+            $campo->delete();
+        });
     }
 }

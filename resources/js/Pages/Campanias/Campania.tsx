@@ -27,6 +27,7 @@ interface BackendCampania {
     fecha_inicio: string | null;
     fecha_fin: string | null;
     estado: CampaignStatus;
+    lotes?: BackendLote[];
 }
 
 interface BackendCampo {
@@ -43,6 +44,10 @@ interface BackendLote {
     id: number;
     nombre: string;
     campo_id: number;
+    caracteristicas?: string;
+    estado?: string;
+    hectareas?: number;
+    deleted_at?: string | null;
 }
 
 const statuses: CampaignStatus[] = [
