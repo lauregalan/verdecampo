@@ -28,6 +28,7 @@ class Campania extends Model
     public function lotes()
     {
         return $this->belongsToMany(Lote::class, 'campania_lote')
+            ->withTrashed()
             ->withTimestamps();
     }
 
