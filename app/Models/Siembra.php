@@ -30,7 +30,7 @@ class Siembra extends Model
 
     public function cultivo()
     {
-        return $this->belongsTo(Cultivo::class);
+        return $this->belongsTo(Cultivo::class)->withTrashed();
     }
 
     //Attribute: último cultivo que tuvo el lote ---
