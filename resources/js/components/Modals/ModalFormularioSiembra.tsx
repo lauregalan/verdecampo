@@ -157,6 +157,13 @@ export default function ModalFormularioSiembra({
             setError("Por favor completá todos los campos obligatorios.");
             return;
         }
+        if (
+            selectedCampania?.fecha_fin &&
+            fecha > selectedCampania.fecha_fin.slice(0, 10)
+        ) {
+            setError("La fecha de siembra no puede ser posterior al fin de la campania.");
+            return;
+        }
 
         const payload = {
             campania_id: Number(campaniaId),
@@ -260,6 +267,11 @@ export default function ModalFormularioSiembra({
                                 </option>
                             ))}
                         </select>
+                        {campanias.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea una campania para registrar siembras.
+                            </p>
+                        )}
                     </div>
 
                     {/* Lote (solo lotes de la campaña) */}
@@ -318,6 +330,11 @@ export default function ModalFormularioSiembra({
                                 </option>
                             ))}
                         </select>
+                        {cultivos.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea un cultivo para registrar siembras.
+                            </p>
+                        )}
                     </div>
 
                     {/* Fecha */}
@@ -330,6 +347,11 @@ export default function ModalFormularioSiembra({
                             disableOutOfRange={false}
                             onChange={setFecha}
                         />
+                        {selectedCampania?.fecha_fin && (
+                            <p className="mt-1 text-xs text-stone-500">
+                                La fecha no puede superar el fin de la campania seleccionada.
+                            </p>
+                        )}
                     </div>
 
                     {/* Observaciones */}

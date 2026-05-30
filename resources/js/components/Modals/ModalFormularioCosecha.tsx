@@ -128,6 +128,20 @@ export default function ModalFormularioCosecha({
     const handleGuardar = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
+
+        if (!form.campania_id || !form.lote_id || !form.rinde || !form.humedad) {
+            setError("Completa todos los campos obligatorios.");
+            return;
+        }
+        if (
+            form.fecha &&
+            selectedCampania?.fecha_inicio &&
+            form.fecha < selectedCampania.fecha_inicio.slice(0, 10)
+        ) {
+            setError("La fecha de cosecha no puede ser anterior al inicio de la campania.");
+            return;
+        }
+
         setSaving(true);
         try {
             const payload = {
@@ -212,6 +226,11 @@ export default function ModalFormularioCosecha({
                                 </option>
                             ))}
                         </select>
+                        {campanias.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea una campania para registrar cosechas.
+                            </p>
+                        )}
                     </div>
 
                     {/* Lote */}
@@ -244,6 +263,11 @@ export default function ModalFormularioCosecha({
                                 </option>
                             ))}
                         </select>
+                        {form.campania_id && !loadingLotes && lotes.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Esta campania no tiene lotes asignados.
+                            </p>
+                        )}
                     </div>
 
                     {/* Fecha */}
@@ -256,6 +280,11 @@ export default function ModalFormularioCosecha({
                             disableOutOfRange={false}
                             onChange={(value) => setForm({ ...form, fecha: value })}
                         />
+                        {selectedCampania?.fecha_inicio && (
+                            <p className="mt-1 text-xs text-stone-500">
+                                La fecha no puede ser anterior al inicio de la campania seleccionada.
+                            </p>
+                        )}
                     </div>
 
                     {/* Rinde y Humedad en fila */}

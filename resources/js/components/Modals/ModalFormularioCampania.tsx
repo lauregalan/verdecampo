@@ -5,6 +5,7 @@ import TextInput from "@/components/TextInput";
 import CalendarDatePicker from "@/components/ui/date-picker";
 import { X } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/Pages/Aplicaciones/utils";
 
 type CampaignStatus = "Planificada" | "En Curso" | "Finalizada" | "Cancelada";
 
@@ -74,6 +75,8 @@ export default function ModalFormularioCampania({
         return lotes.filter((lote) => lote.campo_id === Number(campoId));
     }, [lotes, campoId]);
 
+    const selectedCampoHasNoLotes = Boolean(campoId) && lotesFiltrados.length === 0;
+
     useEffect(() => {
         if (!show) return;
 
@@ -132,6 +135,14 @@ export default function ModalFormularioCampania({
             setFormError("Debes seleccionar un campo para crear la campaña.");
             return;
         }
+        if (selectedCampoHasNoLotes) {
+            setFormError("Antes de crear una campania, registra al menos un lote para el campo seleccionado.");
+            return;
+        }
+        if (selectedLotes.length === 0) {
+            setFormError("Selecciona al menos un lote asociado a la campania.");
+            return;
+        }
         if (fechaFin && fechaFin < fechaInicio) {
             setFormError(
                 "La fecha de fin no puede ser anterior a la fecha de inicio.",
@@ -158,12 +169,13 @@ export default function ModalFormularioCampania({
                 : await api.post("/api/campanias", payload);
 
             if (!response.ok) {
-                const data = await response.json().catch(() => null);
                 throw new Error(
-                    data?.message ??
-                        (editingCampaniaId
-                            ? "Error al actualizar la campaña."
-                            : "Error al crear la campaña."),
+                    await getApiErrorMessage(
+                        response,
+                        editingCampaniaId
+                            ? "Error al actualizar la campania."
+                            : "Error al crear la campania.",
+                    ),
                 );
             }
 
@@ -220,7 +232,11 @@ export default function ModalFormularioCampania({
                         <select
                             id="campania-campo"
                             value={campoId}
-                            onChange={(e) => setCampoId(e.target.value)}
+                            onChange={(e) => {
+                                setCampoId(e.target.value);
+                                setSelectedLotes([]);
+                                setFormError(null);
+                            }}
                             className="mt-2 w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
                         >
                             <option value="">Selecciona un campo</option>
@@ -295,6 +311,11 @@ export default function ModalFormularioCampania({
                                 ))
                             )}
                         </div>
+                        {selectedCampoHasNoLotes && (
+                            <p className="mt-2 text-xs font-medium text-amber-700">
+                                Primero registra lotes en este campo para poder asociarlos a una campania.
+                            </p>
+                        )}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>

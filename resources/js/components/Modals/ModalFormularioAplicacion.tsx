@@ -35,6 +35,7 @@ interface FormState {
 interface CampaniaOption extends CatalogOption {
     fecha_inicio: string | null;
     fecha_fin: string | null;
+    estado?: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -89,6 +90,8 @@ export default function ModalFormularioAplicacion({
     const maxFechaAplicacion = selectedCampania?.fecha_fin
         ? normalizeDateInput(selectedCampania.fecha_fin)
         : undefined;
+    const selectedCampaniaIsNotActive =
+        Boolean(selectedCampania) && selectedCampania?.estado !== "En Curso";
 
     useEffect(() => {
         if (!show) return;
@@ -314,6 +317,16 @@ export default function ModalFormularioAplicacion({
             return;
         }
 
+        if (selectedCampaniaIsNotActive) {
+            setError("Solo se pueden registrar aplicaciones en campanias en curso.");
+            return;
+        }
+
+        if (selectedCampaniaId && lotes.length === 0) {
+            setError("La campania seleccionada no tiene lotes asociados.");
+            return;
+        }
+
         if (
             (minFechaAplicacion && form.fecha < minFechaAplicacion) ||
             (maxFechaAplicacion && form.fecha > maxFechaAplicacion)
@@ -468,9 +481,17 @@ export default function ModalFormularioAplicacion({
                                         value={String(campania.id)}
                                     >
                                         {campania.nombre}
+                                        {campania.estado
+                                            ? ` - ${campania.estado}`
+                                            : ""}
                                     </option>
                                 ))}
                             </select>
+                            {selectedCampaniaIsNotActive && (
+                                <p className="mt-1 text-xs text-amber-600">
+                                    Selecciona una campania en curso para poder registrar aplicaciones.
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -493,7 +514,9 @@ export default function ModalFormularioAplicacion({
                                         ? "Primero seleccioná una campaña"
                                         : loadingLotes
                                           ? "Cargando lotes..."
-                                          : "Seleccioná un lote"}
+                                          : lotes.length === 0
+                                            ? "No hay lotes en esta campania"
+                                            : "Seleccioná un lote"}
                                 </option>
                                 {lotes.map((lote) => (
                                     <option
