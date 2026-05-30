@@ -18,12 +18,13 @@ test('new users can register', function () {
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertGuest();
+    $response->assertRedirect(route('login', absolute: false));
+    $response->assertSessionHas('status', 'Registro enviado. Un productor debe activar tu cuenta y asignarte un rol antes de que puedas ingresar.');
 
     $user = User::where('email', 'test@example.com')->first();
 
     expect($user)->not->toBeNull();
-    expect($user->last_login_at)->not->toBeNull();
-    expect($user->created_at->equalTo($user->last_login_at))->toBeTrue();
+    expect($user->active)->toBeFalse();
+    expect($user->last_login_at)->toBeNull();
 });
