@@ -36,6 +36,11 @@ export default function ModalFormularioCampo({
     const [longitude, setLongitude] = useState<number>(0);
     const [surface, setSurface] = useState<number>(0);
     const [polygon, setPolygon] = useState<Coord[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+    const HECTAREAS_MIN = 0;
+    const HECTAREAS_MAX = 999999.99;
 
     useEffect(() => {
         if (show && initialData) {
@@ -59,7 +64,8 @@ export default function ModalFormularioCampo({
     }, []);
 
     const handleAreaChange = useCallback((ha: number) => {
-        setSurface(ha);
+        const normalized = Math.min(Math.max(ha, HECTAREAS_MIN), HECTAREAS_MAX);
+        setSurface(normalized);
     }, []);
 
     const handleStatusChange = (value: string) => {
@@ -86,6 +92,18 @@ export default function ModalFormularioCampo({
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        setAttemptedSubmit(true);
+        const nextErrors: Record<string, string> = {};
+
+        if (surface < HECTAREAS_MIN || surface > HECTAREAS_MAX) {
+            nextErrors.surface = `La superficie debe estar entre ${HECTAREAS_MIN} y ${HECTAREAS_MAX} hectáreas.`;
+        }
+
+        if (Object.keys(nextErrors).length > 0) {
+            setFieldErrors(nextErrors);
+            return;
+        }
+
         const nuevoCampo: CampoDraft = {
             name,
             surface: `${surface} Ha`,
@@ -98,7 +116,9 @@ export default function ModalFormularioCampo({
             polygon,
         };
         const created = await onSubmit(nuevoCampo);
-        if (created) resetForm();
+        if (created) {
+            resetForm();
+        }
     };
 
     return (
@@ -190,11 +210,25 @@ export default function ModalFormularioCampo({
                                 id="campo-superficie"
                                 type="number"
                                 step="0.01"
-                                min="0"
+                                min={HECTAREAS_MIN}
+                                max={HECTAREAS_MAX}
                                 value={surface}
-                                onChange={(e) => setSurface(parseFloat(e.target.value) || 0)}
+                                onChange={(e) => {
+                                    const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                                    const normalized = Math.min(Math.max(value, HECTAREAS_MIN), HECTAREAS_MAX);
+                                    setSurface(normalized);
+                                    setFieldErrors((current) => ({
+                                        ...current,
+                                        surface: "",
+                                    }));
+                                }}
                                 className="mt-1 w-full"
                             />
+                        {fieldErrors.surface && attemptedSubmit && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {fieldErrors.surface}
+                            </p>
+                        )}
                         </div>
                     </div>
                 </div>

@@ -25,7 +25,20 @@ class CampoRequest extends FormRequest
             'nombre' => ['required', 'string'],
             'latitud' => ['required', 'string'],
             'longitud' => ['required', 'string'],
-            'hectareas' => ['required', 'integer'],
+            'hectareas' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.required' => 'El nombre del campo es requerido',
+            'latitud.required' => 'La latitud es requerida',
+            'longitud.required' => 'La longitud es requerida',
+            'hectareas.required' => 'La superficie es requerida',
+            'hectareas.numeric' => 'La superficie debe ser un número',
+            'hectareas.min' => 'La superficie debe ser mayor a 0',
+            'hectareas.max' => 'La superficie no puede exceder 999999.99 hectáreas',
         ];
     }
 }

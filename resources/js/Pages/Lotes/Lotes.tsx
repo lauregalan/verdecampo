@@ -28,6 +28,49 @@ import {
 } from "./types";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 
+type LoteFormErrors = Record<string, string>;
+
+const loteErrorFieldMap: Record<string, string> = {
+    nombre: "name",
+    campo_id: "campo",
+    caracteristicas: "caracteristicas",
+    estado: "status",
+    latitud: "polygon",
+    longitud: "polygon",
+    hectareas: "hectareas",
+    ph: "ph",
+    napa: "napa",
+    polygon: "polygon",
+};
+
+const getLoteFormErrors = async (
+    response: Response,
+    fallback: string,
+): Promise<LoteFormErrors> => {
+    const payload = (await response.json().catch(() => null)) as
+        | {
+              message?: string;
+              errors?: Record<string, string[]>;
+          }
+        | null;
+
+    if (!payload?.errors) {
+        return { name: payload?.message ?? fallback };
+    }
+
+    return Object.entries(payload.errors).reduce<LoteFormErrors>(
+        (acc, [field, messages]) => {
+            const formField =
+                loteErrorFieldMap[field] ??
+                loteErrorFieldMap[field.split(".")[0]] ??
+                "name";
+            acc[formField] = messages[0] ?? fallback;
+            return acc;
+        },
+        {},
+    );
+};
+
 const mapearLote = (lote: any): Lote => ({
     id: lote.id,
     nombre: lote.nombre,
@@ -246,15 +289,14 @@ export default function Lotes() {
     const handleAgregarLote = async (
         nuevoLote: LoteDraft,
         campoId: number | string,
-    ): Promise<boolean> => {
+    ): Promise<LoteFormErrors | null> => {
         try {
             const campoIdNumerico = Number(campoId);
 
             if (!Number.isInteger(campoIdNumerico) || campoIdNumerico <= 0) {
-                setError(
-                    "Selecciona un campo valido antes de guardar el lote.",
-                );
-                return false;
+                return {
+                    campo: "Selecciona un campo valido antes de guardar el lote.",
+                };
             }
 
             const payload = {
@@ -281,12 +323,14 @@ export default function Lotes() {
                     payload,
                 );
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    console.error("❌ Error backend:", data);
-                    throw new Error("No se pudo actualizar el lote.");
+                    return await getLoteFormErrors(
+                        response,
+                        "No se pudo actualizar el lote.",
+                    );
                 }
+
+                const data = await response.json();
                 console.log("✅ Lote actualizado:", data);
 
                 setLotes((prev) =>
@@ -295,18 +339,20 @@ export default function Lotes() {
 
                 setShowFormulario(false);
                 setLoteEditando(null);
-                return true;
+                setError(null);
+                return null;
             } else {
                 // -------- CREAR --------
                 const response = await api.post(`/api/lotes`, payload);
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    console.error("❌ Error backend:", data);
-                    throw new Error("No se pudo crear el lote.");
+                    return await getLoteFormErrors(
+                        response,
+                        "No se pudo crear el lote.",
+                    );
                 }
 
+                const data = await response.json();
                 console.log("✅ Lote creado:", data);
 
                 setLotes((prev) => [...prev, mapearLote(data)]);
@@ -316,11 +362,13 @@ export default function Lotes() {
             setLoteEditando(null);
             setError(null);
 
-            return true;
+            return null;
         } catch (error) {
             console.error("Error:", error);
-            setError("Error al guardar el lote.");
-            return false;
+            const message =
+                error instanceof Error ? error.message : "Error al guardar el lote.";
+            setError(message);
+            return { name: message };
         }
     };
     const handleAbrirCreacion = () => {
