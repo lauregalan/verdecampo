@@ -10,7 +10,7 @@ use Spatie\Permission\Models\Role;
 uses(RefreshDatabase::class);
 
 
-it('A User cant change his own role', function () {
+it('cant change his own role as a productor', function () {
     Role::findOrCreate('Productor', 'web');
 
     $user = User::factory()->create();
