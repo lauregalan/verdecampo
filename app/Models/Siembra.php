@@ -25,7 +25,7 @@ class Siembra extends Model
 
     public function lote()
     {
-        return $this->belongsTo(Lote::class);
+        return $this->belongsTo(Lote::class)->withTrashed();
     }
 
     public function cultivo()
