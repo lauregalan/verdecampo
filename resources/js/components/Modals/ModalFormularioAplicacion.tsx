@@ -1,9 +1,14 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
 import api from "@/lib/api";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import type {
     AplicacionDraft,
     AplicacionRecord,
@@ -31,6 +36,11 @@ interface FormState {
     observaciones: string;
 }
 
+interface CampaniaOption extends CatalogOption {
+    fecha_inicio: string | null;
+    fecha_fin: string | null;
+}
+
 const EMPTY_FORM: FormState = {
     producto_aplicacion_id: "",
     tipo_aplicacion_id: "",
@@ -46,6 +56,196 @@ const EMPTY_FORM: FormState = {
 
 const normalizeDateInput = (value: string) => value.slice(0, 10);
 
+const monthFormatter = new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric",
+});
+
+const displayDateFormatter = new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+});
+
+const parseDateInput = (value?: string | null) => {
+    if (!value) return null;
+    const [year, month, day] = normalizeDateInput(value).split("-").map(Number);
+    if (!year || !month || !day) return null;
+    return new Date(year, month - 1, day);
+};
+
+const toDateInput = (date: Date) =>
+    [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+const addMonths = (date: Date, amount: number) =>
+    new Date(date.getFullYear(), date.getMonth() + amount, 1);
+
+const buildCalendarDays = (visibleMonth: Date) => {
+    const firstDay = new Date(
+        visibleMonth.getFullYear(),
+        visibleMonth.getMonth(),
+        1,
+    );
+    const daysInMonth = new Date(
+        visibleMonth.getFullYear(),
+        visibleMonth.getMonth() + 1,
+        0,
+    ).getDate();
+    const mondayFirstOffset = (firstDay.getDay() + 6) % 7;
+
+    return [
+        ...Array.from({ length: mondayFirstOffset }, () => null),
+        ...Array.from(
+            { length: daysInMonth },
+            (_, index) =>
+                new Date(
+                    visibleMonth.getFullYear(),
+                    visibleMonth.getMonth(),
+                    index + 1,
+                ),
+        ),
+    ];
+};
+
+function CampaignDatePicker({
+    value,
+    minDate,
+    maxDate,
+    disabled,
+    onChange,
+}: {
+    value: string;
+    minDate?: string;
+    maxDate?: string;
+    disabled: boolean;
+    onChange: (value: string) => void;
+}) {
+    const selectedDate = parseDateInput(value);
+    const min = parseDateInput(minDate);
+    const max = parseDateInput(maxDate);
+    const [open, setOpen] = useState(false);
+    const [visibleMonth, setVisibleMonth] = useState<Date>(
+        selectedDate ?? min ?? new Date(),
+    );
+
+    useEffect(() => {
+        setVisibleMonth(selectedDate ?? min ?? new Date());
+    }, [minDate, value]);
+
+    const days = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
+    const selectedLabel = selectedDate
+        ? displayDateFormatter.format(selectedDate)
+        : disabled
+          ? "Primero selecciona una campania"
+          : "Selecciona una fecha";
+    const canGoPrevious =
+        !min ||
+        new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1) >
+            new Date(min.getFullYear(), min.getMonth(), 1);
+    const canGoNext =
+        !max ||
+        new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1) <
+            new Date(max.getFullYear(), max.getMonth(), 1);
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <button
+                    type="button"
+                    disabled={disabled}
+                    className="mt-1 flex w-full items-center justify-between rounded-md border border-green-700 bg-white px-3 py-2 text-left text-sm shadow-sm transition focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+                >
+                    <span>{selectedLabel}</span>
+                    <CalendarDays size={16} className="text-green-800" />
+                </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72 bg-white p-3">
+                <div className="mb-3 flex items-center justify-between">
+                    <button
+                        type="button"
+                        disabled={!canGoPrevious}
+                        onClick={() =>
+                            setVisibleMonth((current) =>
+                                addMonths(current, -1),
+                            )
+                        }
+                        className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <div className="text-sm font-semibold capitalize text-stone-900">
+                        {monthFormatter.format(visibleMonth)}
+                    </div>
+                    <button
+                        type="button"
+                        disabled={!canGoNext}
+                        onClick={() =>
+                            setVisibleMonth((current) => addMonths(current, 1))
+                        }
+                        className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-stone-500">
+                    {["LU", "MA", "MI", "JU", "VI", "SA", "DO"].map((day) => (
+                        <div key={day} className="py-1">
+                            {day}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-1 grid grid-cols-7 gap-1">
+                    {days.map((date, index) => {
+                        if (!date) {
+                            return <div key={`empty-${index}`} />;
+                        }
+
+                        const dateValue = toDateInput(date);
+                        const isSelected = value === dateValue;
+                        const isBeforeMin = minDate && dateValue < minDate;
+                        const isAfterMax = maxDate && dateValue > maxDate;
+                        const isDisabled = Boolean(isBeforeMin || isAfterMax);
+                        const isInRange =
+                            (!minDate || dateValue >= minDate) &&
+                            (!maxDate || dateValue <= maxDate);
+
+                        return (
+                            <button
+                                key={dateValue}
+                                type="button"
+                                disabled={isDisabled}
+                                onClick={() => {
+                                    onChange(dateValue);
+                                    setOpen(false);
+                                }}
+                                className={[
+                                    "h-8 rounded-md text-sm transition",
+                                    isSelected
+                                        ? "bg-green-700 font-semibold text-white"
+                                        : isInRange
+                                          ? "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                                          : "text-stone-300",
+                                    isDisabled
+                                        ? "cursor-not-allowed opacity-35"
+                                        : "",
+                                ].join(" ")}
+                            >
+                                {date.getDate()}
+                            </button>
+                        );
+                    })}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 export default function ModalFormularioAplicacion({
     show,
     onClose,
@@ -55,7 +255,7 @@ export default function ModalFormularioAplicacion({
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
     const [productos, setProductos] = useState<CatalogOption[]>([]);
     const [tipos, setTipos] = useState<CatalogOption[]>([]);
-    const [campanias, setCampanias] = useState<CatalogOption[]>([]);
+    const [campanias, setCampanias] = useState<CampaniaOption[]>([]);
     const [lotes, setLotes] = useState<LoteOption[]>([]);
     const [loadingCatalogs, setLoadingCatalogs] = useState(false);
     const [loadingLotes, setLoadingLotes] = useState(false);
@@ -66,6 +266,23 @@ export default function ModalFormularioAplicacion({
         () => Number(form.campania_id) || null,
         [form.campania_id],
     );
+
+    const selectedCampania = useMemo(
+        () =>
+            selectedCampaniaId
+                ? (campanias.find(
+                      (campania) => campania.id === selectedCampaniaId,
+                  ) ?? null)
+                : null,
+        [campanias, selectedCampaniaId],
+    );
+
+    const minFechaAplicacion = selectedCampania?.fecha_inicio
+        ? normalizeDateInput(selectedCampania.fecha_inicio)
+        : undefined;
+    const maxFechaAplicacion = selectedCampania?.fecha_fin
+        ? normalizeDateInput(selectedCampania.fecha_fin)
+        : undefined;
 
     useEffect(() => {
         if (!show) return;
@@ -138,7 +355,7 @@ export default function ModalFormularioAplicacion({
                 );
                 setCampanias(
                     Array.isArray(campaniasData)
-                        ? (campaniasData as CatalogOption[])
+                        ? (campaniasData as CampaniaOption[])
                         : [],
                 );
             } catch (err) {
@@ -236,6 +453,33 @@ export default function ModalFormularioAplicacion({
         if (error) setError(null);
     };
 
+    const updateCampania = (value: string) => {
+        const campania = campanias.find(
+            (item) => String(item.id) === value,
+        );
+        const minFecha = campania?.fecha_inicio
+            ? normalizeDateInput(campania.fecha_inicio)
+            : null;
+        const maxFecha = campania?.fecha_fin
+            ? normalizeDateInput(campania.fecha_fin)
+            : null;
+
+        setForm((current) => {
+            const fechaFueraDeRango =
+                current.fecha &&
+                ((minFecha && current.fecha < minFecha) ||
+                    (maxFecha && current.fecha > maxFecha));
+
+            return {
+                ...current,
+                campania_id: value,
+                lote_id: "",
+                fecha: fechaFueraDeRango ? "" : current.fecha,
+            };
+        });
+        if (error) setError(null);
+    };
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -261,6 +505,14 @@ export default function ModalFormularioAplicacion({
 
         if (Number(form.precio_labor) < 0) {
             setError("El precio de labor no puede ser negativo.");
+            return;
+        }
+
+        if (
+            (minFechaAplicacion && form.fecha < minFechaAplicacion) ||
+            (maxFechaAplicacion && form.fecha > maxFechaAplicacion)
+        ) {
+            setError("La fecha debe estar dentro del rango de la campania.");
             return;
         }
 
@@ -397,10 +649,7 @@ export default function ModalFormularioAplicacion({
                                 id="aplicacion-campania"
                                 value={form.campania_id}
                                 onChange={(event) =>
-                                    updateField(
-                                        "campania_id",
-                                        event.target.value,
-                                    )
+                                    updateCampania(event.target.value)
                                 }
                                 className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={loadingCatalogs}
@@ -504,15 +753,12 @@ export default function ModalFormularioAplicacion({
                                 htmlFor="aplicacion-fecha"
                                 value="Fecha *"
                             />
-                            <TextInput
-                                id="aplicacion-fecha"
-                                type="date"
+                            <CampaignDatePicker
                                 value={form.fecha}
-                                onChange={(event) =>
-                                    updateField("fecha", event.target.value)
-                                }
-                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
-                                required
+                                minDate={minFechaAplicacion}
+                                maxDate={maxFechaAplicacion}
+                                disabled={!selectedCampania}
+                                onChange={(value) => updateField("fecha", value)}
                             />
                         </div>
 
