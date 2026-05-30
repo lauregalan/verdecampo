@@ -5,6 +5,7 @@ import TextInput from "@/components/TextInput";
 import CalendarDatePicker from "@/components/ui/date-picker";
 import { X } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/Pages/Aplicaciones/utils";
 
 interface Campania {
     id: number;
@@ -146,15 +147,16 @@ export default function ModalFormularioCosecha({
             }
 
             if (!response.ok) {
-                const body = await response.json().catch(() => ({}));
-                throw new Error(body?.message ?? "Error al guardar");
+                throw new Error(
+                    await getApiErrorMessage(response, "Error al guardar"),
+                );
             }
 
             const data = await response.json();
             onSaved(data);
             handleClose();
-        } catch (err: any) {
-            setError(err.message ?? "Error inesperado");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error inesperado");
         } finally {
             setSaving(false);
         }

@@ -4,6 +4,7 @@ import InputLabel from "@/components/InputLabel";
 import CalendarDatePicker from "@/components/ui/date-picker";
 import { X, Sprout } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/Pages/Aplicaciones/utils";
 
 interface Campania {
     id: number;
@@ -179,13 +180,24 @@ export default function ModalFormularioSiembra({
                 response = await api.post("/api/siembras", payload);
             }
 
-            if (!response.ok) throw new Error();
+            if (!response.ok) {
+                throw new Error(
+                    await getApiErrorMessage(
+                        response,
+                        "Error al guardar la siembra. Intentá nuevamente.",
+                    ),
+                );
+            }
             const data = await response.json();
             onSaved(data);
             resetForm();
             onClose();
-        } catch {
-            setError("Error al guardar la siembra. Intentá nuevamente.");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Error al guardar la siembra. Intentá nuevamente.",
+            );
         } finally {
             setSubmitting(false);
         }
