@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
+import CalendarDatePicker from "@/components/ui/date-picker";
 import { X } from "lucide-react";
 import api from "@/lib/api";
 
@@ -301,13 +302,12 @@ export default function ModalFormularioCampania({
                                 htmlFor="campania-fecha-inicio"
                                 value="Fecha de inicio"
                             />
-                            <TextInput
-                                id="campania-fecha-inicio"
-                                type="date"
+                            <CalendarDatePicker
                                 value={fechaInicio}
-                                onChange={(e) => setFechaInicio(e.target.value)}
-                                className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50"
-                                required
+                                minDate={fechaInicio || undefined}
+                                maxDate={fechaFin || undefined}
+                                disableOutOfRange={false}
+                                onChange={setFechaInicio}
                             />
                         </div>
                         <div>
@@ -315,12 +315,12 @@ export default function ModalFormularioCampania({
                                 htmlFor="campania-fecha-fin"
                                 value="Fecha de fin"
                             />
-                            <TextInput
-                                id="campania-fecha-fin"
-                                type="date"
+                            <CalendarDatePicker
                                 value={fechaFin}
-                                onChange={(e) => setFechaFin(e.target.value)}
-                                className="mt-2 w-full rounded-2xl border-stone-300 bg-stone-50"
+                                minDate={fechaInicio || undefined}
+                                maxDate={fechaFin || undefined}
+                                disableOutOfRange={false}
+                                onChange={setFechaFin}
                             />
                         </div>
                     </div>

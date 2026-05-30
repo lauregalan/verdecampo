@@ -1,13 +1,16 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
+import CalendarDatePicker from "@/components/ui/date-picker";
 import { X } from "lucide-react";
 import api from "@/lib/api";
 
 interface Campania {
     id: number;
     nombre: string;
+    fecha_inicio?: string | null;
+    fecha_fin?: string | null;
 }
 
 interface Lote {
@@ -62,6 +65,16 @@ export default function ModalFormularioCosecha({
     const [loadingLotes, setLoadingLotes] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+
+    const selectedCampania = useMemo(
+        () =>
+            form.campania_id
+                ? (campanias.find(
+                      (campania) => campania.id === form.campania_id,
+                  ) ?? null)
+                : null,
+        [campanias, form.campania_id],
+    );
 
     // Cargar campañas al abrir
     useEffect(() => {
@@ -234,11 +247,12 @@ export default function ModalFormularioCosecha({
                     {/* Fecha */}
                     <div>
                         <InputLabel value="Fecha de cosecha" />
-                        <TextInput
-                            type="date"
+                        <CalendarDatePicker
                             value={form.fecha}
-                            onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                            className="mt-1 w-full border-gray-300 focus:border-green-700 focus:ring-green-700"
+                            minDate={selectedCampania?.fecha_inicio?.slice(0, 10)}
+                            maxDate={selectedCampania?.fecha_fin?.slice(0, 10)}
+                            disableOutOfRange={false}
+                            onChange={(value) => setForm({ ...form, fecha: value })}
                         />
                     </div>
 
