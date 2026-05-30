@@ -1,12 +1,13 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Head, usePage } from "@inertiajs/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertCircle,
     CalendarDays,
     Clock3,
     Eye,
+    EyeOff,
     Filter,
     Pencil,
     Plus,
@@ -96,20 +97,31 @@ const daysBetween = (start: string | null, end: string | null) => {
 function CampaignCard({
     campaign,
     fieldName,
-    onView,
+    isCampaignVisible,
+    onOpenDetail,
+    onToggleVisibility,
     onEdit,
     isProductor,
 }: {
     campaign: BackendCampania;
     fieldName: string;
-    onView: () => void;
+    isCampaignVisible: boolean;
+    onOpenDetail: () => void;
+    onToggleVisibility: () => void;
     onEdit: () => void;
     isProductor: boolean;
 }) {
     const span = daysBetween(campaign.fecha_inicio, campaign.fecha_fin);
 
     return (
-        <article className="group flex h-full flex-col rounded-3xl border border-stone-300 bg-[#FCFBF8] p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+        <article
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onOpenDetail}
+            className={[
+                "group flex h-full cursor-pointer flex-col rounded-3xl border border-stone-300 bg-[#FCFBF8] p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus:outline-none",
+                isCampaignVisible ? "" : "opacity-65",
+            ].join(" ")}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -169,19 +181,35 @@ function CampaignCard({
                 <CalendarDays className="size-5 text-stone-400" />
             </div>
 
-            <div className="mt-4 flex items-center justify-end gap-2 border-t border-stone-200 pt-4">
+            <div className="mt-auto flex items-center justify-end gap-2 border-t border-stone-200 pt-4">
                 <button
                     type="button"
-                    onClick={onView}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onToggleVisibility();
+                    }}
                     className="inline-flex items-center gap-2 rounded-full border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
+                    aria-pressed={isCampaignVisible}
+                    aria-label={
+                        isCampaignVisible
+                            ? "Ocultar campania del listado"
+                            : "Mostrar campania en el listado"
+                    }
                 >
-                    <Eye size={16} />
-                    Ver
+                    {isCampaignVisible ? (
+                        <EyeOff size={16} />
+                    ) : (
+                        <Eye size={16} />
+                    )}
+                    {isCampaignVisible ? "Ocultar" : "Mostrar"}
                 </button>
                 {isProductor && (
                     <button
                         type="button"
-                        onClick={onEdit}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onEdit();
+                        }}
                         className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
                     >
                         <Pencil size={16} />
@@ -192,7 +220,6 @@ function CampaignCard({
         </article>
     );
 }
-
 export default function Campania() {
     const authUser = usePage().props.auth?.user as
         | { roles?: string[] }
@@ -207,6 +234,8 @@ export default function Campania() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailCampania, setDetailCampania] =
         useState<BackendCampania | null>(null);
+    const [loadingDetailId, setLoadingDetailId] = useState<number | null>(null);
+    const detailRequestId = useRef(0);
     const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(
         null,
     );
@@ -215,6 +244,10 @@ export default function Campania() {
         "Todas",
     );
     const [fieldFilter, setFieldFilter] = useState("Todos");
+    const [hiddenCampaignIds, setHiddenCampaignIds] = useState<Set<number>>(
+        () => new Set(),
+    );
+    const [showHiddenCampaigns, setShowHiddenCampaigns] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -309,14 +342,29 @@ export default function Campania() {
                     fieldFilter === "Todos" ||
                     (campania.campo_id !== null &&
                         String(campania.campo_id) === fieldFilter);
-                return matchesSearch && matchesStatus && matchesField;
+                const matchesVisibility =
+                    showHiddenCampaigns || !hiddenCampaignIds.has(campania.id);
+                return (
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesField &&
+                    matchesVisibility
+                );
             })
             .sort((a, b) => {
                 const byStatus = statusOrder[a.estado] - statusOrder[b.estado];
                 if (byStatus !== 0) return byStatus;
                 return a.nombre.localeCompare(b.nombre, "es");
             });
-    }, [campanias, fieldById, fieldFilter, search, statusFilter]);
+    }, [
+        campanias,
+        fieldById,
+        fieldFilter,
+        hiddenCampaignIds,
+        search,
+        showHiddenCampaigns,
+        statusFilter,
+    ]);
 
     const summary = useMemo(
         () => ({
@@ -333,26 +381,66 @@ export default function Campania() {
         [campanias],
     );
 
-    const openDetailModal = async (campaniaId: number) => {
+    const openDetailModal = async (campaign: BackendCampania) => {
+        const requestId = detailRequestId.current + 1;
+        detailRequestId.current = requestId;
+        setDetailCampania(campaign);
+        setShowDetailModal(true);
+        setLoadingDetailId(campaign.id);
         try {
-            const response = await api.get(`/api/campanias/${campaniaId}`);
+            const response = await api.get(`/api/campanias/${campaign.id}`);
             if (!response.ok)
                 throw new Error("No se pudo obtener la campania.");
             const data = (await response.json()) as BackendCampania;
+            if (detailRequestId.current !== requestId) return;
             setDetailCampania(data);
-            setShowDetailModal(true);
         } catch (err) {
+            if (detailRequestId.current !== requestId) return;
             setError(
                 err instanceof Error
                     ? err.message
                     : "Error al cargar la campaña.",
             );
+        } finally {
+            if (detailRequestId.current === requestId) {
+                setLoadingDetailId(null);
+            }
         }
     };
 
     const openEditModal = (campaniaId: number) => {
         setEditingCampaniaId(campaniaId);
         setShowModal(true);
+    };
+
+    const clearActiveFocus = () => {
+        const blurActiveElement = () => {
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        window.setTimeout(blurActiveElement, 0);
+        window.setTimeout(blurActiveElement, 220);
+    };
+
+    const closeDetailModal = () => {
+        detailRequestId.current += 1;
+        setLoadingDetailId(null);
+        setShowDetailModal(false);
+        clearActiveFocus();
+    };
+
+    const toggleCampaignVisibility = (campaniaId: number) => {
+        setHiddenCampaignIds((current) => {
+            const next = new Set(current);
+            if (next.has(campaniaId)) {
+                next.delete(campaniaId);
+            } else {
+                next.add(campaniaId);
+            }
+            return next;
+        });
     };
 
     return (
@@ -426,7 +514,7 @@ export default function Campania() {
                     </section>
 
                     <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
-                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
+                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto_auto]">
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                                     <Search size={14} />
@@ -500,6 +588,27 @@ export default function Campania() {
                                     {filteredCampanias.length} visibles
                                 </div>
                             </div>
+                            <div className="flex items-end">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowHiddenCampaigns((value) => !value)
+                                    }
+                                    className={[
+                                        "inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition",
+                                        showHiddenCampaigns
+                                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                            : "border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100",
+                                    ].join(" ")}
+                                >
+                                    {showHiddenCampaigns ? (
+                                        <Eye size={16} />
+                                    ) : (
+                                        <EyeOff size={16} />
+                                    )}
+                                    Ocultas: {hiddenCampaignIds.size}
+                                </button>
+                            </div>
                         </div>
                     </section>
 
@@ -540,8 +649,14 @@ export default function Campania() {
                                                   ] ?? "Sin campo")
                                                 : "Sin campo"
                                         }
-                                        onView={() =>
-                                            void openDetailModal(campaign.id)
+                                        isCampaignVisible={
+                                            !hiddenCampaignIds.has(campaign.id)
+                                        }
+                                        onOpenDetail={() =>
+                                            void openDetailModal(campaign)
+                                        }
+                                        onToggleVisibility={() =>
+                                            toggleCampaignVisibility(campaign.id)
                                         }
                                         onEdit={() =>
                                             openEditModal(campaign.id)
@@ -556,12 +671,13 @@ export default function Campania() {
 
             <ModalDetalleCampania
                 show={showDetailModal}
-                onClose={() => setShowDetailModal(false)}
+                onClose={closeDetailModal}
                 campania={detailCampania}
+                isLoading={loadingDetailId === detailCampania?.id}
                 fieldById={fieldById}
                 cultivoById={cultivoById}
                 onEdit={() => {
-                    setShowDetailModal(false);
+                    closeDetailModal();
                     if (detailCampania) openEditModal(detailCampania.id);
                 }}
             />

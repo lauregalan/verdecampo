@@ -36,6 +36,7 @@ interface ModalDetalleCampaniaProps {
     show: boolean;
     onClose: () => void;
     campania: BackendCampania | null;
+    isLoading?: boolean;
     fieldById: Record<number, string>;
     cultivoById: Record<number, string>;
     onEdit: () => void;
@@ -45,6 +46,7 @@ export default function ModalDetalleCampania({
     show,
     onClose,
     campania,
+    isLoading = false,
     fieldById,
     cultivoById,
     onEdit,
@@ -111,7 +113,11 @@ export default function ModalDetalleCampania({
                                 </span>
                             </div>
 
-                            {lotes.length > 0 ? (
+                            {isLoading ? (
+                                <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-500">
+                                    Cargando lotes asociados...
+                                </div>
+                            ) : lotes.length > 0 ? (
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     {lotes.map((lote) => (
                                         <article
