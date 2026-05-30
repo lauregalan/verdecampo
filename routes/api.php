@@ -31,12 +31,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}/roles', [UserController::class, 'getRoles']);
 
+    Route::post('/invitar', [InvitarController::class, 'generarInvitacion']);
+
     Route::apiResource('campos', CampoController::class)->only(['index', 'show']);
 
     Route::apiResource('campanias', CampaniaController::class)->only(['index', 'show']);
     Route::get('/campanias/{campania}/lotes', [CampaniaController::class, 'getLotes']);
 
-    Route::apiResource('cultivos', CultivoController::class)->only(['index', 'show']);
+    // Cultivos
+    Route::apiResource('cultivos', CultivoController::class);
+    Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
     Route::get('/cultivos/campania/{campaniaId}', [CultivoController::class, 'getByCampania']);
     Route::get('/cultivos/lote/{loteId}', [CultivoController::class, 'getByLote']);
 
@@ -58,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/aplicaciones', [AplicacionController::class, 'index']);
     Route::get('/aplicaciones/{id}', [AplicacionController::class, 'show']);
+    Route::post('/aplicaciones', [AplicacionController::class, 'store']);
+    Route::put('/aplicaciones/{id}', [AplicacionController::class, 'update']);
+    Route::delete('/aplicaciones/{id}', [AplicacionController::class, 'destroy']);
+    Route::get('/aplicaciones/lote/{loteId}', [AplicacionController::class, 'getByLote']);
 
     Route::get('/siembras', [SiembraController::class, 'showAll']);
     Route::get('/siembras/{id}', [SiembraController::class, 'show']);

@@ -1,23 +1,21 @@
 import Body from "@/components/ui/Tabs/Body";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Head, router, usePage } from "@inertiajs/react";
-import {
-    ClipboardPlus,
-    Eye,
-    Layers,
-    MapPin,
-    Pencil,
-    Plus,
-    Trash2,
-} from "lucide-react";
+import { router, usePage, Head } from "@inertiajs/react";
+import { Eye, Layers, MapPin, Maximize2, Pencil, Plus, Sprout, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ModalFormularioCampo from "@/components/Modals/ModalFormularioCampo";
 import { statusStyles } from "./mockCampos";
 import type { CampoCard, CampoDraft } from "./types";
 import api from "@/lib/api";
-import { Maximize2, Sprout } from "lucide-react";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import { ProductoSumary } from "./ProductoSumary";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 interface FieldCardProps extends CampoCard {
     onOpenDetail: () => void;
     onDelete: () => void;
@@ -50,15 +48,6 @@ const toCampoCard = (campo: BackendCampo): CampoCard => ({
     longitude: Number.parseFloat(campo.longitud) || 0,
     polygon: [],
 });
-
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-
 const FieldCard = ({
     id,
     name,
@@ -143,7 +132,6 @@ const FieldCard = ({
             </CardContent>
 
             <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
-                {/* NUEVO: Acceso directo a Lotes */}
                 <button
                     type="button"
                     onClick={(e) => {
@@ -156,7 +144,6 @@ const FieldCard = ({
                     <Layers strokeWidth={1.5} size={16} />
                 </button>
 
-                {/* Botones actuales mejorados */}
                 <button
                     type="button"
                     onClick={(e) => {
@@ -167,14 +154,6 @@ const FieldCard = ({
                     title="Ver detalle completo"
                 >
                     <Eye strokeWidth={1.5} size={16} />
-                </button>
-
-                <button
-                    type="button"
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Ver en mapa"
-                >
-                    <MapPin strokeWidth={1.5} size={16} />
                 </button>
 
                 {isProductor && (
@@ -399,7 +378,7 @@ export default function Campo() {
                                     onDelete={() => setCampoAEliminar(campo)}
                                     onViewLotes={() =>
                                         router.visit(
-                                            `/lotes?campo=${encodeURIComponent(campo.name)}`,
+                                            `/lotes?campoId=${campo.id}`,
                                         )
                                     }
                                 />

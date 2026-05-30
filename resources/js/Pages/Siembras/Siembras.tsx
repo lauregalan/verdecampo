@@ -115,9 +115,15 @@ export default function Siembras() {
     }, [busqueda]);
 
     const siembrasFiltradas = useMemo(() => {
-        if (!busqueda) return siembras;
+        const orderedSiembras = [...siembras].sort(
+            (a, b) =>
+                new Date(b.fecha_siembra).getTime() -
+                new Date(a.fecha_siembra).getTime(),
+        );
+
+        if (!busqueda) return orderedSiembras;
         const q = busqueda.toLowerCase();
-        return siembras.filter(
+        return orderedSiembras.filter(
             (s) =>
                 s.campania_nombre?.toLowerCase().includes(q) ||
                 s.lote_nombre?.toLowerCase().includes(q) ||

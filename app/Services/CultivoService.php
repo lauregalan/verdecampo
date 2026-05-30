@@ -35,4 +35,13 @@ class CultivoService
     {
         $cultivo->delete();
     }
+
+    public function getByLote(int $loteId)
+    {
+        return Cultivo::whereHas('siembras', function ($query) use ($loteId) {
+            $query->where('lote_id', $loteId);
+        })->with(['siembras' => function ($query) use ($loteId) {
+            $query->where('lote_id', $loteId)->orderBy('fecha_siembra', 'desc');
+        }])->get();
+    }
 }

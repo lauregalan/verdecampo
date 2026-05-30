@@ -3,28 +3,25 @@ import { Head, Link, usePage } from "@inertiajs/react";
 import {
     Activity,
     ArrowLeft,
-    CalendarDays,
     ChartColumnBig,
     Droplets,
     Fingerprint,
-    Icon,
-    Layers,
-    ListTree,
-    NotebookPen,
-    Sun,
     Timer,
 } from "lucide-react";
 import { CircleMarker, MapContainer, TileLayer } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { EstimacionCard } from "./EstimacionCard";
 import { LocalWeatherCard } from "./LocalWeatherCard";
 import api from "@/lib/api";
+import {
+    estimarRendimientoCampo,
+    getCultivoProfile,
+    getSiembraActiva,
+} from "@/lib/rendimiento";
 
 interface CampoDetallePageProps {
     campoId: number | string;
@@ -36,21 +33,140 @@ interface BackendCampo {
     latitud: string;
     longitud: string;
     hectareas: number;
+    clima?: {
+        temperatura_max: number[];
+        temperatura_min: number[];
+        precipitacion: number[];
+        codigo_clima: number[];
+        fechas: string[];
+    };
 }
 
-const acciones = [
-    { title: "Ver lotes", icon: ListTree },
-    { title: "Crear lotes", icon: ListTree },
-    { title: "Ver campanas asociadas", icon: CalendarDays },
-    { title: "Ver rendimiento", icon: ChartColumnBig },
-    { title: "Consultar eventos o tareas", icon: NotebookPen },
-];
+interface BackendLote {
+    id: number;
+    nombre: string;
+    caracteristicas: string;
+    estado: string;
+    latitud: number | string;
+    longitud: number | string;
+    hectareas: number;
+    campo_id: number;
+    ph: number;
+    napa: number;
+    siembras?: any[];
+}
+
+interface CultivoActual {
+    tipo: string;
+    variedad: string;
+    fecha_siembra: string;
+    dias_transcurridos: number;
+    dias_a_cosecha: number;
+}
+
+interface RendimientoCampo {
+    kg_por_hectarea: number;
+    kg_total: number;
+    promedio_kg_ha: number;
+    confianza: number;
+    lotes_estimados: number;
+}
+
+const getEstadoCampo = (lotes: BackendLote[]) => {
+    if (lotes.some((lote) => lote.estado === "produccion")) {
+        return {
+            label: "En Produccion",
+            className: "bg-green-700 hover:bg-green-800",
+        };
+    }
+    if (lotes.some((lote) => lote.estado === "preparacion")) {
+        return {
+            label: "En Preparacion",
+            className: "bg-yellow-600 hover:bg-yellow-700",
+        };
+    }
+    if (lotes.some((lote) => lote.estado === "barbecho")) {
+        return {
+            label: "Barbecho",
+            className: "bg-red-600 hover:bg-red-700",
+        };
+    }
+
+    return {
+        label: "Disponible",
+        className: "bg-emerald-500 hover:bg-emerald-600",
+    };
+};
+
+const getCaracteristicaPredominante = (lotes: BackendLote[]) => {
+    const caracteristicas = lotes
+        .map((lote) => lote.caracteristicas?.toLowerCase() ?? "")
+        .join(" ");
+
+    if (caracteristicas.includes("fertil") || caracteristicas.includes("fÃ©rtil")) {
+        return "Fertil";
+    }
+    if (caracteristicas.includes("arcilloso")) {
+        return "Arcilloso";
+    }
+    if (caracteristicas.includes("arenoso")) {
+        return "Arenoso";
+    }
+
+    return "Variado";
+};
 
 export default function CampoDetalle() {
     const { campoId } = usePage().props as unknown as CampoDetallePageProps;
     const [campo, setCampo] = useState<BackendCampo | null>(null);
+    const [lotesCampo, setLotesCampo] = useState<BackendLote[]>([]);
+    const [cultivoActual, setCultivoActual] = useState<CultivoActual | null>(null);
+    const [rendimientoCampo, setRendimientoCampo] =
+        useState<RendimientoCampo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const calcularCultivoActual = (lotes: BackendLote[]) => {
+        const siembrasActivas = lotes
+            .map((lote) => getSiembraActiva(lote.siembras ?? []))
+            .filter((siembra): siembra is NonNullable<typeof siembra> => Boolean(siembra));
+
+        if (siembrasActivas.length === 0) {
+            setCultivoActual(null);
+            return;
+        }
+
+        const siembraMasReciente = siembrasActivas.sort(
+            (a, b) =>
+                new Date(b.fecha_siembra).getTime() -
+                new Date(a.fecha_siembra).getTime(),
+        )[0];
+
+        const fechaSiembra = new Date(siembraMasReciente.fecha_siembra);
+        const diasTranscurridos = Math.floor(
+            (new Date().getTime() - fechaSiembra.getTime()) /
+                (1000 * 60 * 60 * 24),
+        );
+        const diasCiclo = getCultivoProfile(
+            siembraMasReciente.cultivo?.tipo,
+        ).cycleDays;
+
+        setCultivoActual({
+            tipo: siembraMasReciente.cultivo?.tipo || "Desconocido",
+            variedad: siembraMasReciente.cultivo?.variedad || "Desconocida",
+            fecha_siembra: siembraMasReciente.fecha_siembra,
+            dias_transcurridos: diasTranscurridos,
+            dias_a_cosecha: Math.max(0, diasCiclo - diasTranscurridos),
+        });
+    };
+
+    const calcularRendimiento = (
+        lotes: BackendLote[],
+        clima?: BackendCampo["clima"],
+    ) => {
+        const estimacion = estimarRendimientoCampo(lotes, clima);
+        setRendimientoCampo(estimacion);
+    };
 
     useEffect(() => {
         const controller = new AbortController();
@@ -58,21 +174,34 @@ export default function CampoDetalle() {
         const loadCampo = async () => {
             try {
                 setLoading(true);
-                const response = await api.get(`/api/campos/${campoId}`);
 
-                if (!response.ok) {
-                    if (response.status === 404) {
+                const [campoResponse, lotesResponse] = await Promise.all([
+                    api.get(`/api/campos/${campoId}`),
+                    api.get(`/api/lotes/campo/${campoId}`),
+                ]);
+
+                if (!campoResponse.ok) {
+                    if (campoResponse.status === 404) {
                         setCampo(null);
                         setError("Campo no encontrado.");
                         return;
                     }
-
                     throw new Error("No se pudo obtener el detalle del campo.");
                 }
 
-                const payload = (await response.json()) as BackendCampo;
-                setCampo(payload);
+                if (!lotesResponse.ok) {
+                    throw new Error("No se pudieron obtener los lotes del campo.");
+                }
+
+                const campoPayload = (await campoResponse.json()) as BackendCampo;
+                const lotesPayload = (await lotesResponse.json()) as BackendLote[];
+
+                setCampo(campoPayload);
+                setLotesCampo(lotesPayload);
                 setError(null);
+
+                calcularCultivoActual(lotesPayload);
+                calcularRendimiento(lotesPayload, campoPayload.clima);
             } catch (err) {
                 if ((err as Error).name === "AbortError") return;
                 setCampo(null);
@@ -86,6 +215,8 @@ export default function CampoDetalle() {
 
         return () => controller.abort();
     }, [campoId]);
+
+    const estadoCampo = useMemo(() => getEstadoCampo(lotesCampo), [lotesCampo]);
 
     if (loading) {
         return (
@@ -135,70 +266,54 @@ export default function CampoDetalle() {
     const centroCampo: LatLngExpression = hasValidCoords
         ? [latitude, longitude]
         : [-34.6037, -58.3816];
-    const DashboardCard = ({
-        children,
-        className = "",
-    }: {
-        children: React.ReactNode;
-        className?: string;
-    }) => (
-        <div
-            className={`rounded-3xl border border-stone-100 bg-white p-6 shadow-sm hover:shadow-md transition-shadow duration-300 ${className}`}
-        >
-            {children}
-        </div>
-    );
 
     return (
         <Body>
             <Head title={`Detalle - ${campo.nombre}`} />
 
-            <div className="flex h-full w-full flex-col overflow-hidden p-4 font-sans md:p-6">
-                <div className="flex mx-auto mb-4 w-full max-w-8xl shrink-0 justify-start">
-                    <div className="flex flex-col gap-6 ">
+            <div className="flex min-h-full w-full flex-col p-4 font-sans md:p-6">
+                <div className="mx-auto mb-4 flex w-full max-w-8xl shrink-0 justify-start">
+                    <div className="flex flex-col gap-6">
                         <Button
                             variant="outline"
                             asChild
-                            className="gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900 max-w-[160px]"
+                            className="max-w-[160px] gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900"
                         >
                             <Link href="/campo">
                                 <ArrowLeft size={16} />
-                                Volver a Lotes
+                                Volver a Campos
                             </Link>
                         </Button>
 
                         <div className="flex flex-row gap-6">
-                            <Badge className="w-fit bg-green-700 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white hover:bg-green-800">
-                                En Producción
+                            <Badge
+                                className={`w-fit px-3 py-1 text-xs font-bold uppercase tracking-wider text-white ${estadoCampo.className}`}
+                            >
+                                {estadoCampo.label}
                             </Badge>
                             <div className="flex flex-col">
                                 <div className="flex flex-row gap-2">
-                                    <Button
-                                        asChild
-                                        variant="default"
-                                        className=""
-                                    >
-                                        <Link href={`/campo/${campo.id}/lotes`}>
-                                            <Layers size={16} />
+                                    <Button asChild variant="default">
+                                        <Link href={`/lotes?campoId=${campo.id}`}>
                                             Ver Lotes
                                         </Link>
                                     </Button>
-                                    <Button>Ver mapas</Button>
-                                    <Button>Ver informes</Button>
-                                    <Button>Ver cultivos</Button>
+                                    <Button asChild variant="default">
+                                        <Link href="/clutivos">Ver cultivos</Link>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <Card className="lg:col-span-3 h-full w-full mx-auto  max-w-6xl  min-h-[400px] md:min-h-[500px] lg:min-h-[60vh] flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm">
-                        <div className="relative h-[100%] w-full shrink-0 border-b border-stone-200 ">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-5">
+                    <Card className="mx-auto h-full max-h-[60vh] min-h-[400px] w-full max-w-6xl flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm lg:col-span-3">
+                        <div className="relative h-full w-full shrink-0 border-b border-stone-200">
                             <MapContainer
                                 center={centroCampo}
                                 zoom={10}
-                                scrollWheelZoom={true}
+                                scrollWheelZoom
                                 className="z-[10] h-full w-full"
                             >
                                 <TileLayer
@@ -221,8 +336,8 @@ export default function CampoDetalle() {
                         </div>
                     </Card>
 
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 w-full">
-                        <Card className="col-span-2 flex min-h-[220px] max-h-[230px] flex-col justify-between border-stone-200 bg-[#FCFBF8] p-6 shadow-sm">
+                    <div className="grid w-full min-h-0 grid-cols-2 gap-4 lg:col-span-2">
+                        <Card className="col-span-2 flex max-h-[220px] flex-col justify-between border-stone-200 bg-[#FCFBF8] p-6 shadow-sm">
                             <div className="flex items-center justify-between border-b border-stone-100 pb-4">
                                 <div>
                                     <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900">
@@ -231,34 +346,9 @@ export default function CampoDetalle() {
                                     <p className="text-sm font-medium text-stone-500">
                                         Superficie:{" "}
                                         <span className="font-bold text-stone-800">
-                                            {campo.hectareas.toLocaleString(
-                                                "es-AR",
-                                            )}{" "}
-                                            Ha
+                                            {campo.hectareas.toLocaleString("es-AR")} Ha
                                         </span>
                                     </p>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                                >
-                                    Cambiar nombre
-                                </Button>
-                            </div>
-
-                            <div className="mt-6 flex flex-col gap-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                    Último cultivo registrado
-                                </label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="Ej: Soja 2025"
-                                        className="border-stone-200 bg-white focus:border-emerald-500 focus:ring-emerald-500"
-                                    />
-                                    <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
-                                        Guardar
-                                    </Button>
                                 </div>
                             </div>
                         </Card>
@@ -270,29 +360,63 @@ export default function CampoDetalle() {
                                 </h2>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 p-6 pt-4">
-                                <span className="text-2xl font-black uppercase text-stone-800">
-                                    Soja
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <Fingerprint className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Variedad:{" "}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Activity className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Estado:{" "}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Timer className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Dias a cosecha:{" "}
-                                    </span>
-                                </div>
+                                {cultivoActual ? (
+                                    <>
+                                        <span className="text-xl font-black uppercase text-stone-800">
+                                            {cultivoActual.tipo} {cultivoActual.variedad}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <Fingerprint className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Fecha de siembra:{" "}
+                                                {new Date(
+                                                    cultivoActual.fecha_siembra,
+                                                ).toLocaleDateString("es-AR")}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Activity className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Dias transcurridos:{" "}
+                                                {cultivoActual.dias_transcurridos}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Timer className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Dias a cosecha:{" "}
+                                                {cultivoActual.dias_a_cosecha}
+                                            </span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-xl font-black uppercase text-stone-800">
+                                            —
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <Fingerprint className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Variedad: Sin informacion
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Activity className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Estado: Sin cultivo activo
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Timer className="size-4 text-stone-500" />
+                                            <span className="text-sm text-stone-700">
+                                                Dias a cosecha: N/A
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
+
                         <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-stone-800">
@@ -300,19 +424,36 @@ export default function CampoDetalle() {
                                 </h3>
                                 <ChartColumnBig className="size-6 text-yellow-600 transition-colors group-hover:text-yellow-700" />
                             </div>
-                            <div className="mt-4">
+                            <div className="mt-4 space-y-2">
                                 <p className="text-sm text-stone-500">
-                                    Proyección de Cosecha:
+                                    Proyeccion de cosecha total:
                                 </p>
                                 <span className="text-xl font-bold text-emerald-700">
-                                    1200 kg/Ha
+                                    {rendimientoCampo
+                                        ? `${rendimientoCampo.kg_total.toLocaleString()} kg`
+                                        : "— kg"}
                                 </span>
+                                <p className="text-sm text-stone-500">
+                                    Promedio:{" "}
+                                    {rendimientoCampo
+                                        ? `${rendimientoCampo.promedio_kg_ha.toLocaleString()} kg/Ha`
+                                        : "—"}
+                                </p>
+                                <p className="text-sm text-stone-500">
+                                    Confianza:{" "}
+                                    <span className="font-semibold text-stone-700">
+                                        {rendimientoCampo
+                                            ? `${rendimientoCampo.confianza}%`
+                                            : "—"}
+                                    </span>
+                                </p>
+                                <p className="text-xs text-stone-400">
+                                    Estimacion ponderada por hectareas y ajustada por
+                                    clima, suelo y estado del cultivo.
+                                </p>
                             </div>
                             <div className="mt-4 h-20 w-full rounded-md bg-stone-100 p-2">
-                                <svg
-                                    viewBox="0 0 100 50"
-                                    className="h-full w-full"
-                                >
+                                <svg viewBox="0 0 100 50" className="h-full w-full">
                                     <polyline
                                         fill="none"
                                         stroke="#10B981"
@@ -328,14 +469,8 @@ export default function CampoDetalle() {
                                     />
                                 </svg>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="mt-4 w-full justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                            >
-                                Ver informes detallados
-                            </Button>
                         </Card>
+
                         <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-stone-800">
@@ -344,29 +479,62 @@ export default function CampoDetalle() {
                                 <Droplets className="size-6 text-blue-600 transition-colors group-hover:text-blue-700" />
                             </div>
                             <div className="mt-4 flex flex-col gap-2">
-                                <p className="text-sm text-stone-500">
-                                    pH:{" "}
-                                    <span className="font-bold text-stone-700">
-                                        6.5
-                                    </span>
-                                </p>
-                                <p className="text-sm text-stone-500">
-                                    Nutrientes:{" "}
-                                    <span className="font-bold text-stone-700">
-                                        Balanceado
-                                    </span>
-                                </p>
+                                {lotesCampo.length > 0 ? (
+                                    <>
+                                        <p className="text-sm text-stone-500">
+                                            pH promedio:{" "}
+                                            <span className="font-bold text-stone-700">
+                                                {(
+                                                    lotesCampo.reduce(
+                                                        (sum, lote) =>
+                                                            sum + (lote.ph || 0),
+                                                        0,
+                                                    ) / lotesCampo.length
+                                                ).toFixed(1)}
+                                            </span>
+                                        </p>
+                                        <p className="text-sm text-stone-500">
+                                            Caracteristica predominante:{" "}
+                                            <span className="font-bold text-stone-700">
+                                                {getCaracteristicaPredominante(
+                                                    lotesCampo,
+                                                )}
+                                            </span>
+                                        </p>
+                                        <p className="text-sm text-stone-500">
+                                            Napa promedio:{" "}
+                                            <span className="font-bold text-stone-700">
+                                                {(
+                                                    lotesCampo.reduce(
+                                                        (sum, lote) =>
+                                                            sum + (lote.napa || 0),
+                                                        0,
+                                                    ) / lotesCampo.length
+                                                ).toFixed(1)}{" "}
+                                                m
+                                            </span>
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-stone-500">
+                                            pH:{" "}
+                                            <span className="font-bold text-stone-700">
+                                                Sin datos
+                                            </span>
+                                        </p>
+                                        <p className="text-sm text-stone-500">
+                                            Caracteristicas:{" "}
+                                            <span className="font-bold text-stone-700">
+                                                Sin informacion
+                                            </span>
+                                        </p>
+                                    </>
+                                )}
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="mt-4 w-full justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                            >
-                                Ver detalle del suelo
-                            </Button>
                         </Card>
 
-                        <LocalWeatherCard />
+                        <LocalWeatherCard clima={campo.clima} />
                     </div>
                 </div>
             </div>

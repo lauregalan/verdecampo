@@ -85,8 +85,12 @@ export default function ModalFormularioLote({
             setLastCrop("falta implementar");
             setLatitude(initialData.latitude);
             setLongitude(initialData.longitude);
-            setHectareas(initialData.hectareas ?? 0);
-            setPolygon(initialData.polygon || []);
+            setHectareas(initialData.hectareas);
+
+            if (initialData.polygon) {
+                setPolygon(initialData.polygon);
+            }
+
             setCaracteristicas(initialData.caracteristicas);
             setPh(initialData.ph);
             setNapa(initialData.napa);

@@ -94,6 +94,31 @@ const daysBetween = (start: string | null, end: string | null) => {
     return Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 };
 
+const parseFieldFilter = (value: string | null) => {
+    if (!value) return "Todos";
+
+    const parsedValue = Number(value);
+
+    return Number.isInteger(parsedValue) && parsedValue > 0
+        ? String(parsedValue)
+        : "Todos";
+};
+
+const parseLoteFilter = (searchParams: URLSearchParams) =>
+    parseFieldFilter(searchParams.get("loteId") ?? searchParams.get("lote_id"));
+
+const getInitialSearchParams = () =>
+    typeof window === "undefined"
+        ? new URLSearchParams()
+        : new URLSearchParams(window.location.search);
+
+const parseStatusFilter = (
+    value: string | null,
+): CampaignStatus | "Todas" =>
+    statuses.includes(value as CampaignStatus)
+        ? (value as CampaignStatus)
+        : "Todas";
+
 function CampaignCard({
     campaign,
     fieldName,
@@ -160,11 +185,11 @@ function CampaignCard({
                     <div className="flex items-center gap-2 text-stone-500">
                         <Clock3 size={16} />
                         <span className="text-xs font-bold uppercase tracking-wide">
-                            Duracion
+                            Duración
                         </span>
                     </div>
                     <div className="mt-2 text-sm font-semibold text-stone-900">
-                        {span === null ? "Abierta" : `${span + 1} dias`}
+                        {span === null ? "Abierta" : `${span + 1} días`}
                     </div>
                 </div>
             </div>
@@ -230,6 +255,9 @@ export default function Campania() {
     const [campos, setCampos] = useState<BackendCampo[]>([]);
     const [cultivos, setCultivos] = useState<BackendCultivo[]>([]);
     const [lotes, setLotes] = useState<BackendLote[]>([]);
+    const [lotesPorCampania, setLotesPorCampania] = useState<
+        Record<number, number[]>
+    >({});
     const [showModal, setShowModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailCampania, setDetailCampania] =
@@ -239,15 +267,26 @@ export default function Campania() {
     const [editingCampaniaId, setEditingCampaniaId] = useState<number | null>(
         null,
     );
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">(
-        "Todas",
+    const [search, setSearch] = useState(
+        () => getInitialSearchParams().get("q") ?? "",
     );
+    const [statusFilter, setStatusFilter] = useState<CampaignStatus | "Todas">(
+        () => parseStatusFilter(getInitialSearchParams().get("estado")),
+    );
+    const [fieldFilter, setFieldFilter] = useState(() =>
+        parseFieldFilter(getInitialSearchParams().get("campoId")),
+    );
+    const [loteFilter, setLoteFilter] = useState(() =>
+        parseLoteFilter(getInitialSearchParams()),
+    );
+<<<<<<< HEAD
     const [fieldFilter, setFieldFilter] = useState("Todos");
     const [hiddenCampaignIds, setHiddenCampaignIds] = useState<Set<number>>(
         () => new Set(),
     );
     const [showHiddenCampaigns, setShowHiddenCampaigns] = useState(false);
+=======
+>>>>>>> development
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -257,10 +296,38 @@ export default function Campania() {
             const response = await api.get("/api/campanias");
             if (!response.ok) throw new Error();
             const payload = (await response.json()) as BackendCampania[];
-            setCampanias(Array.isArray(payload) ? payload : []);
+            const campaniasData = Array.isArray(payload) ? payload : [];
+            setCampanias(campaniasData);
+
+            const lotesEntries = await Promise.all(
+                campaniasData.map(async (campania) => {
+                    try {
+                        const lotesResponse = await api.get(
+                            `/api/campanias/${campania.id}/lotes`,
+                        );
+
+                        if (!lotesResponse.ok) {
+                            return [campania.id, []] as const;
+                        }
+
+                        const lotesPayload =
+                            (await lotesResponse.json()) as BackendLote[];
+                        const loteIds = Array.isArray(lotesPayload)
+                            ? lotesPayload.map((lote) => lote.id)
+                            : [];
+
+                        return [campania.id, loteIds] as const;
+                    } catch {
+                        return [campania.id, []] as const;
+                    }
+                }),
+            );
+
+            setLotesPorCampania(Object.fromEntries(lotesEntries));
             setError(null);
         } catch {
             setCampanias([]);
+            setLotesPorCampania({});
             setError("Error al cargar campañas desde el backend.");
         } finally {
             setLoading(false);
@@ -307,6 +374,35 @@ export default function Campania() {
         void cargarLotes();
     }, [cargarCampanias, cargarCampos, cargarCultivos, cargarLotes]);
 
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const searchParams = new URLSearchParams();
+        const busqueda = search.trim();
+
+        if (busqueda) {
+            searchParams.set("q", busqueda);
+        }
+        if (statusFilter !== "Todas") {
+            searchParams.set("estado", statusFilter);
+        }
+        if (fieldFilter !== "Todos") {
+            searchParams.set("campoId", fieldFilter);
+        }
+        if (loteFilter !== "Todos") {
+            searchParams.set("loteId", loteFilter);
+        }
+
+        const queryString = searchParams.toString();
+        const nextUrl = queryString
+            ? `${window.location.pathname}?${queryString}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, "", nextUrl);
+    }, [fieldFilter, loteFilter, search, statusFilter]);
+
     const fieldById = useMemo(
         () =>
             Object.fromEntries(
@@ -342,6 +438,7 @@ export default function Campania() {
                     fieldFilter === "Todos" ||
                     (campania.campo_id !== null &&
                         String(campania.campo_id) === fieldFilter);
+<<<<<<< HEAD
                 const matchesVisibility =
                     showHiddenCampaigns || !hiddenCampaignIds.has(campania.id);
                 return (
@@ -349,6 +446,16 @@ export default function Campania() {
                     matchesStatus &&
                     matchesField &&
                     matchesVisibility
+=======
+                const matchesLote =
+                    loteFilter === "Todos" ||
+                    (Number.isInteger(Number(loteFilter)) &&
+                        (lotesPorCampania[campania.id] ?? []).includes(
+                            Number(loteFilter),
+                        ));
+                return (
+                    matchesSearch && matchesStatus && matchesField && matchesLote
+>>>>>>> development
                 );
             })
             .sort((a, b) => {
@@ -360,9 +467,15 @@ export default function Campania() {
         campanias,
         fieldById,
         fieldFilter,
+<<<<<<< HEAD
         hiddenCampaignIds,
         search,
         showHiddenCampaigns,
+=======
+        loteFilter,
+        lotesPorCampania,
+        search,
+>>>>>>> development
         statusFilter,
     ]);
 
@@ -390,7 +503,7 @@ export default function Campania() {
         try {
             const response = await api.get(`/api/campanias/${campaign.id}`);
             if (!response.ok)
-                throw new Error("No se pudo obtener la campania.");
+                throw new Error("No se pudo obtener la campaña.");
             const data = (await response.json()) as BackendCampania;
             if (detailRequestId.current !== requestId) return;
             setDetailCampania(data);
@@ -451,7 +564,7 @@ export default function Campania() {
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">
-                                Gestion de campañas
+                                Gestión de campañas
                             </h1>
                         </div>
                         {isProductor && (
@@ -514,7 +627,11 @@ export default function Campania() {
                     </section>
 
                     <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
+<<<<<<< HEAD
                         <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto_auto]">
+=======
+                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_auto]">
+>>>>>>> development
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                                     <Search size={14} />
@@ -583,6 +700,29 @@ export default function Campania() {
                                     ))}
                                 </select>
                             </label>
+                            <label className="block">
+                                <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
+                                    <Sprout size={14} />
+                                    Lote
+                                </span>
+                                <select
+                                    value={loteFilter}
+                                    onChange={(e) =>
+                                        setLoteFilter(e.target.value)
+                                    }
+                                    className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+                                >
+                                    <option value="Todos">Todos los lotes</option>
+                                    {lotes.map((lote) => (
+                                        <option
+                                            key={lote.id}
+                                            value={String(lote.id)}
+                                        >
+                                            {lote.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
                             <div className="flex items-end">
                                 <div className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-600">
                                     {filteredCampanias.length} visibles
@@ -621,7 +761,7 @@ export default function Campania() {
                         <div className="grid grid-cols-1 gap-6 pb-8 md:grid-cols-2 xl:grid-cols-3">
                             {loading ? (
                                 <div className="col-span-full rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center text-sm text-stone-500">
-                                    Cargando campanias...
+                                    Cargando campañas...
                                 </div>
                             ) : filteredCampanias.length === 0 ? (
                                 <div className="col-span-full rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center">
@@ -629,11 +769,11 @@ export default function Campania() {
                                         <AlertCircle size={24} />
                                     </div>
                                     <h2 className="mt-4 text-xl font-bold text-stone-900">
-                                        No hay campanias para mostrar
+                                        No hay campañas para mostrar
                                     </h2>
                                     <p className="mt-2 text-sm text-stone-500">
                                         Ajusta los filtros o crea una nueva
-                                        campania para empezar.
+                                        campaña para empezar.
                                     </p>
                                 </div>
                             ) : (
