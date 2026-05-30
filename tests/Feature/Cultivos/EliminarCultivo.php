@@ -38,3 +38,23 @@ it('soft deletes a crop without leaving its campaigns without crop', function ()
     expect($campania->fresh()->cultivo)->not->toBeNull();
     expect($campania->fresh()->cultivo->id)->toBe($cultivo->id);
 });
+
+it('lists only active crops', function () {
+    Role::findOrCreate('Productor', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('Productor');
+
+    Sanctum::actingAs($user);
+
+    $cultivoActivo = Cultivo::factory()->create();
+    $cultivoEliminado = Cultivo::factory()->create();
+    $cultivoEliminado->delete();
+
+    $response = $this->getJson('/api/cultivos');
+
+    $response
+        ->assertOk()
+        ->assertJsonFragment(['id' => $cultivoActivo->id])
+        ->assertJsonMissing(['id' => $cultivoEliminado->id]);
+});
