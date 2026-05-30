@@ -131,7 +131,7 @@ export default function Dashboard({
                                 <p className="mt-3 max-w-2xl text-sm text-green-100/85 md:text-base">
                                     Tenes {summary.campos_count} campos,{" "}
                                     {summary.lotes_count} lotes y{" "}
-                                    {summary.active_campaigns_count} campanias
+                                    {summary.active_campaigns_count} campañas
                                     en curso.
                                     {is_productor
                                         ? ` Ademas, hay ${summary.pending_users_count} usuarios pendientes de revision.`
