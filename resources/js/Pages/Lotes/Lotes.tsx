@@ -505,14 +505,9 @@ export default function Lotes() {
             const campoIdNumerico = Number(campoId);
 
             if (!Number.isInteger(campoIdNumerico) || campoIdNumerico <= 0) {
-<<<<<<< HEAD
                 return {
                     campo: "Selecciona un campo valido antes de guardar el lote.",
                 };
-=======
-                setError("Selecciona un campo valido antes de guardar el lote.");
-                return false;
->>>>>>> development
             }
 
             const payload = {
@@ -535,7 +530,6 @@ export default function Lotes() {
                 );
 
                 if (!response.ok) {
-<<<<<<< HEAD
                     return await getLoteFormErrors(
                         response,
                         "No se pudo actualizar el lote.",
@@ -544,22 +538,12 @@ export default function Lotes() {
 
                 const data = await response.json();
                 console.log("✅ Lote actualizado:", data);
-=======
-                    throw new Error("No se pudo actualizar el lote.");
-                }
->>>>>>> development
 
                 setLotes((prev) =>
                     prev.map((lote) =>
                         lote.id === data.id ? mapearLote(data) : lote,
                     ),
                 );
-<<<<<<< HEAD
-
-                setShowFormulario(false);
-                setLoteEditando(null);
-                setError(null);
-                return null;
             } else {
                 // -------- CREAR --------
                 const response = await api.post(`/api/lotes`, payload);
@@ -574,16 +558,6 @@ export default function Lotes() {
                 const data = await response.json();
                 console.log("✅ Lote creado:", data);
 
-=======
-            } else {
-                const response = await api.post("/api/lotes", payload);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error("No se pudo crear el lote.");
-                }
-
->>>>>>> development
                 setLotes((prev) => [...prev, mapearLote(data)]);
             }
 
@@ -591,7 +565,6 @@ export default function Lotes() {
             setLoteEditando(null);
             setError(null);
 
-<<<<<<< HEAD
             return null;
         } catch (error) {
             console.error("Error:", error);
@@ -599,13 +572,6 @@ export default function Lotes() {
                 error instanceof Error ? error.message : "Error al guardar el lote.";
             setError(message);
             return { name: message };
-=======
-            return true;
-        } catch (submitError) {
-            console.error("Error:", submitError);
-            setError("Error al guardar el lote.");
-            return false;
->>>>>>> development
         }
     };
 
