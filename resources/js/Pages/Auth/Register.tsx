@@ -6,9 +6,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { KeyRound, Mail, Sprout, User } from 'lucide-react';
 
-export default function Register({emailInvitado}: {emailInvitado?: string}) {
-    const queryParams = new URLSearchParams(window.location.search);
-
+export default function Register({ emailInvitado = '' }: { emailInvitado?: string }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: emailInvitado,
@@ -48,17 +46,50 @@ export default function Register({emailInvitado}: {emailInvitado?: string}) {
 
             <form onSubmit={submit} className="space-y-4">
 
-                <div className="flex flex-col items-center justify-center mb-6">
+                <div className="mb-6 flex flex-col items-center justify-center">
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#d2e7d9] text-[#2f5f48] shadow-md border-2 border-[#4f6b5d]">
                         <User size={40} strokeWidth={1.5} />
                     </div>
-                    
-                    <p className="text-sm font-medium text-[#4d685a]">Completando registro para:</p>
-                    <p className="text-xl font-bold tracking-tight text-[#194230] mt-1 break-all">
-                        {data.email || 'correo@ejemplo.com'}
-                    </p>
                 </div>
 
+                <div>
+                    <InputLabel htmlFor="name" value="Nombre" className="text-base font-semibold text-[#2f4d3f]" />
+                    <div className="relative mt-1">
+                        <User size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#577465]" />
+                        <TextInput
+                            id="name"
+                            type="text"
+                            name="name"
+                            value={data.name}
+                            placeholder="Tu nombre"
+                            className="block w-full rounded-xl border-[#4f6b5d] bg-[#eef4ee] py-2.5 pl-10 text-base focus:border-[#2f5f48] focus:ring-[#2f5f48]"
+                            autoComplete="name"
+                            isFocused={true}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                        />
+                    </div>
+                    <InputError message={errors.name} className="mt-2" />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="email" value="Correo Electronico" className="text-base font-semibold text-[#2f4d3f]" />
+                    <div className="relative mt-1">
+                        <Mail size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#577465]" />
+                        <TextInput
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            placeholder="correo@ejemplo.com"
+                            className="block w-full rounded-xl border-[#4f6b5d] bg-[#eef4ee] py-2.5 pl-10 text-base focus:border-[#2f5f48] focus:ring-[#2f5f48]"
+                            autoComplete="username"
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                    </div>
+                    <InputError message={errors.email} className="mt-2" />
+                </div>
 
                 <div>
                     <InputLabel htmlFor="password" value="Contrasena" className="text-base font-semibold text-[#2f4d3f]" />
