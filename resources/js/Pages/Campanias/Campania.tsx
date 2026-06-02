@@ -279,14 +279,10 @@ export default function Campania() {
     const [loteFilter, setLoteFilter] = useState(() =>
         parseLoteFilter(getInitialSearchParams()),
     );
-<<<<<<< HEAD
-    const [fieldFilter, setFieldFilter] = useState("Todos");
     const [hiddenCampaignIds, setHiddenCampaignIds] = useState<Set<number>>(
         () => new Set(),
     );
     const [showHiddenCampaigns, setShowHiddenCampaigns] = useState(false);
-=======
->>>>>>> development
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -438,24 +434,20 @@ export default function Campania() {
                     fieldFilter === "Todos" ||
                     (campania.campo_id !== null &&
                         String(campania.campo_id) === fieldFilter);
-<<<<<<< HEAD
-                const matchesVisibility =
-                    showHiddenCampaigns || !hiddenCampaignIds.has(campania.id);
-                return (
-                    matchesSearch &&
-                    matchesStatus &&
-                    matchesField &&
-                    matchesVisibility
-=======
                 const matchesLote =
                     loteFilter === "Todos" ||
                     (Number.isInteger(Number(loteFilter)) &&
                         (lotesPorCampania[campania.id] ?? []).includes(
                             Number(loteFilter),
                         ));
+                const matchesVisibility =
+                    showHiddenCampaigns || !hiddenCampaignIds.has(campania.id);
                 return (
-                    matchesSearch && matchesStatus && matchesField && matchesLote
->>>>>>> development
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesField &&
+                    matchesLote &&
+                    matchesVisibility
                 );
             })
             .sort((a, b) => {
@@ -467,15 +459,11 @@ export default function Campania() {
         campanias,
         fieldById,
         fieldFilter,
-<<<<<<< HEAD
         hiddenCampaignIds,
-        search,
-        showHiddenCampaigns,
-=======
         loteFilter,
         lotesPorCampania,
         search,
->>>>>>> development
+        showHiddenCampaigns,
         statusFilter,
     ]);
 
@@ -488,6 +476,11 @@ export default function Campania() {
             fields: new Set(
                 campanias
                     .map((c) => c.campo_id)
+                    .filter((id): id is number => id !== null),
+            ).size,
+            cultivos: new Set(
+                campanias
+                    .map((c) => c.cultivo_id)
                     .filter((id): id is number => id !== null),
             ).size,
         }),
@@ -608,6 +601,11 @@ export default function Campania() {
                                 value: summary.fields,
                                 detail: "Con campañas asociadas",
                             },
+                            {
+                                label: "Cultivos",
+                                value: summary.cultivos,
+                                detail: "En campañas activas",
+                            },
                         ].map((item) => (
                             <article
                                 key={item.label}
@@ -627,11 +625,7 @@ export default function Campania() {
                     </section>
 
                     <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
-<<<<<<< HEAD
-                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto_auto]">
-=======
-                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_auto]">
->>>>>>> development
+                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_auto_auto]">
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                                     <Search size={14} />

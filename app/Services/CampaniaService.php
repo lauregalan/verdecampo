@@ -9,12 +9,12 @@ class CampaniaService
 
     public function index()
     {
-        return Campania::all();
+        return Campania::with(['cultivo', 'lotes'])->get();
     }
 
     public function show(Campania $campania)
     {
-        return $campania->load('lotes');
+        return $campania->load(['cultivo', 'lotes']);
     }
 
     public function store(array $data)
