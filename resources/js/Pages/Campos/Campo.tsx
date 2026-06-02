@@ -144,17 +144,6 @@ const FieldCard = ({
                     <Layers strokeWidth={1.5} size={16} />
                 </button>
 
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenDetail();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Ver detalle completo"
-                >
-                    <Eye strokeWidth={1.5} size={16} />
-                </button>
 
                 {isProductor && (
                     <button

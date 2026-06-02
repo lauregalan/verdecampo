@@ -21,14 +21,31 @@ interface CampoSummary {
     hectareas: number;
 }
 
+interface LoteSummary {
+    id: number;
+    nombre: string;
+    caracteristicas: string;
+    estado: string;
+    longitud: number;
+    latitud: number;
+    hectareas: number;
+    campo_id?: number;
+    idCampo?: number;
+    ph: number;
+    napa: number;
+    siembras?: SiembraSummary[];
+}
+
 interface CampaniaSummary {
     id: number;
     nombre: string;
-    cultivo_id: number;
+    cultivo_id: number | null;
     campo_id: number;
     fecha_inicio: string;
     fecha_fin: string;
     estado: string;
+    cultivo?: CultivoSummary | null;
+    lotes?: LoteSummary[];
 }
 
 interface CultivoSummary {
@@ -48,25 +65,13 @@ interface SiembraSummary {
     campania: CampaniaSummary;
 }
 
-interface LoteSummary {
-    id: number;
-    nombre: string;
-    caracteristicas: string;
-    estado: string;
-    longitud: number;
-    latitud: number;
-    hectareas: number;
-    idCampo: number;
-    ph: number;
-    napa: number;
-    siembras?: SiembraSummary[];
-}
-
 const asArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? value : []);
 
 export const ProductoSumary: React.FC = () => {
     const [campos, setCampos] = useState<CampoSummary[]>([]);
     const [lotes, setLotes] = useState<LoteSummary[]>([]);
+    const [campanias, setCampanias] = useState<CampaniaSummary[]>([]);
+    const [cultivos, setCultivos] = useState<CultivoSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -75,12 +80,24 @@ export const ProductoSumary: React.FC = () => {
             setLoading(true);
 
             try {
-                const [camposResponse, lotesResponse] = await Promise.all([
+                const [
+                    camposResponse,
+                    lotesResponse,
+                    campaniasResponse,
+                    cultivosResponse,
+                ] = await Promise.all([
                     api.get("/api/campos"),
                     api.get("/api/lotes"),
+                    api.get("/api/campanias"),
+                    api.get("/api/cultivos"),
                 ]);
 
-                if (!camposResponse.ok || !lotesResponse.ok) {
+                if (
+                    !camposResponse.ok ||
+                    !lotesResponse.ok ||
+                    !campaniasResponse.ok ||
+                    !cultivosResponse.ok
+                ) {
                     throw new Error("Error al cargar estadisticas");
                 }
 
@@ -90,13 +107,23 @@ export const ProductoSumary: React.FC = () => {
                 const lotesData = asArray<LoteSummary>(
                     await lotesResponse.json(),
                 );
+                const campaniasData = asArray<CampaniaSummary>(
+                    await campaniasResponse.json(),
+                );
+                const cultivosData = asArray<CultivoSummary>(
+                    await cultivosResponse.json(),
+                );
 
                 setCampos(camposData);
                 setLotes(lotesData);
+                setCampanias(campaniasData);
+                setCultivos(cultivosData);
                 setError(null);
             } catch {
                 setCampos([]);
                 setLotes([]);
+                setCampanias([]);
+                setCultivos([]);
                 setError("No se pudieron cargar las estadisticas.");
             } finally {
                 setLoading(false);
@@ -145,37 +172,45 @@ export const ProductoSumary: React.FC = () => {
 
     const cropData = useMemo(() => {
         const cultivoMap = new Map<string, { name: string; ha: number }>();
+        const cultivoById = new Map(cultivos.map((cultivo) => [cultivo.id, cultivo]));
 
-        lotes.forEach((lote) => {
-            const siembrasEnCurso = (lote.siembras ?? []).filter(
-                (siembra) =>
-                    siembra.campania?.estado?.toLowerCase() === "en curso",
-            );
+        campanias
+            .filter(
+                (campania) =>
+                    campania.estado?.toLowerCase() === "en curso" &&
+                    campania.cultivo_id !== null,
+            )
+            .forEach((campania) => {
+                const cultivo =
+                    campania.cultivo ??
+                    (campania.cultivo_id
+                        ? cultivoById.get(campania.cultivo_id)
+                        : null);
 
-            if (siembrasEnCurso.length === 0) {
-                return;
-            }
+                if (!cultivo) {
+                    return;
+                }
 
-            const siembraReciente = siembrasEnCurso.sort(
-                (a, b) =>
-                    new Date(b.fecha_siembra).getTime() -
-                    new Date(a.fecha_siembra).getTime(),
-            )[0];
+                const cultivoNombre = `${cultivo.tipo} ${cultivo.variedad}`.trim();
+                const hectares = asArray<LoteSummary>(campania.lotes).reduce(
+                    (sum, lote) => sum + Number(lote.hectareas),
+                    0,
+                );
 
-            const cultivoNombre = `${siembraReciente.cultivo.tipo} ${siembraReciente.cultivo.variedad}`;
+                if (hectares <= 0) {
+                    return;
+                }
 
-            cultivoMap.set(cultivoNombre, {
-                name: cultivoNombre,
-                ha:
-                    (cultivoMap.get(cultivoNombre)?.ha ?? 0) +
-                    Number(lote.hectareas),
+                cultivoMap.set(cultivoNombre, {
+                    name: cultivoNombre,
+                    ha: (cultivoMap.get(cultivoNombre)?.ha ?? 0) + hectares,
+                });
             });
-        });
 
         return Array.from(cultivoMap.values())
             .sort((a, b) => b.ha - a.ha)
             .slice(0, 5);
-    }, [lotes]);
+    }, [campanias, cultivos]);
 
     const healthScore = useMemo(() => {
         if (totalLoteHa === 0) {

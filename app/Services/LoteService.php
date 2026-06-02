@@ -8,12 +8,12 @@ class LoteService
 {
     public function getAllByCampo(int $id_campo)
     {
-        return Lote::with(['campo', 'siembras.cultivo', 'siembras.campania'])->where('campo_id', $id_campo)->get();
+        return Lote::with(['campo', 'siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->where('campo_id', $id_campo)->get();
     }
 
     public function getById(int $id)
     {
-        return Lote::with(['siembras.cultivo', 'siembras.campania'])->find($id);
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->find($id);
     }
 
     public function getAllByCampania(int $id_campania)
@@ -51,6 +51,6 @@ class LoteService
 
     public function getAll()
     {
-        return Lote::with(['siembras.cultivo', 'siembras.campania'])->get();
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->get();
     }
 }

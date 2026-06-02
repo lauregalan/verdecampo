@@ -54,6 +54,7 @@ interface BackendLote {
     ph: number;
     napa: number;
     siembras?: any[];
+    cosechas?: any[];
 }
 
 interface CultivoActual {
@@ -271,13 +272,13 @@ export default function CampoDetalle() {
         <Body>
             <Head title={`Detalle - ${campo.nombre}`} />
 
-            <div className="flex min-h-full w-full flex-col p-4 font-sans md:p-6">
-                <div className="mx-auto mb-4 flex w-full max-w-8xl shrink-0 justify-start">
-                    <div className="flex flex-col gap-6">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden font-sans">
+                <div className="mb-3 flex w-full shrink-0 flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <Button
                             variant="outline"
                             asChild
-                            className="max-w-[160px] gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900"
+                            className="h-9 max-w-[160px] gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900"
                         >
                             <Link href="/campo">
                                 <ArrowLeft size={16} />
@@ -285,30 +286,26 @@ export default function CampoDetalle() {
                             </Link>
                         </Button>
 
-                        <div className="flex flex-row gap-6">
-                            <Badge
-                                className={`w-fit px-3 py-1 text-xs font-bold uppercase tracking-wider text-white ${estadoCampo.className}`}
-                            >
-                                {estadoCampo.label}
-                            </Badge>
-                            <div className="flex flex-col">
-                                <div className="flex flex-row gap-2">
-                                    <Button asChild variant="default">
-                                        <Link href={`/lotes?campoId=${campo.id}`}>
-                                            Ver Lotes
-                                        </Link>
-                                    </Button>
-                                    <Button asChild variant="default">
-                                        <Link href="/clutivos">Ver cultivos</Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
+                        <Badge
+                            className={`w-fit px-3 py-1 text-xs font-bold uppercase tracking-wider text-white ${estadoCampo.className}`}
+                        >
+                            {estadoCampo.label}
+                        </Badge>
+                    </div>
+                    <div className="flex flex-row gap-2">
+                        <Button asChild variant="default" className="h-9">
+                            <Link href={`/lotes?campoId=${campo.id}`}>
+                                Ver Lotes
+                            </Link>
+                        </Button>
+                        <Button asChild variant="default" className="h-9">
+                            <Link href="/cultivos">Ver cultivos</Link>
+                        </Button>
                     </div>
                 </div>
 
-                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-5">
-                    <Card className="mx-auto h-full max-h-[60vh] min-h-[400px] w-full max-w-6xl flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm lg:col-span-3">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-5">
+                    <Card className="mx-auto h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm lg:col-span-3">
                         <div className="relative h-full w-full shrink-0 border-b border-stone-200">
                             <MapContainer
                                 center={centroCampo}
@@ -336,11 +333,11 @@ export default function CampoDetalle() {
                         </div>
                     </Card>
 
-                    <div className="grid w-full min-h-0 grid-cols-2 gap-4 lg:col-span-2">
-                        <Card className="col-span-2 flex max-h-[220px] flex-col justify-between border-stone-200 bg-[#FCFBF8] p-6 shadow-sm">
-                            <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                    <div className="grid h-full min-h-0 w-full grid-cols-2 grid-rows-[auto_1fr_1fr] gap-3 lg:col-span-2">
+                        <Card className="col-span-2 flex min-h-0 flex-col justify-center border-stone-200 bg-[#FCFBF8] p-4 shadow-sm">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900">
+                                    <h2 className="text-xl font-black uppercase tracking-tight text-stone-900">
                                         {campo.nombre}
                                     </h2>
                                     <p className="text-sm font-medium text-stone-500">
@@ -353,21 +350,21 @@ export default function CampoDetalle() {
                             </div>
                         </Card>
 
-                        <Card className="flex flex-col justify-start border-stone-100 bg-white/60 p-0 shadow-sm transition-colors hover:bg-white">
-                            <CardHeader className="border-b border-stone-100 p-6 pb-4">
-                                <h2 className="text-xl font-bold uppercase tracking-tight text-stone-700">
+                        <Card className="flex min-h-0 flex-col overflow-hidden border-stone-100 bg-white/60 p-0 shadow-sm transition-colors hover:bg-white">
+                            <CardHeader className="border-b border-stone-100 p-4 pb-3">
+                                <h2 className="text-base font-bold uppercase tracking-tight text-stone-700">
                                     Cultivo actual
                                 </h2>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-3 p-6 pt-4">
+                            <CardContent className="flex min-h-0 flex-col gap-2 p-4 pt-3">
                                 {cultivoActual ? (
                                     <>
-                                        <span className="text-xl font-black uppercase text-stone-800">
+                                        <span className="text-lg font-black uppercase text-stone-800">
                                             {cultivoActual.tipo} {cultivoActual.variedad}
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <Fingerprint className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Fecha de siembra:{" "}
                                                 {new Date(
                                                     cultivoActual.fecha_siembra,
@@ -376,14 +373,14 @@ export default function CampoDetalle() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Activity className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Dias transcurridos:{" "}
                                                 {cultivoActual.dias_transcurridos}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Timer className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Dias a cosecha:{" "}
                                                 {cultivoActual.dias_a_cosecha}
                                             </span>
@@ -391,24 +388,24 @@ export default function CampoDetalle() {
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-xl font-black uppercase text-stone-800">
+                                        <span className="text-lg font-black uppercase text-stone-800">
                                             —
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <Fingerprint className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Variedad: Sin informacion
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Activity className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Estado: Sin cultivo activo
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Timer className="size-4 text-stone-500" />
-                                            <span className="text-sm text-stone-700">
+                                            <span className="text-xs text-stone-700">
                                                 Dias a cosecha: N/A
                                             </span>
                                         </div>
@@ -417,29 +414,29 @@ export default function CampoDetalle() {
                             </CardContent>
                         </Card>
 
-                        <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
+                        <Card className="group relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-stone-800">
+                                <h3 className="text-base font-bold text-stone-800">
                                     Rendimiento Estimado
                                 </h3>
-                                <ChartColumnBig className="size-6 text-yellow-600 transition-colors group-hover:text-yellow-700" />
+                                <ChartColumnBig className="size-5 text-yellow-600 transition-colors group-hover:text-yellow-700" />
                             </div>
-                            <div className="mt-4 space-y-2">
-                                <p className="text-sm text-stone-500">
+                            <div className="mt-3 space-y-1.5">
+                                <p className="text-xs text-stone-500">
                                     Proyeccion de cosecha total:
                                 </p>
-                                <span className="text-xl font-bold text-emerald-700">
+                                <span className="text-lg font-bold text-emerald-700">
                                     {rendimientoCampo
                                         ? `${rendimientoCampo.kg_total.toLocaleString()} kg`
                                         : "— kg"}
                                 </span>
-                                <p className="text-sm text-stone-500">
+                                <p className="text-xs text-stone-500">
                                     Promedio:{" "}
                                     {rendimientoCampo
                                         ? `${rendimientoCampo.promedio_kg_ha.toLocaleString()} kg/Ha`
                                         : "—"}
                                 </p>
-                                <p className="text-sm text-stone-500">
+                                <p className="text-xs text-stone-500">
                                     Confianza:{" "}
                                     <span className="font-semibold text-stone-700">
                                         {rendimientoCampo
@@ -447,12 +444,12 @@ export default function CampoDetalle() {
                                             : "—"}
                                     </span>
                                 </p>
-                                <p className="text-xs text-stone-400">
+                                <p className="line-clamp-2 text-[11px] text-stone-400">
                                     Estimacion ponderada por hectareas y ajustada por
                                     clima, suelo y estado del cultivo.
                                 </p>
                             </div>
-                            <div className="mt-4 h-20 w-full rounded-md bg-stone-100 p-2">
+                            <div className="mt-3 h-14 w-full rounded-md bg-stone-100 p-2">
                                 <svg viewBox="0 0 100 50" className="h-full w-full">
                                     <polyline
                                         fill="none"
@@ -471,18 +468,18 @@ export default function CampoDetalle() {
                             </div>
                         </Card>
 
-                        <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-stone-800">
+                        <Card className="group relative flex min-h-0 flex-col justify-start overflow-hidden rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
+                            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                                <h3 className="text-base font-bold text-stone-800">
                                     Historial de Suelo
                                 </h3>
-                                <Droplets className="size-6 text-blue-600 transition-colors group-hover:text-blue-700" />
+                                <Droplets className="size-5 text-blue-600 transition-colors group-hover:text-blue-700" />
                             </div>
-                            <div className="mt-4 flex flex-col gap-2">
+                            <div className="mt-3 flex flex-col gap-2">
                                 {lotesCampo.length > 0 ? (
                                     <>
-                                        <p className="text-sm text-stone-500">
-                                            pH promedio:{" "}
+                                        <p className="text-xs text-stone-500">
+                                            pH promedio:
                                             <span className="font-bold text-stone-700">
                                                 {(
                                                     lotesCampo.reduce(
@@ -493,16 +490,16 @@ export default function CampoDetalle() {
                                                 ).toFixed(1)}
                                             </span>
                                         </p>
-                                        <p className="text-sm text-stone-500">
-                                            Caracteristica predominante:{" "}
+                                        <p className="text-xs text-stone-500">
+                                            Caracteristica predominante:
                                             <span className="font-bold text-stone-700">
                                                 {getCaracteristicaPredominante(
                                                     lotesCampo,
                                                 )}
                                             </span>
                                         </p>
-                                        <p className="text-sm text-stone-500">
-                                            Napa promedio:{" "}
+                                        <p className="text-xs text-stone-500">
+                                            Napa promedio:
                                             <span className="font-bold text-stone-700">
                                                 {(
                                                     lotesCampo.reduce(
@@ -517,14 +514,14 @@ export default function CampoDetalle() {
                                     </>
                                 ) : (
                                     <>
-                                        <p className="text-sm text-stone-500">
-                                            pH:{" "}
+                                        <p className="text-xs text-stone-500">
+                                            pH:
                                             <span className="font-bold text-stone-700">
                                                 Sin datos
                                             </span>
                                         </p>
-                                        <p className="text-sm text-stone-500">
-                                            Caracteristicas:{" "}
+                                        <p className="text-xs text-stone-500">
+                                            Caracteristicas:
                                             <span className="font-bold text-stone-700">
                                                 Sin informacion
                                             </span>

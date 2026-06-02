@@ -16,7 +16,17 @@ type CampaniaReferencia = {
     estado?: string;
 };
 
+type CosechaReferencia = {
+    campania_id?: number;
+    lote_id?: number;
+    fecha: string | null;
+    rinde: number;
+    campania?: CampaniaReferencia;
+};
+
 type SiembraReferencia = {
+    campania_id?: number;
+    lote_id?: number;
     fecha_siembra: string;
     cultivo?: CultivoReferencia;
     campania?: CampaniaReferencia;
@@ -29,6 +39,7 @@ type LoteRendimientoInput = {
     caracteristicas?: string;
     estado?: string;
     siembras?: SiembraReferencia[];
+    cosechas?: CosechaReferencia[];
 };
 
 export type RendimientoLoteEstimado = {
@@ -43,6 +54,7 @@ export type RendimientoLoteEstimado = {
     factor_clima: number;
     factor_estado: number;
     factor_desarrollo: number;
+    fecha_ultima_cosecha?: string | null;
 };
 
 export type RendimientoCampoEstimado = {
@@ -108,6 +120,63 @@ export const getSiembraActiva = (siembras: SiembraReferencia[] = []) => {
         );
 
     return siembrasEnCurso[0] ?? null;
+};
+
+export const getUltimaCosecha = (cosechas: CosechaReferencia[] = []) => {
+    const cosechasOrdenadas = [...cosechas]
+        .filter((cosecha) => Number.isFinite(Number(cosecha.rinde)))
+        .sort((a, b) => {
+            const fechaA = a.fecha ? new Date(a.fecha).getTime() : 0;
+            const fechaB = b.fecha ? new Date(b.fecha).getTime() : 0;
+
+            if (fechaA !== fechaB) return fechaB - fechaA;
+
+            return Number(b.rinde) - Number(a.rinde);
+        });
+
+    return cosechasOrdenadas[0] ?? null;
+};
+
+const fueCosechada = (
+    siembra: SiembraReferencia,
+    cosechas: CosechaReferencia[] = [],
+) => {
+    const fechaSiembra = new Date(siembra.fecha_siembra).getTime();
+
+    return cosechas.some((cosecha) => {
+        if (
+            siembra.campania_id &&
+            cosecha.campania_id &&
+            siembra.campania_id !== cosecha.campania_id
+        ) {
+            return false;
+        }
+
+        const fechaCosecha = cosecha.fecha
+            ? new Date(cosecha.fecha).getTime()
+            : Number.POSITIVE_INFINITY;
+
+        return Number.isNaN(fechaSiembra) || fechaCosecha >= fechaSiembra;
+    });
+};
+
+export const getSiembraActual = (
+    siembras: SiembraReferencia[] = [],
+    cosechas: CosechaReferencia[] = [],
+) => {
+    const siembrasSinCosecha = [...siembras].filter(
+        (siembra) => !fueCosechada(siembra, cosechas),
+    );
+
+    const siembraActiva = getSiembraActiva(siembrasSinCosecha);
+
+    if (siembraActiva) return siembraActiva;
+
+    return siembrasSinCosecha.sort(
+        (a, b) =>
+            new Date(b.fecha_siembra).getTime() -
+            new Date(a.fecha_siembra).getTime(),
+    )[0] ?? null;
 };
 
 const getFactorPh = (ph: number) => {
@@ -247,7 +316,28 @@ export const estimarRendimientoLote = (
     lote: LoteRendimientoInput,
     clima?: ClimaPronostico,
 ): RendimientoLoteEstimado => {
-    const siembraActiva = getSiembraActiva(lote.siembras);
+    const ultimaCosecha = getUltimaCosecha(lote.cosechas);
+
+    if (ultimaCosecha) {
+        const kgPorHectarea = Math.max(Number(ultimaCosecha.rinde) || 0, 0);
+
+        return {
+            kg_por_hectarea: Math.round(kgPorHectarea),
+            kg_total: Math.round(kgPorHectarea * Math.max(lote.hectareas || 0, 0)),
+            confianza: 100,
+            progreso: null,
+            cultivo_referencia: "Ultima cosecha",
+            factor_ph: 1,
+            factor_napa: 1,
+            factor_caracteristicas: 1,
+            factor_clima: 1,
+            factor_estado: 1,
+            factor_desarrollo: 1,
+            fecha_ultima_cosecha: ultimaCosecha.fecha,
+        };
+    }
+
+    const siembraActiva = getSiembraActual(lote.siembras, lote.cosechas);
     const cultivoProfile = getCultivoProfile(siembraActiva?.cultivo?.tipo);
     const progreso = getProgresoCultivo(
         siembraActiva?.fecha_siembra,
