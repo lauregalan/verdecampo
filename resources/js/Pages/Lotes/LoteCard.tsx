@@ -168,18 +168,6 @@ export default function LoteCard({
             </CardContent>
 
             <CardFooter className="flex items-center justify-end gap-1 border-t border-stone-200 bg-stone-50/50 p-2.5 text-stone-600">
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenDetail();
-                    }}
-                    className="rounded bg-transparent p-1.5 transition-colors hover:bg-stone-100 hover:text-stone-900"
-                    title="Ver detalle completo"
-                >
-                    <Eye strokeWidth={1.5} size={16} />
-                </button>
-
                 {isProductor && (
                     <button
                         type="button"

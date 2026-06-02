@@ -41,6 +41,7 @@ interface BackendLote {
     ph: number;
     napa: number;
     siembras?: any[];
+    cosechas?: any[];
 }
 
 interface CultivoActual {
@@ -393,13 +394,13 @@ export default function LoteDetalle() {
                         <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-3 shadow-sm transition-colors hover:bg-white">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-base font-bold text-stone-800">
-                                    Rendimiento Estimado
+                                    Rendimiento Ultima Cosecha
                                 </h3>
                                 <ChartColumnBig className="size-5 text-yellow-600 transition-colors group-hover:text-yellow-700" />
                             </div>
                             <div className="mt-3 space-y-1.5">
                                 <p className="text-xs text-stone-500">
-                                    Proyeccion por hectarea:
+                                    Rinde por hectarea:
                                 </p>
                                 <span className="text-lg font-bold text-emerald-700">
                                     {rendimientoEstimado
@@ -407,7 +408,7 @@ export default function LoteDetalle() {
                                         : "— kg/Ha"}
                                 </span>
                                 <p className="text-xs text-stone-500">
-                                    Total estimado:{" "}
+                                    Total cosechado:{" "}
                                     <span className="font-semibold text-stone-700">
                                         {rendimientoEstimado
                                             ? `${rendimientoEstimado.kg_total.toLocaleString()} kg`
