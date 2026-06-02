@@ -2,7 +2,7 @@ import {
     CalendarDays,
     ChevronRight,
     ChevronUp,
-    GroupIcon,
+    Users,
     LayoutDashboard,
     LogOut,
     Settings,
@@ -103,7 +103,7 @@ export default function AppSidebar() {
                                     className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                 >
                                     <Link href="/usuarios">
-                                        <GroupIcon size={18} />
+                                        <Users size={18} />
                                         <span className="font-medium">
                                             Gestion Usuarios
                                         </span>
@@ -134,7 +134,7 @@ export default function AppSidebar() {
                                 className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/lotes">
-                                    <Tractor size={18} />
+                                    <Sprout size={18} />
                                     <span className="font-medium">
                                         Mis Lotes
                                     </span>
