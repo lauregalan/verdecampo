@@ -2,7 +2,7 @@ import { Head, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Edit2, Trash2, FileSpreadsheet } from "lucide-react";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import ModalFormularioCultivo from "@/components/Modals/ModalFormularioCultivo";
 import {
@@ -213,13 +213,23 @@ export default function Cultivos() {
                 )}
 
                 <div className="mx-auto mb-6 max-w-7xl">
-                    <input
-                        type="text"
-                        placeholder="Buscar por tipo o variedad..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                    <div className="flex gap-2 items-center">
+                        <input
+                            type="text"
+                            placeholder="Buscar por tipo o variedad..."
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <a
+                            href="/cultivos/exportar/excel"
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-800 hover:shadow-md active:scale-95 whitespace-nowrap"
+                            title="Exportar a Excel"
+                        >
+                            <FileSpreadsheet size={20} strokeWidth={2.5} />
+                            Exportar
+                        </a>
+                    </div>
                 </div>
 
                 <DataTable

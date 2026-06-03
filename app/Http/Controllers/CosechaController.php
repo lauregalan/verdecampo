@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CosechasExport;
 use App\Http\Requests\CosechaRequest;
 use App\Models\Cosecha;
 use App\Services\CosechaService;
 use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CosechaController extends Controller
 {
@@ -46,6 +48,14 @@ class CosechaController extends Controller
     public function getByCampania(int $campaniaId): JsonResponse
     {
         return response()->json($this->cosechaService->getByCampania($campaniaId));
+    }
+
+    /**
+     * Exportar cosechas a Excel
+     */
+    public function exportToExcel()
+    {
+        return Excel::download(new CosechasExport, 'cosechas_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 
     public function getByLote(int $loteId): JsonResponse
