@@ -17,6 +17,10 @@ class Siembra extends Model
         'observaciones',
     ];
 
+    protected $casts = [
+        'fecha_siembra' => 'date',
+    ];
+
     // Relaciones---------
     public function campania()
     {
@@ -33,7 +37,7 @@ class Siembra extends Model
         return $this->belongsTo(Cultivo::class);
     }
 
-    //Attribute: último cultivo que tuvo el lote ---
+    // Attribute: último cultivo que tuvo el lote ---
     /*public function getUltimoCultivoAttribute()
     {
         return Attribute::make(
@@ -51,16 +55,15 @@ class Siembra extends Model
         );
     }*/
 
-        
-        public function getUltimoCultivoAttribute()
-{
-    
-        $siembraAnterior = Siembra::where('lote_id', $this->lote_id)
-    ->where('fecha_siembra', '<', $this->fecha_siembra)
-    ->orderBy('fecha_siembra', 'desc')
-    ->with('cultivo')
-    ->first();
+    public function getUltimoCultivoAttribute()
+    {
 
-    return $siembraAnterior?->cultivo ?? null;
-}
+        $siembraAnterior = Siembra::where('lote_id', $this->lote_id)
+            ->where('fecha_siembra', '<', $this->fecha_siembra)
+            ->orderBy('fecha_siembra', 'desc')
+            ->with('cultivo')
+            ->first();
+
+        return $siembraAnterior?->cultivo ?? null;
+    }
 }

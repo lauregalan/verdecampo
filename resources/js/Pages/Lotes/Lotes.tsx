@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import ModalFormularioLote from "@/components/Modals/ModalFormularioLote";
 import LoteCard from "./LoteCard";
-import { Plus } from "lucide-react";
+import { Plus, FileSpreadsheet } from "lucide-react";
 import {
     LoteDraft,
     Lote,
@@ -44,8 +44,10 @@ const mapearLote = (lote: any): Lote => ({
 });
 
 export default function Lotes() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [lotes, setLotes] = useState<Lote[]>([]);
     const [lotesFiltrados, setLotesFiltrados] = useState<Lote[]>([]);
@@ -388,14 +390,26 @@ export default function Lotes() {
 
                 <div className="mx-auto max-w-7xl">
                     <div className="rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm space-y-4">
-                        {/* 🔍 Buscador */}
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            value={nombreBuscado}
-                            onChange={(e) => setNombreBuscado(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                        />
+                        {/* 🔍 Buscador y Exportar */}
+                        <div className="flex gap-2 items-center">
+                            <input
+                                type="text"
+                                placeholder="Buscar..."
+                                value={nombreBuscado}
+                                onChange={(e) =>
+                                    setNombreBuscado(e.target.value)
+                                }
+                                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                            <a
+                                href="/lotes/exportar/excel"
+                                className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-800 hover:shadow-md active:scale-95 whitespace-nowrap"
+                                title="Exportar a Excel"
+                            >
+                                <FileSpreadsheet size={20} strokeWidth={2.5} />
+                                Exportar
+                            </a>
+                        </div>
 
                         {/* 🎛️ Filtros */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
