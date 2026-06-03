@@ -22,7 +22,7 @@ export default function Siembras() {
 
                 <div className="mx-auto max-w-7xl">
                     <div className="rounded-2xl border border-stone-200 bg-[#fdf8f0] p-6 shadow-sm space-y-4">
-                        
+
                         <input
                             type="text"
                             placeholder="Buscar..."
@@ -42,7 +42,7 @@ import { Head, router, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import api from "@/lib/api";
-import { Plus, Edit2, Trash2, Sprout } from "lucide-react";
+import { Plus, Edit2, Trash2, Sprout, FileSpreadsheet } from "lucide-react";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import ModalFormularioSiembra from "@/components/Modals/ModalFormularioSiembra";
 import {
@@ -77,8 +77,10 @@ interface SiembraRow {
 const PER_PAGE = 10;
 
 export default function Siembras() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [siembras, setSiembras] = useState<SiembraRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,8 +88,9 @@ export default function Siembras() {
     const [siembraEditando, setSiembraEditando] = useState<SiembraDB | null>(
         null,
     );
-    const [siembraAEliminar, setSiembraAEliminar] =
-        useState<SiembraRow | null>(null);
+    const [siembraAEliminar, setSiembraAEliminar] = useState<SiembraRow | null>(
+        null,
+    );
     const [error, setError] = useState<string | null>(null);
     const [busqueda, setBusqueda] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -245,41 +248,45 @@ export default function Siembras() {
                     <span className="italic text-gray-400">—</span>
                 ),
         },
-        ...(isProductor ? [{
-            id: "acciones",
-            header: "Acciones",
-            headerClassName:
-                "px-6 py-4 text-right text-sm font-semibold text-gray-900",
-            cellClassName: "px-6 py-4 text-right",
-            cell: (s: SiembraRow) => (
-                <div className="flex justify-end gap-2">
-                    <button
-                        onClick={() => {
-                            setSiembraEditando({
-                                id: s.id,
-                                campania_id: s.campania_id,
-                                lote_id: s.lote_id,
-                                cultivo_id: s.cultivo_id,
-                                fecha: s.fecha_siembra,
-                                observaciones: s.observaciones,
-                            });
-                            setShowFormulario(true);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
-                    >
-                        <Edit2 size={14} />
-                        Editar
-                    </button>
-                    <button
-                        onClick={() => setSiembraAEliminar(s)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
-                    >
-                        <Trash2 size={14} />
-                        Eliminar
-                    </button>
-                </div>
-            ),
-        } as ColumnDef<SiembraRow>] : []),
+        ...(isProductor
+            ? [
+                  {
+                      id: "acciones",
+                      header: "Acciones",
+                      headerClassName:
+                          "px-6 py-4 text-right text-sm font-semibold text-gray-900",
+                      cellClassName: "px-6 py-4 text-right",
+                      cell: (s: SiembraRow) => (
+                          <div className="flex justify-end gap-2">
+                              <button
+                                  onClick={() => {
+                                      setSiembraEditando({
+                                          id: s.id,
+                                          campania_id: s.campania_id,
+                                          lote_id: s.lote_id,
+                                          cultivo_id: s.cultivo_id,
+                                          fecha: s.fecha_siembra,
+                                          observaciones: s.observaciones,
+                                      });
+                                      setShowFormulario(true);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
+                              >
+                                  <Edit2 size={14} />
+                                  Editar
+                              </button>
+                              <button
+                                  onClick={() => setSiembraAEliminar(s)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+                              >
+                                  <Trash2 size={14} />
+                                  Eliminar
+                              </button>
+                          </div>
+                      ),
+                  } as ColumnDef<SiembraRow>,
+              ]
+            : []),
     ];
 
     return (
@@ -320,13 +327,23 @@ export default function Siembras() {
 
                 {/* Search */}
                 <div className="mx-auto mb-6 max-w-[1600px]">
-                    <input
-                        type="text"
-                        placeholder="Buscar por campaña, lote o cultivo..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                    <div className="flex gap-2 items-center">
+                        <input
+                            type="text"
+                            placeholder="Buscar por campaña, lote o cultivo..."
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <a
+                            href="/siembras/exportar/excel"
+                            className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-800 hover:shadow-md active:scale-95 whitespace-nowrap"
+                            title="Exportar a Excel"
+                        >
+                            <FileSpreadsheet size={20} strokeWidth={2.5} />
+                            Exportar
+                        </a>
+                    </div>
                 </div>
 
                 {/* Table */}

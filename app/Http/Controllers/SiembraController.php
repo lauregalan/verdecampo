@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Siembra;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Exports\SiembrasExport;
 use App\Http\Requests\SiembraRequest;
+use App\Models\Siembra;
 use App\Services\SiembraService;
+use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SiembraController extends Controller
 {
     public function __construct(private SiembraService $siembraService)
     {
         //
-    }   
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -21,18 +23,18 @@ class SiembraController extends Controller
     {
         //
         $siembras = $this->siembraService->getAll();
+
         return response()->json($siembras, 200);
     }
-
 
     /**
      * Show the form for creating a new resource.
      */
-    //public function create()
-    //{
-        //
+    // public function create()
+    // {
+    //
 
-    //}
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -40,6 +42,7 @@ class SiembraController extends Controller
     public function store(SiembraRequest $request)
     {
         $siembra = $this->siembraService->create($request->validated());
+
         return response()->json($siembra, 201);
     }
 
@@ -49,6 +52,7 @@ class SiembraController extends Controller
     public function show(int $id): JsonResponse
     {
         $siembra = $this->siembraService->getById($id);
+
         return response()->json($siembra, 200);
     }
 
@@ -66,6 +70,7 @@ class SiembraController extends Controller
     public function update(SiembraRequest $request, int $id): JsonResponse
     {
         $siembra = $this->siembraService->update($id, $request->validated());
+
         return response()->json($siembra, 200);
     }
 
@@ -76,6 +81,15 @@ class SiembraController extends Controller
     {
 
         $siembra = $this->siembraService->delete($id);
+
         return response()->json($siembra, 200);
+    }
+
+    /**
+     * Exportar siembras a Excel
+     */
+    public function exportToExcel()
+    {
+        return Excel::download(new SiembrasExport, 'siembras_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

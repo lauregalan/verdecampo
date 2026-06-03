@@ -5,6 +5,7 @@ import {
     CalendarDays,
     DollarSign,
     Eye,
+    FileSpreadsheet,
     Filter,
     Layers,
     Package,
@@ -75,12 +76,10 @@ const getApiErrorMessage = async (
     response: Response,
     fallback: string,
 ): Promise<string> => {
-    const payload = (await response.json().catch(() => null)) as
-        | {
-              message?: string;
-              errors?: Record<string, string[]>;
-          }
-        | null;
+    const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+    } | null;
 
     const validationMessage = payload?.errors
         ? Object.values(payload.errors).flat()[0]
@@ -211,8 +210,10 @@ function AplicacionCard({
 }
 
 export default function Aplicaciones() {
-    const authUser = usePage().props.auth?.user as { roles?: string[] } | undefined;
-    const isProductor = authUser?.roles?.includes('Productor') ?? false;
+    const authUser = usePage().props.auth?.user as
+        | { roles?: string[] }
+        | undefined;
+    const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
     const [aplicaciones, setAplicaciones] = useState<AplicacionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -282,9 +283,9 @@ export default function Aplicaciones() {
 
     const tiposDisponibles = useMemo(
         () =>
-            Array.from(new Set(aplicaciones.map((aplicacion) => aplicacion.tipo))).sort(
-                (left, right) => left.localeCompare(right, "es"),
-            ),
+            Array.from(
+                new Set(aplicaciones.map((aplicacion) => aplicacion.tipo)),
+            ).sort((left, right) => left.localeCompare(right, "es")),
         [aplicaciones],
     );
 
@@ -308,7 +309,9 @@ export default function Aplicaciones() {
                     aplicacion.campania,
                     aplicacion.lote,
                     aplicacion.observaciones,
-                ].some((value) => value.toLowerCase().includes(normalizedSearch));
+                ].some((value) =>
+                    value.toLowerCase().includes(normalizedSearch),
+                );
 
             const matchesTipo =
                 tipoFilter === "Todos" || aplicacion.tipo === tipoFilter;
@@ -363,11 +366,9 @@ export default function Aplicaciones() {
             setAplicacionEditando(null);
             return null;
         } catch (saveError) {
-            return (
-                saveError instanceof Error
-                    ? saveError.message
-                    : "No se pudo guardar la aplicación."
-            );
+            return saveError instanceof Error
+                ? saveError.message
+                : "No se pudo guardar la aplicación.";
         }
     };
 
@@ -418,8 +419,9 @@ export default function Aplicaciones() {
                                 Gestión de Aplicaciones
                             </h1>
                             <p className="mt-2 text-sm text-stone-500">
-                                Registrá productos aplicados, campaña, lote y costo operativo
-                                con el mismo flujo del resto del tablero.
+                                Registrá productos aplicados, campaña, lote y
+                                costo operativo con el mismo flujo del resto del
+                                tablero.
                             </p>
                         </div>
                         {isProductor && (
@@ -467,13 +469,15 @@ export default function Aplicaciones() {
                                 <div className="mt-4 text-3xl font-black tracking-tight text-stone-900 xl:text-4xl">
                                     {item.value}
                                 </div>
-                                <p className="mt-2 text-sm text-stone-500">{item.detail}</p>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    {item.detail}
+                                </p>
                             </article>
                         ))}
                     </section>
 
                     <section className="rounded-2xl border border-stone-200/80 bg-white/55 p-5 shadow-sm backdrop-blur-sm md:p-6">
-                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
+                        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_auto_auto]">
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-stone-400">
                                     <Search size={14} />
@@ -483,7 +487,9 @@ export default function Aplicaciones() {
                                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" />
                                     <input
                                         value={search}
-                                        onChange={(event) => setSearch(event.target.value)}
+                                        onChange={(event) =>
+                                            setSearch(event.target.value)
+                                        }
                                         placeholder="Producto, lote, campaña..."
                                         className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/80 py-3 pl-10 pr-4 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white/90"
                                     />
@@ -497,10 +503,14 @@ export default function Aplicaciones() {
                                 </span>
                                 <select
                                     value={tipoFilter}
-                                    onChange={(event) => setTipoFilter(event.target.value)}
+                                    onChange={(event) =>
+                                        setTipoFilter(event.target.value)
+                                    }
                                     className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/80 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white/90"
                                 >
-                                    <option value="Todos">Todos los tipos</option>
+                                    <option value="Todos">
+                                        Todos los tipos
+                                    </option>
                                     {tiposDisponibles.map((tipo) => (
                                         <option key={tipo} value={tipo}>
                                             {tipo}
@@ -521,7 +531,9 @@ export default function Aplicaciones() {
                                     }
                                     className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/80 px-4 py-3 text-sm text-stone-800 outline-none transition focus:border-emerald-500 focus:bg-white/90"
                                 >
-                                    <option value="Todos">Todas las campañas</option>
+                                    <option value="Todos">
+                                        Todas las campañas
+                                    </option>
                                     {campaniasDisponibles.map((campania) => (
                                         <option key={campania} value={campania}>
                                             {campania}
@@ -534,6 +546,19 @@ export default function Aplicaciones() {
                                 <div className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/80 px-4 py-3 text-sm font-semibold text-stone-600 backdrop-blur-sm">
                                     {aplicacionesFiltradas.length} visibles
                                 </div>
+                            </div>
+                            <div className="flex items-end">
+                                <a
+                                    href="/aplicaciones/exportar/excel"
+                                    className="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-4 py-3 font-semibold text-white shadow-sm transition-all hover:bg-emerald-800 hover:shadow-md active:scale-95 whitespace-nowrap"
+                                    title="Exportar a Excel"
+                                >
+                                    <FileSpreadsheet
+                                        size={18}
+                                        strokeWidth={2.5}
+                                    />
+                                    Exportar
+                                </a>
                             </div>
                         </div>
                     </section>
@@ -559,8 +584,8 @@ export default function Aplicaciones() {
                                         No hay aplicaciones para mostrar
                                     </h2>
                                     <p className="mt-2 text-sm text-stone-500">
-                                        Ajustá los filtros o registrá una nueva aplicación para
-                                        empezar.
+                                        Ajustá los filtros o registrá una nueva
+                                        aplicación para empezar.
                                     </p>
                                 </div>
                             ) : (
@@ -569,9 +594,13 @@ export default function Aplicaciones() {
                                         key={aplicacion.id}
                                         aplicacion={aplicacion}
                                         isProductor={isProductor}
-                                        onView={() => setAplicacionDetalle(aplicacion)}
+                                        onView={() =>
+                                            setAplicacionDetalle(aplicacion)
+                                        }
                                         onEdit={() => abrirEdicion(aplicacion)}
-                                        onDelete={() => setAplicacionAEliminar(aplicacion)}
+                                        onDelete={() =>
+                                            setAplicacionAEliminar(aplicacion)
+                                        }
                                     />
                                 ))
                             )}
@@ -629,7 +658,9 @@ export default function Aplicaciones() {
                                     Cantidad aplicada
                                 </div>
                                 <div className="mt-2 text-base font-semibold text-stone-900">
-                                    {aplicacionDetalle.cantidad.toLocaleString("es-AR")}{" "}
+                                    {aplicacionDetalle.cantidad.toLocaleString(
+                                        "es-AR",
+                                    )}{" "}
                                     {aplicacionDetalle.unidad}
                                 </div>
                             </div>
@@ -673,7 +704,8 @@ export default function Aplicaciones() {
                                     Observaciones
                                 </div>
                                 <div className="mt-2 text-sm leading-6 text-stone-700">
-                                    {aplicacionDetalle.observaciones || "Sin observaciones cargadas."}
+                                    {aplicacionDetalle.observaciones ||
+                                        "Sin observaciones cargadas."}
                                 </div>
                             </div>
                         </div>
