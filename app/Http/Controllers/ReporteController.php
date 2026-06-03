@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ReporteProductividadService;
+use App\Services\ReporteAplicacionesService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,6 +19,19 @@ class ReporteController extends Controller
             : 'reporte-productividad-campanias.pdf';
 
         return Pdf::loadView('reportes.productividad-campanias', $reporte)
+            ->setPaper('a4', 'landscape')
+            ->download($nombre);
+    }
+
+    public function aplicaciones(Request $request, ReporteAplicacionesService $service): Response
+    {
+        $campaniaId = $request->integer('campania_id') ?: null;
+        $reporte = $service->generar($campaniaId);
+        $nombre = $campaniaId
+            ? "reporte-aplicaciones-campania-{$campaniaId}.pdf"
+            : 'reporte-aplicaciones.pdf';
+
+        return Pdf::loadView('reportes.aplicaciones', $reporte)
             ->setPaper('a4', 'landscape')
             ->download($nombre);
     }
