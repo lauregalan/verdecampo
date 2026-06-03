@@ -3,6 +3,7 @@
 use App\Http\Controllers\AceptarInvitacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,14 @@ Route::get('/campanias', function () {
 Route::get('/cosechas', function () {
     return Inertia::render('Cosechas/Cosechas');
 })->middleware(['auth', 'verified'])->name('cosechas');
+
+Route::get('/reportes', function () {
+    return Inertia::render('Reportes/ProductividadCampanias');
+})->middleware(['auth', 'verified'])->name('reportes');
+
+Route::get('/reportes/productividad-campanias.pdf', [ReporteController::class, 'productividadCampanias'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.productividad-campanias');
 
 Route::get('/campania', function () {
     return Redirect('/campanias');
