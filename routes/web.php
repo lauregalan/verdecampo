@@ -75,12 +75,16 @@ Route::get('/cosechas', function () {
 })->middleware(['auth', 'verified'])->name('cosechas');
 
 Route::get('/reportes', function () {
-    return Inertia::render('Reportes/ProductividadCampanias');
+    return Inertia::render('Reportes/Reportes');
 })->middleware(['auth', 'verified'])->name('reportes');
 
 Route::get('/reportes/productividad-campanias.pdf', [ReporteController::class, 'productividadCampanias'])
     ->middleware(['auth', 'verified'])
     ->name('reportes.productividad-campanias');
+
+Route::get('/reportes/aplicaciones.pdf', [ReporteController::class, 'aplicaciones'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.aplicaciones');
 
 Route::get('/campania', function () {
     return Redirect('/campanias');
