@@ -2,6 +2,7 @@ import {
     CalendarDays,
     ChevronRight,
     ChevronUp,
+    FileText,
     GroupIcon,
     LayoutDashboard,
     LogOut,
@@ -263,6 +264,21 @@ export default function AppSidebar() {
                                     <Sprout size={18} />
                                     <span className="font-medium">
                                         Siembras
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={currentPath.startsWith("/reportes")}
+                                className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                            >
+                                <Link href="/reportes">
+                                    <FileText size={18} />
+                                    <span className="font-medium">
+                                        Reportes
                                     </span>
                                 </Link>
                             </SidebarMenuButton>
