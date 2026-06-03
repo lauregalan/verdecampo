@@ -86,6 +86,10 @@ Route::get('/reportes/aplicaciones.pdf', [ReporteController::class, 'aplicacione
     ->middleware(['auth', 'verified'])
     ->name('reportes.aplicaciones');
 
+Route::get('/reportes/rendimiento-lotes.pdf', [ReporteController::class, 'rendimientoLotes'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.rendimiento-lotes');
+
 Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');
