@@ -1,14 +1,9 @@
 import { Lote } from "./types";
 import {
-    Check,
-    ClipboardPlus,
-    Eye,
     Maximize2,
     Pencil,
     Sprout,
-    Timer,
     Trash2,
-    Tractor,
 } from "lucide-react";
 import {
     Card,
@@ -18,6 +13,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { statusStyles } from "../Campos/mockCampos";
+
+const LOTE_IMAGES = [
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?q=80&w=1200&auto=format&fit=crop",
+    "https://plus.unsplash.com/premium_photo-1661962692059-55d5a4319814?q=80&w=1200&auto=format&fit=crop",
+];
 
 interface LoteCardProps {
     lote: Lote;
@@ -37,53 +41,7 @@ export default function LoteCard({
 }: LoteCardProps) {
     const config = statusStyles["verde"];
     const { className, Icon } = config;
-
-    const renderImage = () => {
-        switch (lote.estado) {
-            case "produccion":
-                return (
-                    <div className="h-full w-full bg-cover bg-center bg-green-500 flex items-center justify-center">
-                        <Sprout
-                            size={48}
-                            className="text-white opacity-80"
-                            aria-hidden="true"
-                        />
-                    </div>
-                );
-            case "barbecho":
-                return (
-                    <div className="h-full w-full bg-cover bg-center bg-red-500 flex items-center justify-center">
-                        <Timer
-                            size={48}
-                            className="text-white opacity-80"
-                            aria-hidden="true"
-                        />
-                    </div>
-                );
-            case "preparacion":
-                return (
-                    <div className="h-full w-full bg-cover bg-center bg-yellow-500 flex items-center justify-center">
-                        <Tractor
-                            size={48}
-                            className="text-white opacity-80"
-                            aria-hidden="true"
-                        />
-                    </div>
-                );
-            case "disponible":
-                return (
-                    <div className="h-full w-full bg-cover bg-center bg-green-200 flex items-center justify-center">
-                        <Check
-                            size={48}
-                            className="text-white opacity-80"
-                            aria-hidden="true"
-                        />
-                    </div>
-                );
-            default:
-                return <div className="h-full w-full bg-cover bg-center bg-gray-500" />;
-        }
-    };
+    const imageUrl = LOTE_IMAGES[Math.abs(lote.id) % LOTE_IMAGES.length];
 
     const getCultivoActual = () => {
         const siembrasEnCurso =
@@ -121,7 +79,12 @@ export default function LoteCard({
             data-lote-id={lote.id}
         >
             <div className="h-60 w-full shrink-0 overflow-hidden border-b border-stone-200 bg-stone-100">
-                {renderImage()}
+                <img
+                    src={imageUrl}
+                    alt={`Vista agricola de ${lote.nombre}`}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                />
             </div>
 
             <CardHeader className="flex flex-row items-start justify-between gap-2 p-4 pb-2 space-y-0">
