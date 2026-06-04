@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Exports\AplicacionesExport;
 use App\Http\Requests\AplicacionRequest;
 use App\Services\AplicacionService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
-use Maatwebsite\Excel\Facades\Excel;
 
 class AplicacionController extends Controller
 {
-    public function __construct(private AplicacionService $aplicacionService) {}
+    public function __construct(
+        private AplicacionService $aplicacionService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     public function index(): JsonResponse
     {
@@ -49,6 +52,6 @@ class AplicacionController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new AplicacionesExport, 'aplicaciones_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new AplicacionesExport, 'aplicaciones_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

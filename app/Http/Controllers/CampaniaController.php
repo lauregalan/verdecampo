@@ -6,13 +6,16 @@ use App\Exports\CampaniasExport;
 use App\Http\Requests\CampaniaRequest;
 use App\Models\Campania;
 use App\Services\CampaniaService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class CampaniaController extends Controller
 {
-    public function __construct(private CampaniaService $campaniaService) {}
+    public function __construct(
+        private CampaniaService $campaniaService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     public function index(): JsonResponse
     {
@@ -56,7 +59,7 @@ class CampaniaController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new CampaniasExport, 'campanias_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new CampaniasExport, 'campanias_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 
     public function asignarLotes(Request $request, Campania $campania): JsonResponse

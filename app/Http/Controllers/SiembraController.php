@@ -6,15 +6,15 @@ use App\Exports\SiembrasExport;
 use App\Http\Requests\SiembraRequest;
 use App\Models\Siembra;
 use App\Services\SiembraService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
-use Maatwebsite\Excel\Facades\Excel;
 
 class SiembraController extends Controller
 {
-    public function __construct(private SiembraService $siembraService)
-    {
-        //
-    }
+    public function __construct(
+        private SiembraService $siembraService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -90,6 +90,6 @@ class SiembraController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new SiembrasExport, 'siembras_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new SiembrasExport, 'siembras_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

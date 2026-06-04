@@ -6,12 +6,15 @@ use App\Exports\UsersExport;
 use App\Http\Requests\RoleRequest;
 use App\Models\User;
 use App\Services\RoleService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
-    public function __construct(private RoleService $roleService) {}
+    public function __construct(
+        private RoleService $roleService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -111,6 +114,6 @@ class UserController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new UsersExport, 'usuarios_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new UsersExport, 'usuarios_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

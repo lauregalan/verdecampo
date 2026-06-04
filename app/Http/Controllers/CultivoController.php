@@ -6,12 +6,15 @@ use App\Exports\CultivosExport;
 use App\Http\Requests\CultivoRequest;
 use App\Models\Cultivo;
 use App\Services\CultivoService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
-use Maatwebsite\Excel\Facades\Excel;
 
 class CultivoController extends Controller
 {
-    public function __construct(private CultivoService $cultivoService) {}
+    public function __construct(
+        private CultivoService $cultivoService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     public function index(): JsonResponse
     {
@@ -50,6 +53,6 @@ class CultivoController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new CultivosExport, 'cultivos_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new CultivosExport, 'cultivos_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

@@ -6,12 +6,15 @@ use App\Exports\CosechasExport;
 use App\Http\Requests\CosechaRequest;
 use App\Models\Cosecha;
 use App\Services\CosechaService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
-use Maatwebsite\Excel\Facades\Excel;
 
 class CosechaController extends Controller
 {
-    public function __construct(private CosechaService $cosechaService) {}
+    public function __construct(
+        private CosechaService $cosechaService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     public function index(): JsonResponse
     {
@@ -55,7 +58,7 @@ class CosechaController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new CosechasExport, 'cosechas_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new CosechasExport, 'cosechas_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 
     public function getByLote(int $loteId): JsonResponse

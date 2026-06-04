@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Exports\LotesExport;
 use App\Http\Requests\LoteRequest;
 use App\Services\LoteService;
+use App\Services\SimpleExcelExportService;
 use Illuminate\Http\JsonResponse;
-use Maatwebsite\Excel\Facades\Excel;
 
 class LoteController extends Controller
 {
-    public function __construct(private LoteService $loteService) {}
+    public function __construct(
+        private LoteService $loteService,
+        private SimpleExcelExportService $simpleExcelExportService,
+    ) {}
 
     public function indexByCampo(int $id_campo): JsonResponse
     {
@@ -74,6 +77,6 @@ class LoteController extends Controller
      */
     public function exportToExcel()
     {
-        return Excel::download(new LotesExport, 'lotes_'.date('Y-m-d_H-i-s').'.xlsx');
+        return $this->simpleExcelExportService->download(new LotesExport, 'lotes_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }
