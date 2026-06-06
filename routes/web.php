@@ -90,6 +90,11 @@ Route::get('/reportes/rendimiento-lotes.pdf', [ReporteController::class, 'rendim
     ->middleware(['auth', 'verified'])
     ->name('reportes.rendimiento-lotes');
 
+Route::get('/reportes/salud-agronomica.pdf', [ReporteController::class, 'saludAgronomica'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.salud-agronomica');
+
+
 Route::get('/campania', function () {
     return Redirect('/campanias');
 })->middleware(['auth', 'verified'])->name('gestionarCampaÃ±as');

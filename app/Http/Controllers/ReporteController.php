@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ReporteAplicacionesService;
 use App\Services\ReporteProductividadService;
 use App\Services\ReporteRendimientoLotesService;
+use App\Services\ReporteSaludAgronomicaService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -48,5 +49,13 @@ class ReporteController extends Controller
         return Pdf::loadView('reportes.rendimiento-lotes', $reporte)
             ->setPaper('a4', 'landscape')
             ->download($nombre);
+    }
+
+    public function saludAgronomica(Request $request, ReporteSaludAgronomicaService $service): Response
+    {
+        $reporte = $service->generar();
+        return Pdf::loadView('reportes.saludAgronomica', $reporte)
+            ->setPaper('a4', 'landscape')
+            ->download('reporte-salud-agronomica.pdf');
     }
 }
