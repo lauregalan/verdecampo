@@ -11,19 +11,11 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
-function actingAsProductor(): void
-{
-    Role::findOrCreate('Productor', 'web');
 
-    $user = User::factory()->create();
-    $user->assignRole('Productor');
-
-    Sanctum::actingAs($user);
-}
 
 
 it('prevents creating campaign when another campaign exists with same field and overlapping lots', function () {
-    actingAsProductor();
+
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
@@ -54,7 +46,7 @@ it('prevents creating campaign when another campaign exists with same field and 
 });
 
 it('allows creating campaign with same field but different lots', function () {
-    actingAsProductor();
+
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();

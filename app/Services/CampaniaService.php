@@ -20,20 +20,67 @@ class CampaniaService
         return $campania->load(['cultivo', 'lotes']);
     }
 
+    private function verificarDuplicadoExacto(array $data, $ignoreId = null)
+{
+
+    $query = Campania::where('campo_id', $data['campo_id'])
+        ->where('fecha_inicio', $data['fecha_inicio'])
+        ->where('fecha_fin', $data['fecha_fin']);
+
+
+    if (empty($data['cultivo_id'])) {
+        $query->whereNull('cultivo_id');
+    } else {
+        $query->where('cultivo_id', $data['cultivo_id']);
+    }
+
+
+    if ($ignoreId) {
+        $query->where('id', '!=', $ignoreId);
+    }
+
+    $posiblesDuplicados = $query->get();
+
+
+    $lotesNuevos = $data['lote_ids'] ?? [];
+    sort($lotesNuevos);
+
+
+    foreach ($posiblesDuplicados as $campania) {
+        $lotesExistentes = $campania->lotes->pluck('id')->toArray();
+        sort($lotesExistentes);
+
+        if ($lotesNuevos === $lotesExistentes) {
+            return $campania;
+        }
+    }
+
+    return null;
+}
+
     public function store(array $data)
     {
-        $campaniaEnConflicto = $this->verificarConflictoCampanias(
-            $data['campo_id'] ?? null,
-            $data['lote_ids'] ?? [],
-            $data['fecha_inicio'] ?? null,
-            $data['fecha_fin'] ?? null
-        );
+        $duplicadoExacto = $this->verificarDuplicadoExacto($data);
 
-        if ($campaniaEnConflicto) {
-            throw ValidationException::withMessages([
-                'lotes' => "Algunos de estos lotes ya están siendo utilizados en la campaña '{$campaniaEnConflicto->nombre}' durante esas fechas (desde {$campaniaEnConflicto->fecha_inicio} hasta {$campaniaEnConflicto->fecha_fin})."
-            ]);
-        }
+    if ($duplicadoExacto) {
+        throw ValidationException::withMessages([
+            'nombre' => "Ya existe una campaña idéntica registrada bajo el nombre '{$duplicadoExacto->nombre}'. No puedes registrar dos campañas con exactamente el mismo contenido."
+        ]);
+    }
+
+
+    $campaniaEnConflicto = $this->verificarConflictoCampanias(
+        $data['campo_id'] ?? null,
+        $data['lote_ids'] ?? [],
+        $data['fecha_inicio'] ?? null,
+        $data['fecha_fin'] ?? null
+    );
+
+    if ($campaniaEnConflicto) {
+        throw ValidationException::withMessages([
+            'lotes' => "Algunos de estos lotes ya están siendo utilizados en la campaña '{$campaniaEnConflicto->nombre}' durante esas fechas (desde {$campaniaEnConflicto->fecha_inicio} hasta {$campaniaEnConflicto->fecha_fin})."
+        ]);
+    }
 
 
         if (isset($data['fecha_fin'])) {
@@ -58,8 +105,19 @@ class CampaniaService
         return $campania;
     }
 
-public function update(Campania $campania, array $data)
-    {
+public function update(Campania $campania, array $data){
+
+        $duplicadoExacto = $this->verificarDuplicadoExacto(
+        array_merge($campania->toArray(), $data),
+        $campania->id
+        );
+
+        if ($duplicadoExacto) {
+            throw ValidationException::withMessages([
+                'nombre' => "Los cambios generan una campaña idéntica a '{$duplicadoExacto->nombre}'. No puedes duplicar contenido existente."
+            ]);
+        }
+
         $campaniaEnConflicto = $this->verificarConflictoCampanias(
             $data['campo_id'] ?? $campania->campo_id,
             $data['lote_ids'] ?? $campania->lotes->pluck('id')->toArray(),
