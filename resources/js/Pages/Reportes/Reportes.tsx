@@ -91,7 +91,7 @@ export default function ProductividadCampanias() {
                                 Reportes
                             </h1>
                             <p className="mt-1 text-sm text-gray-500">
-                                Generar reportes con estadisticas
+                                Analiza métricas clave y descarga informes detallados para optimizar la toma de decisiones productivas
                             </p>
                         </div>
                     </div>
@@ -250,7 +250,7 @@ export default function ProductividadCampanias() {
                     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-100 text-black-700">
                                     <FileText size={24} />
                                 </div>
                                 <div>
