@@ -36,10 +36,16 @@ it('updates campaign lots to production when campaign starts', function () {
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
     $lote = Lote::factory()->for($campo)->state(['estado' => 'disponible'])->create();
+
+    // Forzamos fechas para que el backend acepte "En Curso"
     $campania = Campania::factory()
         ->for($campo)
         ->for($cultivo)
-        ->state(['estado' => 'Planificada'])
+        ->state([
+            'estado' => 'Planificada',
+            'fecha_inicio' => now()->subDays(5)->toDateString(), // Arrancó hace 5 días
+            'fecha_fin' => now()->addMonths(3)->toDateString(),  // Termina en 3 meses
+        ])
         ->create();
 
     $campania->lotes()->attach($lote);
@@ -55,7 +61,7 @@ it('updates campaign lots to production when campaign starts', function () {
 });
 
 it('updates campaign lots to available when campaign finishes', function () {
-        Role::findOrCreate('Productor', 'web');
+    Role::findOrCreate('Productor', 'web');
 
     $user = User::factory()->create();
     $user->assignRole('Productor');
@@ -65,10 +71,16 @@ it('updates campaign lots to available when campaign finishes', function () {
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
     $lote = Lote::factory()->for($campo)->state(['estado' => 'produccion'])->create();
+
+    // Forzamos fechas para que el backend la clasifique sí o sí como "Finalizada"
     $campania = Campania::factory()
         ->for($campo)
         ->for($cultivo)
-        ->state(['estado' => 'En Curso'])
+        ->state([
+            'estado' => 'En Curso',
+            'fecha_inicio' => now()->subMonths(6)->toDateString(),
+            'fecha_fin' => now()->subDays(2)->toDateString(), // ¡Terminó hace 2 días!
+        ])
         ->create();
 
     $campania->lotes()->attach($lote);

@@ -9,7 +9,6 @@ use Carbon\Carbon;
 
 class CampaniaService
 {
-
     public function index()
     {
         return Campania::with(['cultivo', 'lotes'])->get();
@@ -21,77 +20,67 @@ class CampaniaService
     }
 
     private function verificarDuplicadoExacto(array $data, $ignoreId = null)
-{
+    {
+        $query = Campania::where('campo_id', '=', $data['campo_id'])
+            ->where('fecha_inicio', $data['fecha_inicio'])
+            ->where('fecha_fin', $data['fecha_fin']);
 
-    $query = Campania::where('campo_id', $data['campo_id'])
-        ->where('fecha_inicio', $data['fecha_inicio'])
-        ->where('fecha_fin', $data['fecha_fin']);
-
-
-    if (empty($data['cultivo_id'])) {
-        $query->whereNull('cultivo_id');
-    } else {
-        $query->where('cultivo_id', $data['cultivo_id']);
-    }
-
-
-    if ($ignoreId) {
-        $query->where('id', '!=', $ignoreId);
-    }
-
-    $posiblesDuplicados = $query->get();
-
-
-    $lotesNuevos = $data['lote_ids'] ?? [];
-    sort($lotesNuevos);
-
-
-    foreach ($posiblesDuplicados as $campania) {
-        $lotesExistentes = $campania->lotes->pluck('id')->toArray();
-        sort($lotesExistentes);
-
-        if ($lotesNuevos === $lotesExistentes) {
-            return $campania;
+        if (empty($data['cultivo_id'])) {
+            $query->whereNull('cultivo_id');
+        } else {
+            $query->where('cultivo_id', $data['cultivo_id']);
         }
-    }
 
-    return null;
-}
+        if ($ignoreId) {
+            $query->where('id', '!=', $ignoreId);
+        }
+
+        $posiblesDuplicados = $query->get();
+
+        $lotesNuevos = array_map('intval', $data['lote_ids'] ?? []);
+        sort($lotesNuevos);
+
+        foreach ($posiblesDuplicados as $campania) {
+            $lotesExistentes = $campania->lotes->pluck('id')->map(fn($id) => (int)$id)->toArray();
+            sort($lotesExistentes);
+
+            if ($lotesNuevos === $lotesExistentes) {
+                return $campania;
+            }
+        }
+
+        return null;
+    }
 
     public function store(array $data)
     {
         $duplicadoExacto = $this->verificarDuplicadoExacto($data);
 
-    if ($duplicadoExacto) {
-        throw ValidationException::withMessages([
-            'nombre' => "Ya existe una campaña idéntica registrada bajo el nombre '{$duplicadoExacto->nombre}'. No puedes registrar dos campañas con exactamente el mismo contenido."
-        ]);
-    }
+        if ($duplicadoExacto) {
+            throw ValidationException::withMessages([
+                'nombre' => "Ya existe una campaña idéntica registrada bajo el nombre '{$duplicadoExacto->nombre}'. No puedes registrar dos campañas con exactamente el mismo contenido."
+            ]);
+        }
 
+        $campaniaEnConflicto = $this->verificarConflictoCampanias(
+            $data['campo_id'] ?? null,
+            $data['lote_ids'] ?? [],
+            $data['fecha_inicio'] ?? null,
+            $data['fecha_fin'] ?? null
+        );
 
-    $campaniaEnConflicto = $this->verificarConflictoCampanias(
-        $data['campo_id'] ?? null,
-        $data['lote_ids'] ?? [],
-        $data['fecha_inicio'] ?? null,
-        $data['fecha_fin'] ?? null
-    );
-
-    if ($campaniaEnConflicto) {
-        throw ValidationException::withMessages([
-            'lotes' => "Algunos de estos lotes ya están siendo utilizados en la campaña '{$campaniaEnConflicto->nombre}' durante esas fechas (desde {$campaniaEnConflicto->fecha_inicio} hasta {$campaniaEnConflicto->fecha_fin})."
-        ]);
-    }
-
+        if ($campaniaEnConflicto) {
+            throw ValidationException::withMessages([
+                'lotes' => "Algunos de estos lotes ya están siendo utilizados en la campaña '{$campaniaEnConflicto->nombre}' durante esas fechas (desde {$campaniaEnConflicto->fecha_inicio} hasta {$campaniaEnConflicto->fecha_fin})."
+            ]);
+        }
 
         if (isset($data['fecha_fin'])) {
             $fechaFin = Carbon::parse($data['fecha_fin']);
 
-
             if ($fechaFin->isPast()) {
                 $data['estado'] = 'Finalizada';
-            }
-
-            elseif (isset($data['fecha_inicio']) && Carbon::parse($data['fecha_inicio'])->isPast() && $fechaFin->isFuture()) {
+            } elseif (isset($data['fecha_inicio']) && Carbon::parse($data['fecha_inicio'])->isPast() && $fechaFin->isFuture()) {
                 $data['estado'] = 'En Curso';
             }
         }
@@ -105,12 +94,19 @@ class CampaniaService
         return $campania;
     }
 
-public function update(Campania $campania, array $data){
+    public function update(Campania $campania, array $data)
+    {
+        // 1. Armamos el array de datos completo de forma segura (sin toArray() para evitar problemas de formato de fecha)
+        $datosCompletos = [
+            'campo_id' => $data['campo_id'] ?? $campania->campo_id,
+            'cultivo_id' => array_key_exists('cultivo_id', $data) ? $data['cultivo_id'] : $campania->cultivo_id,
+            'fecha_inicio' => $data['fecha_inicio'] ?? (is_string($campania->fecha_inicio) ? $campania->fecha_inicio : $campania->fecha_inicio->toDateString()),
+            'fecha_fin' => $data['fecha_fin'] ?? (is_string($campania->fecha_fin) ? $campania->fecha_fin : $campania->fecha_fin->toDateString()),
+            'lote_ids' => $data['lote_ids'] ?? $campania->lotes->pluck('id')->toArray(),
+        ];
 
-        $duplicadoExacto = $this->verificarDuplicadoExacto(
-        array_merge($campania->toArray(), $data),
-        $campania->id
-        );
+        // 2. Comprobamos el duplicado exacto
+        $duplicadoExacto = $this->verificarDuplicadoExacto($datosCompletos, $campania->id);
 
         if ($duplicadoExacto) {
             throw ValidationException::withMessages([
@@ -118,11 +114,12 @@ public function update(Campania $campania, array $data){
             ]);
         }
 
+        // 3. Comprobamos conflictos de solapamiento
         $campaniaEnConflicto = $this->verificarConflictoCampanias(
-            $data['campo_id'] ?? $campania->campo_id,
-            $data['lote_ids'] ?? $campania->lotes->pluck('id')->toArray(),
-            $data['fecha_inicio'] ?? $campania->fecha_inicio,
-            $data['fecha_fin'] ?? $campania->fecha_fin,
+            $datosCompletos['campo_id'],
+            $datosCompletos['lote_ids'],
+            $datosCompletos['fecha_inicio'],
+            $datosCompletos['fecha_fin'],
             $campania->id
         );
 
@@ -132,6 +129,7 @@ public function update(Campania $campania, array $data){
             ]);
         }
 
+        // 4. Lógica de estado inteligente con Carbon
         $fechaInicioStr = $data['fecha_inicio'] ?? $campania->fecha_inicio;
         $fechaFinStr = $data['fecha_fin'] ?? $campania->fecha_fin;
 
@@ -139,12 +137,9 @@ public function update(Campania $campania, array $data){
             $fechaInicio = Carbon::parse($fechaInicioStr);
             $fechaFin = Carbon::parse($fechaFinStr);
 
-
             if ($fechaFin->isPast()) {
                 $data['estado'] = 'Finalizada';
-            }
-
-            elseif ($fechaInicio->isPast() && $fechaFin->isFuture()) {
+            } elseif ($fechaInicio->isPast() && $fechaFin->isFuture()) {
                 $data['estado'] = 'En Curso';
             }
         }
@@ -158,9 +153,10 @@ public function update(Campania $campania, array $data){
         return $campania;
     }
 
-    public function destroy(Campania $campania)
+    public function destroy(Campania $campania): void
     {
-        $campania->delete();
+        $campania->lotes()->detach();
+        Campania::destroy($campania->getKey());
     }
 
     public function getLotes(Campania $campania)
@@ -178,17 +174,6 @@ public function update(Campania $campania, array $data){
         $campania->lotes()->detach($loteId);
     }
 
-    /**
-     * Verifica si hay conflictos con otras campañas en el mismo campo y lotes.
-     * Retorna la campaña en conflicto si la hay, null si no hay conflictos.
-     *
-     * @param int|null $campoId ID del campo
-     * @param array $loteIds IDs de los lotes
-     * @param string|null $fechaInicio Fecha de inicio de la campaña
-     * @param string|null $fechaFin Fecha de fin de la campaña
-     * @param int|null $campaniaIdExcluir ID de la campaña a excluir de la búsqueda (útil para updates)
-     * @return Campania|null
-     */
     private function verificarConflictoCampanias(
         ?int $campoId,
         array $loteIds,
@@ -200,19 +185,14 @@ public function update(Campania $campania, array $data){
             return null;
         }
 
-        return Campania::where('campo_id', $campoId)
+        return Campania::where('campo_id', '=', $campoId)
             ->when($campaniaIdExcluir, function ($query) use ($campaniaIdExcluir) {
-                // Excluir la campaña actual si se proporciona
                 return $query->where('id', '!=', $campaniaIdExcluir);
             })
-            // Verificar sobreposición de fechas:
-            // Dos rangos de fechas se superponen si:
-            // fecha_inicio <= fecha_fin_nueva AND fecha_fin >= fecha_inicio_nueva
             ->where(function ($query) use ($fechaInicio, $fechaFin) {
                 $query->where('fecha_inicio', '<=', $fechaFin)
                       ->where('fecha_fin', '>=', $fechaInicio);
             })
-            // Verificar que al menos uno de los lotes esté siendo usado
             ->whereHas('lotes', function ($query) use ($loteIds) {
                 $query->whereIn('lote_id', $loteIds);
             })

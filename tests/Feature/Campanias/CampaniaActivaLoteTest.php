@@ -11,8 +11,16 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
+// Función de ayuda para asegurar que el test está autenticado como Productor
+function loguearProductor() {
+    Role::findOrCreate('Productor', 'web');
+    $user = User::factory()->create();
+    $user->assignRole('Productor');
+    Sanctum::actingAs($user);
+}
+
 it('prevents creating duplicate campaigns with exact same content but different name', function () {
-    actingAsProductor();
+    loguearProductor(); // <-- Autenticamos la petición
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
@@ -30,7 +38,7 @@ it('prevents creating duplicate campaigns with exact same content but different 
         ->create();
     $campaniaOriginal->lotes()->attach($lote);
 
-    // mismos datose
+    // mismos datos
     $response = $this->postJson('/api/campanias', [
         'campo_id' => $campo->id,
         'cultivo_id' => $cultivo->id,
@@ -41,76 +49,84 @@ it('prevents creating duplicate campaigns with exact same content but different 
         'lote_ids' => [$lote->id],
     ]);
 
-    $response->assertInvalid();
+    // Usamos 422, que es el código correcto de validación
+    $response->assertStatus(422)->assertJsonValidationErrors(['nombre']);
 });
 
 it('prevents creating a new active campaign if the lot already has one active', function () {
-    actingAsProductor();
+    loguearProductor();
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
     $lote = Lote::factory()->for($campo)->create();
 
-    // campaña activa
+    // Campaña activa en el primer semestre
     $campaniaActiva = Campania::factory()
         ->for($campo)
         ->for($cultivo)
         ->state([
-            'estado' => 'Activa',
+            'estado' => 'En Curso',
             'fecha_inicio' => '2026-01-01',
             'fecha_fin' => '2026-06-30',
         ])
         ->create();
     $campaniaActiva->lotes()->attach($lote);
 
-    // otra activa
+    // Intentamos crear otra campaña que empiece en MAYO (¡Solapamiento!)
     $response = $this->postJson('/api/campanias', [
         'campo_id' => $campo->id,
         'cultivo_id' => $cultivo->id,
-        'nombre' => 'Nueva Campaña de Verano',
-        'fecha_inicio' => '2026-07-01', 
+        'nombre' => 'Nueva Campaña Invasora',
+        'fecha_inicio' => '2026-05-01', // Choca con la activa
         'fecha_fin' => '2026-12-31',
-        'estado' => 'Activa',
+        'estado' => 'En Curso',
         'lote_ids' => [$lote->id],
     ]);
 
-
-    $response->assertInvalid();
+    $response->assertStatus(422)->assertJsonValidationErrors(['lotes']);
 });
 
 it('prevents updating a planned campaign to active if the lot already has an active campaign', function () {
-    actingAsProductor();
+    loguearProductor();
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
     $lote = Lote::factory()->for($campo)->create();
 
-    // campaña actualmente activa
+    // Campaña activa todo el año
     $campaniaActiva = Campania::factory()
         ->for($campo)
         ->for($cultivo)
-        ->state(['estado' => 'Activa'])
+        ->state([
+            'estado' => 'En Curso',
+            'fecha_inicio' => '2026-01-01',
+            'fecha_fin' => '2026-12-31',
+        ])
         ->create();
     $campaniaActiva->lotes()->attach($lote);
 
-    // campaña planificada en el mismo lote
+    // Campaña planificada
     $campaniaPlanificada = Campania::factory()
         ->for($campo)
         ->for($cultivo)
-        ->state(['estado' => 'Planificada'])
+        ->state([
+            'estado' => 'Planificada',
+            'fecha_inicio' => '2026-06-01', // Choca con la activa
+            'fecha_fin' => '2026-10-01',
+        ])
         ->create();
     $campaniaPlanificada->lotes()->attach($lote);
 
-    // actualizar planificada a act
+    // Intentamos actualizar a Activa
     $response = $this->putJson("/api/campanias/{$campaniaPlanificada->id}", [
         'campo_id' => $campo->id,
         'cultivo_id' => $cultivo->id,
         'nombre' => $campaniaPlanificada->nombre,
         'fecha_inicio' => $campaniaPlanificada->fecha_inicio,
         'fecha_fin' => $campaniaPlanificada->fecha_fin,
-        'estado' => 'Activa', // <- El cambio conflictivo
+        'estado' => 'En Curso', // <- El cambio conflictivo
         'lote_ids' => [$lote->id],
     ]);
 
-    $response->assertInvalid();
+    $response->assertStatus(422)->assertJsonValidationErrors(['lotes']);
 });

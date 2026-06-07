@@ -30,7 +30,7 @@ class LoteService
 
     public function update(int $id, array $data)
     {
-        $lote = Lote::find($id);
+        $lote = Lote::findOrFail($id);
         $lote->update($data);
 
         return $lote;
@@ -38,7 +38,7 @@ class LoteService
 
     public function delete(int $id)
     {
-        $lote = Lote::find($id);
+        $lote = Lote::findOrFail($id);
         $lote->delete();
 
         return $lote;
@@ -46,7 +46,7 @@ class LoteService
 
     public function getByName(string $nombre)
     {
-        return Lote::where('nombre', 'like', '%'.$nombre.'%')->get();
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->where('nombre', 'like', '%'.$nombre.'%')->get();
     }
 
     public function getAll()

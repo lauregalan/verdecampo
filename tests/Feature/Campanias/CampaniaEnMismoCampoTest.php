@@ -13,9 +13,8 @@ uses(RefreshDatabase::class);
 
 
 
-
 it('prevents creating campaign when another campaign exists with same field and overlapping lots', function () {
-
+    actingAsProductor(); // Faltaba autenticar
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
@@ -42,17 +41,17 @@ it('prevents creating campaign when another campaign exists with same field and 
         'lote_ids' => [$lote1->id],
     ]);
 
-    $response->assertInvalid(['lotes']);
+    // Usamos aserción JSON estricta
+    $response->assertStatus(422)->assertJsonValidationErrors(['lotes']);
 });
 
 it('allows creating campaign with same field but different lots', function () {
-
+    actingAsProductor(); // Faltaba autenticar
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
     $lote1 = Lote::factory()->for($campo)->create();
     $lote2 = Lote::factory()->for($campo)->create();
-
 
     $campania1 = Campania::factory()
         ->for($campo)
@@ -71,7 +70,7 @@ it('allows creating campaign with same field but different lots', function () {
         'fecha_inicio' => '2026-03-01',
         'fecha_fin' => '2026-07-31',
         'estado' => 'Planificada',
-        'lote_ids' => [$lote2->id],
+        'lote_ids' => [$lote2->id], // Diferente lote, debería pasar
     ]);
 
     $response->assertCreated();
@@ -99,7 +98,7 @@ it('allows creating campaign with same field and lots but non-overlapping dates'
         'campo_id' => $campo->id,
         'cultivo_id' => $cultivo->id,
         'nombre' => 'Campaña sin sobreposición',
-        'fecha_inicio' => '2026-07-01',
+        'fecha_inicio' => '2026-07-01', // Inicia un día después de que termina la otra
         'fecha_fin' => '2026-12-31',
         'estado' => 'Planificada',
         'lote_ids' => [$lote->id],
@@ -118,7 +117,6 @@ it('allows creating campaign in different field even with overlapping dates', fu
     $lote1 = Lote::factory()->for($campo1)->create();
     $lote2 = Lote::factory()->for($campo2)->create();
 
-
     $campania1 = Campania::factory()
         ->for($campo1)
         ->for($cultivo)
@@ -129,7 +127,6 @@ it('allows creating campaign in different field even with overlapping dates', fu
         ->create();
     $campania1->lotes()->attach($lote1);
 
-
     $response = $this->postJson('/api/campanias', [
         'campo_id' => $campo2->id,
         'cultivo_id' => $cultivo->id,
@@ -137,7 +134,7 @@ it('allows creating campaign in different field even with overlapping dates', fu
         'fecha_inicio' => '2026-01-01',
         'fecha_fin' => '2026-06-30',
         'estado' => 'Planificada',
-        'lote_ids' => [$lote2->id],
+        'lote_ids' => [$lote2->id], // Distinto campo y lote
     ]);
 
     $response->assertCreated();
@@ -173,7 +170,7 @@ it('prevents updating campaign when conflict arises with another campaign', func
         ->create();
     $campania2->lotes()->attach($lote2);
 
-
+    // Intentamos estirar la campaña 1 y cambiarla al lote 2 (¡Choca con la campaña 2!)
     $response = $this->putJson(
         "/api/campanias/{$campania1->id}",
         [
@@ -183,12 +180,12 @@ it('prevents updating campaign when conflict arises with another campaign', func
             'fecha_inicio' => '2026-06-15',
             'fecha_fin' => '2026-09-30',
             'estado' => 'Planificada',
-            'lote_ids' => [$lote2->id],
+            'lote_ids' => [$lote2->id], // Modificación conflictiva
         ],
     );
 
-    $response->assertUnprocessable();
-
+    // Reemplazamos assertUnprocessable() por la aserción estricta
+    $response->assertStatus(422)->assertJsonValidationErrors(['lotes']);
 });
 
 it('allows updating campaign when staying within own date range', function () {
@@ -207,7 +204,6 @@ it('allows updating campaign when staying within own date range', function () {
         ])
         ->create();
     $campania->lotes()->attach($lote1);
-
 
     $response = $this->putJson(
         "/api/campanias/{$campania->id}",
