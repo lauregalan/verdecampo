@@ -36,31 +36,39 @@ const toDateInput = (date: Date) =>
 const addMonths = (date: Date, amount: number) =>
     new Date(date.getFullYear(), date.getMonth() + amount, 1);
 
-const buildCalendarDays = (visibleMonth: Date) => {
-    const firstDay = new Date(
-        visibleMonth.getFullYear(),
-        visibleMonth.getMonth(),
-        1,
-    );
-    const daysInMonth = new Date(
-        visibleMonth.getFullYear(),
-        visibleMonth.getMonth() + 1,
-        0,
-    ).getDate();
-    const mondayFirstOffset = (firstDay.getDay() + 6) % 7;
+const buildCalendarDays = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
 
-    return [
-        ...Array.from({ length: mondayFirstOffset }, () => null),
-        ...Array.from(
-            { length: daysInMonth },
-            (_, index) =>
-                new Date(
-                    visibleMonth.getFullYear(),
-                    visibleMonth.getMonth(),
-                    index + 1,
-                ),
-        ),
-    ];
+    // Ajustar para lunes = 0, domingo = 6
+    const startDay = (firstDay.getDay() + 6) % 7;
+
+    const days = [];
+    for (let i = 0; i < startDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
+
+    return days;
+};
+
+const parseManualDateInput = (input: string): string | null => {
+    const cleaned = input.trim();
+    const match = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+
+    if (!match) return null;
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+    const date = new Date(year, month - 1, day);
+    if (date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+
+    return toDateInput(date);
 };
 
 interface CalendarDatePickerProps {
@@ -91,12 +99,36 @@ export default function CalendarDatePicker({
     const max = parseDateInput(maxDate);
     const [open, setOpen] = useState(false);
     const [visibleMonth, setVisibleMonth] = useState<Date>(
-        selectedDate ?? min ?? new Date(),
+        selectedDate ?? new Date(),
     );
 
+    // Inicializar el input manual con el formato DD/MM/YYYY
+    const [manualInput, setManualInput] = useState(
+        value ? value.split('-').reverse().join('/') : ""
+    );
+
+    // Sincronizar input cuando cambia el valor externo (ej: cambio de fecha desde fuera)
     useEffect(() => {
-        setVisibleMonth(selectedDate ?? min ?? new Date());
-    }, [minDate, value]);
+        if (value) {
+            const parts = value.split('-');
+            if (parts.length === 3) {
+                setManualInput(`${parts[2]}/${parts[1]}/${parts[0]}`);
+            }
+        } else {
+            setManualInput("");
+        }
+        if (selectedDate) setVisibleMonth(selectedDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
+
+    // Sincronización en tiempo real con el calendario
+    useEffect(() => {
+        const parsed = parseManualDateInput(manualInput);
+        if (parsed) {
+            const date = parseDateInput(parsed);
+            if (date) setVisibleMonth(date); // Actualiza el calendario mientras el usuario escribe
+        }
+    }, [manualInput]);
 
     const days = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
     const selectedLabel = selectedDate
@@ -104,11 +136,13 @@ export default function CalendarDatePicker({
         : disabled
           ? disabledLabel
           : placeholder;
+
     const canGoPrevious =
         !restrictNavigationToRange ||
         !min ||
         new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1) >
             new Date(min.getFullYear(), min.getMonth(), 1);
+
     const canGoNext =
         !restrictNavigationToRange ||
         !max ||
@@ -127,85 +161,102 @@ export default function CalendarDatePicker({
                     <CalendarDays size={16} className="text-green-800" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-72 bg-white p-3">
-                <div className="mb-3 flex items-center justify-between">
-                    <button
-                        type="button"
-                        disabled={!canGoPrevious}
-                        onClick={() =>
-                            setVisibleMonth((current) =>
-                                addMonths(current, -1),
-                            )
-                        }
-                        className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <div className="text-sm font-semibold capitalize text-stone-900">
-                        {monthFormatter.format(visibleMonth)}
+            <PopoverContent align="start" className="w-72 bg-white p-3" side="bottom" sideOffset={8}>
+                <div className="space-y-3">
+                    <div>
+                        <label className="text-xs font-semibold text-stone-700">
+                            Ingresa la fecha (DD/MM/YYYY)
+                        </label>
+                        <input
+                            type="text"
+                            value={manualInput}
+                            onChange={(e) => {
+                                setManualInput(e.target.value);
+                                const parsed = parseManualDateInput(e.target.value);
+                                if (parsed) {
+                                    onChange(parsed); // Actualiza el valor en tiempo real
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                // Mantenemos el Enter por si el usuario quiere cerrar el calendario rápido
+                                if (e.key === 'Enter') {
+                                    const parsed = parseManualDateInput(manualInput);
+                                    if (parsed) {
+                                        onChange(parsed);
+                                        setOpen(false);
+                                    }
+                                }
+                            }}
+                            placeholder="DD/MM/YYYY"
+                            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none transition focus:border-green-700 focus:ring-1 focus:ring-green-700"
+                        />
                     </div>
-                    <button
-                        type="button"
-                        disabled={!canGoNext}
-                        onClick={() =>
-                            setVisibleMonth((current) => addMonths(current, 1))
-                        }
-                        className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
 
-                <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-stone-500">
-                    {["LU", "MA", "MI", "JU", "VI", "SA", "DO"].map((day) => (
-                        <div key={day} className="py-1">
-                            {day}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="mt-1 grid grid-cols-7 gap-1">
-                    {days.map((date, index) => {
-                        if (!date) {
-                            return <div key={`empty-${index}`} />;
-                        }
-
-                        const dateValue = toDateInput(date);
-                        const isSelected = value === dateValue;
-                        const isBeforeMin = minDate && dateValue < minDate;
-                        const isAfterMax = maxDate && dateValue > maxDate;
-                        const isDisabled =
-                            disableOutOfRange &&
-                            Boolean(isBeforeMin || isAfterMax);
-                        const isInRange =
-                            (!minDate || dateValue >= minDate) &&
-                            (!maxDate || dateValue <= maxDate);
-
-                        return (
+                    <div className="border-t border-stone-200 pt-3">
+                        <div className="mb-3 flex items-center justify-between">
                             <button
-                                key={dateValue}
                                 type="button"
-                                disabled={isDisabled}
-                                onClick={() => {
-                                    onChange(dateValue);
-                                    setOpen(false);
-                                }}
-                                className={[
-                                    "h-8 rounded-md text-sm transition",
-                                    isSelected
-                                        ? "bg-green-700 font-semibold text-white"
-                                        : isInRange
-                                          ? "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
-                                          : "bg-stone-50 text-stone-500 hover:bg-stone-100",
-                                    isDisabled
-                                        ? "cursor-not-allowed opacity-75"
-                                        : "",
-                                ].join(" ")}
+                                disabled={!canGoPrevious}
+                                onClick={() => setVisibleMonth((current) => addMonths(current, -1))}
+                                className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
                             >
-                                {date.getDate()}
+                                <ChevronLeft size={18} />
                             </button>
-                        );
-                    })}
+                            <div className="text-sm font-semibold capitalize text-stone-900">
+                                {monthFormatter.format(visibleMonth)}
+                            </div>
+                            <button
+                                type="button"
+                                disabled={!canGoNext}
+                                onClick={() => setVisibleMonth((current) => addMonths(current, 1))}
+                                className="rounded-md p-1 text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-stone-500">
+                            {["LU", "MA", "MI", "JU", "VI", "SA", "DO"].map((day) => (
+                                <div key={day} className="py-1">{day}</div>
+                            ))}
+                        </div>
+
+                        <div className="mt-1 grid grid-cols-7 gap-1">
+                            {days.map((date, index) => {
+                                if (!date) return <div key={`empty-${index}`} />;
+
+                                const dateValue = toDateInput(date);
+                                const isSelected = value === dateValue;
+                                const isBeforeMin = minDate && dateValue < minDate;
+                                const isAfterMax = maxDate && dateValue > maxDate;
+                                const isDisabled = disableOutOfRange && Boolean(isBeforeMin || isAfterMax);
+                                const isInRange = (!minDate || dateValue >= minDate) && (!maxDate || dateValue <= maxDate);
+
+                                return (
+                                    <button
+                                        key={dateValue}
+                                        type="button"
+                                        disabled={isDisabled}
+                                        onClick={() => {
+                                            onChange(dateValue);
+                                            setOpen(false);
+                                        }}
+                                        className={[
+                                            "h-8 rounded-md text-sm transition",
+                                            isSelected
+                                                ? "bg-green-700 font-semibold text-white"
+                                                : isInRange
+                                                  ? "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                                                  : "bg-stone-50 text-stone-500 hover:bg-stone-100",
+                                            isDisabled ? "cursor-not-allowed opacity-75" : "",
+                                        ].join(" ")}
+                                    >
+                                        {date.getDate()}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </PopoverContent>
         </Popover>
