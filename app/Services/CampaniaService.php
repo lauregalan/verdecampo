@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Campania;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+
 
 class CampaniaService
 {
@@ -33,6 +35,20 @@ class CampaniaService
             ]);
         }
 
+
+        if (isset($data['fecha_fin'])) {
+            $fechaFin = Carbon::parse($data['fecha_fin']);
+
+
+            if ($fechaFin->isPast()) {
+                $data['estado'] = 'Finalizada';
+            }
+
+            elseif (isset($data['fecha_inicio']) && Carbon::parse($data['fecha_inicio'])->isPast() && $fechaFin->isFuture()) {
+                $data['estado'] = 'En Curso';
+            }
+        }
+
         $campania = Campania::create($data);
 
         if (isset($data['lote_ids'])) {
@@ -42,7 +58,7 @@ class CampaniaService
         return $campania;
     }
 
-    public function update(Campania $campania, array $data)
+public function update(Campania $campania, array $data)
     {
         $campaniaEnConflicto = $this->verificarConflictoCampanias(
             $data['campo_id'] ?? $campania->campo_id,
@@ -54,7 +70,25 @@ class CampaniaService
 
         if ($campaniaEnConflicto) {
             throw ValidationException::withMessages([
+                'lotes' => "Algunos de estos lotes ya están siendo utilizados en la campaña '{$campaniaEnConflicto->nombre}' durante esas fechas (desde {$campaniaEnConflicto->fecha_inicio} hasta {$campaniaEnConflicto->fecha_fin})."
             ]);
+        }
+
+        $fechaInicioStr = $data['fecha_inicio'] ?? $campania->fecha_inicio;
+        $fechaFinStr = $data['fecha_fin'] ?? $campania->fecha_fin;
+
+        if ($fechaInicioStr && $fechaFinStr) {
+            $fechaInicio = Carbon::parse($fechaInicioStr);
+            $fechaFin = Carbon::parse($fechaFinStr);
+
+
+            if ($fechaFin->isPast()) {
+                $data['estado'] = 'Finalizada';
+            }
+
+            elseif ($fechaInicio->isPast() && $fechaFin->isFuture()) {
+                $data['estado'] = 'En Curso';
+            }
         }
 
         if (isset($data['lote_ids'])) {

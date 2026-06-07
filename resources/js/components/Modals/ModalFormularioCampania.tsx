@@ -78,6 +78,25 @@ export default function ModalFormularioCampania({
     const selectedCampoHasNoLotes = Boolean(campoId) && lotesFiltrados.length === 0;
 
     useEffect(() => {
+        if (!fechaInicio) return;
+
+
+        const todayStr = new Date().toLocaleDateString('en-CA');
+
+
+        if (estado === "Cancelada") return;
+
+        if (fechaFin && fechaFin < todayStr) {
+            setEstado("Finalizada");
+        } else if (fechaInicio <= todayStr && (!fechaFin || fechaFin >= todayStr)) {
+            setEstado("En Curso");
+        } else if (fechaInicio > todayStr) {
+            setEstado("Planificada");
+        }
+    }, [fechaInicio, fechaFin]);
+
+
+    useEffect(() => {
         if (!show) return;
 
         if (editingCampaniaId !== null) {
@@ -98,7 +117,6 @@ export default function ModalFormularioCampania({
                 })
                 .catch(() => setFormError("Error al cargar la campaña."));
 
-            // Cargar lotes asociados
             api.get(`/api/campanias/${editingCampaniaId}/lotes`)
                 .then((res) => res.json())
                 .then((data: { id: number }[]) => {
@@ -331,9 +349,9 @@ export default function ModalFormularioCampania({
                                 htmlFor="campania-fecha-inicio"
                                 value="Fecha de inicio"
                             />
+                            {/* CORRECCIÓN: Quitamos el minDate=fechaInicio para que el usuario pueda corregir la fecha hacia atrás si se equivoca */}
                             <CalendarDatePicker
                                 value={fechaInicio}
-                                minDate={fechaInicio || undefined}
                                 maxDate={fechaFin || undefined}
                                 disableOutOfRange={false}
                                 onChange={setFechaInicio}
@@ -347,7 +365,6 @@ export default function ModalFormularioCampania({
                             <CalendarDatePicker
                                 value={fechaFin}
                                 minDate={fechaInicio || undefined}
-                                maxDate={fechaFin || undefined}
                                 disableOutOfRange={false}
                                 onChange={setFechaFin}
                             />
@@ -369,6 +386,10 @@ export default function ModalFormularioCampania({
                                 </option>
                             ))}
                         </select>
+                        {/* NUEVO: Mensaje informativo sutil para el usuario */}
+                        <p className="mt-2 text-xs font-medium text-stone-500">
+                            ✨ El estado se asigna automáticamente al seleccionar las fechas.
+                        </p>
                     </div>
                 </div>
                 {formError && (
