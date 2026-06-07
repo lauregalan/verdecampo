@@ -98,6 +98,10 @@ Route::get('/reportes/productos.pdf', [ReporteController::class, 'productos'])
     ->middleware(['auth', 'verified'])
     ->name('reportes.productos');
 
+Route::get('/reportes/rotacion-cultivos.pdf', [ReporteController::class, 'rotacionCultivos'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.rotacion-cultivos');
+
 
 Route::get('/campania', function () {
     return Redirect('/campanias');

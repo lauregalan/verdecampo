@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class ReporteProductosService{
 
-    public function generarReporteCatalogo(): array
+    public function generar(): array
     {
         $rankingProductos = ProductoAplicacion::withCount('aplicaciones')
             ->having('aplicaciones_count', '>', 0)

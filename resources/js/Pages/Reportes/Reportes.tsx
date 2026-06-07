@@ -71,7 +71,9 @@ export default function ProductividadCampanias() {
     const saludAgronomicaDownloadUrl = "/reportes/salud-agronomica.pdf";
 
 
-    const catalogoDownloadUrl = "/reportes/productos.pdf";
+    const productosDownloadUrl = "/reportes/productos.pdf";
+
+    const rotacionDownloadUrl = "/reportes/rotacion-cultivos.pdf";
 
     const handleDownload = (url: string) => {
         window.location.href = url;
@@ -132,7 +134,7 @@ export default function ProductividadCampanias() {
                             <label className="block">
                                 <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
                                     <Filter size={16} />
-                                    Campana
+                                    Campaña
                                 </span>
                                 <select
                                     value={campaniaId}
@@ -169,9 +171,9 @@ export default function ProductividadCampanias() {
                                         Uso de insumos y aplicaciones
                                     </h2>
                                     <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                                        Incluye cantidad de aplicaciones por campana,
+                                        Incluye cantidad de aplicaciones por campaña,
                                         lote, producto y tipo; costo operativo total y
-                                        costo por campana.
+                                        costo por campaña.
                                     </p>
                                 </div>
                             </div>
@@ -264,7 +266,35 @@ export default function ProductividadCampanias() {
 
                             <button
                                 type="button"
-                                onClick={() => handleDownload(catalogoDownloadUrl)}
+                                onClick={() => handleDownload(productosDownloadUrl)}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Download size={18} />
+                                Descargar PDF
+                            </button>
+                        </div>
+                    </section>
+
+
+                    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex gap-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                                    <FileText size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900">
+                                        Catálogo de Rotacion de Cultivos
+                                    </h2>
+                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                                        Incluye frecuencia de cultivos, cultivo antecesor más común, rotación por lote y alertas de repetición.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDownload(rotacionDownloadUrl)}
                                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
                             >
                                 <Download size={18} />

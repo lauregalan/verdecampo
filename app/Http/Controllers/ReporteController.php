@@ -7,6 +7,7 @@ use App\Services\ReporteProductividadService;
 use App\Services\ReporteRendimientoLotesService;
 use App\Services\ReporteSaludAgronomicaService;
 use App\Services\ReporteProductosService;
+use App\Services\ReporteRotacionCultivosService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -62,9 +63,17 @@ class ReporteController extends Controller
 
     public function productos(Request $request, ReporteProductosService $service)
     {
-        $reporte = $service->generarReporteCatalogo();
+        $reporte = $service->generar();
         return Pdf::loadView('reportes.productos', $reporte)
             ->setPaper('a4', 'landscape')
             ->download('reporte-productos.pdf');
+    }
+
+    public function rotacionCultivos(Request $request, ReporteRotacionCultivosService $service)
+    {
+        $reporte = $service->generar();
+        return Pdf::loadView('reportes.rotacion-cultivos', $reporte)
+            ->setPaper('a4', 'landscape')
+            ->download('reporte-rotacion-cultivos.pdf');
     }
 }
