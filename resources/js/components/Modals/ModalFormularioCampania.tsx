@@ -317,6 +317,14 @@ export default function ModalFormularioCampania({
                             </p>
                         )}
                     </div>
+                    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                        <p className="text-sm font-semibold text-blue-900">
+                            ℹ️ Validación de conflictos
+                        </p>
+                        <p className="mt-2 text-xs text-blue-800">
+                            No puede haber dos campañas simultáneas en el mismo campo compartiendo los mismos lotes. Si intentas crear o editar una campaña con fechas que se superponen con otra campaña existente en los mismos lotes, recibirás un error.
+                        </p>
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <InputLabel

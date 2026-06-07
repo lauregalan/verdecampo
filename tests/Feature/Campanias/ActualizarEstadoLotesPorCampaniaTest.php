@@ -11,15 +11,6 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
-function actingAsProductor(): void
-{
-    Role::findOrCreate('Productor', 'web');
-
-    $user = User::factory()->create();
-    $user->assignRole('Productor');
-
-    Sanctum::actingAs($user);
-}
 
 function campaniaPayload(Campania $campania, string $estado, array $loteIds): array
 {
@@ -35,7 +26,12 @@ function campaniaPayload(Campania $campania, string $estado, array $loteIds): ar
 }
 
 it('updates campaign lots to production when campaign starts', function () {
-    actingAsProductor();
+    Role::findOrCreate('Productor', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('Productor');
+
+    Sanctum::actingAs($user);
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
@@ -59,7 +55,12 @@ it('updates campaign lots to production when campaign starts', function () {
 });
 
 it('updates campaign lots to available when campaign finishes', function () {
-    actingAsProductor();
+        Role::findOrCreate('Productor', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('Productor');
+
+    Sanctum::actingAs($user);
 
     $campo = Campo::factory()->create();
     $cultivo = Cultivo::factory()->create();
