@@ -94,6 +94,10 @@ Route::get('/reportes/salud-agronomica.pdf', [ReporteController::class, 'saludAg
     ->middleware(['auth', 'verified'])
     ->name('reportes.salud-agronomica');
 
+Route::get('/reportes/productos.pdf', [ReporteController::class, 'productos'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.productos');
+
 
 Route::get('/campania', function () {
     return Redirect('/campanias');

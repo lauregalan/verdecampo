@@ -6,6 +6,7 @@ use App\Services\ReporteAplicacionesService;
 use App\Services\ReporteProductividadService;
 use App\Services\ReporteRendimientoLotesService;
 use App\Services\ReporteSaludAgronomicaService;
+use App\Services\ReporteProductosService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -20,7 +21,7 @@ class ReporteController extends Controller
             ? "reporte-productividad-campania-{$campaniaId}.pdf"
             : 'reporte-productividad-campanias.pdf';
 
-        return Pdf::loadView('reportes.productividad-campanias', $reporte)
+        return Pdf::loadView('reportes.productividad-campañas', $reporte)
             ->setPaper('a4', 'landscape')
             ->download($nombre);
     }
@@ -57,5 +58,13 @@ class ReporteController extends Controller
         return Pdf::loadView('reportes.saludAgronomica', $reporte)
             ->setPaper('a4', 'landscape')
             ->download('reporte-salud-agronomica.pdf');
+    }
+
+    public function productos(Request $request, ReporteProductosService $service)
+    {
+        $reporte = $service->generarReporteCatalogo();
+        return Pdf::loadView('reportes.productos', $reporte)
+            ->setPaper('a4', 'landscape')
+            ->download('reporte-productos.pdf');
     }
 }

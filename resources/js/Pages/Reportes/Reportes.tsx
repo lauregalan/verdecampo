@@ -68,9 +68,10 @@ export default function ProductividadCampanias() {
         return `/reportes/rendimiento-lotes.pdf${query ? `?${query}` : ""}`;
     }, [campaniaId]);
 
-        const saludAgronomicaDownloadUrl = "/reportes/salud-agronomica.pdf"
+    const saludAgronomicaDownloadUrl = "/reportes/salud-agronomica.pdf";
 
 
+    const catalogoDownloadUrl = "/reportes/productos.pdf";
 
     const handleDownload = (url: string) => {
         window.location.href = url;
@@ -214,7 +215,7 @@ export default function ProductividadCampanias() {
                             </button>
                         </div>
                     </section>
-                    
+
                     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex gap-4">
@@ -244,6 +245,33 @@ export default function ProductividadCampanias() {
                         </div>
                     </section>
 
+                    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex gap-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                                    <FileText size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900">
+                                        Catálogo de Productos y Uso
+                                    </h2>
+                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                                        Incluye ranking de productos más aplicados, insumos sin uso (stock inmovilizado),
+                                        categorías más demandadas y distribución de inventario por formato físico.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDownload(catalogoDownloadUrl)}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow-md active:scale-95"
+                            >
+                                <Download size={18} />
+                                Descargar PDF
+                            </button>
+                        </div>
+                    </section>
 
                 </div>
             </div>
