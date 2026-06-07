@@ -6,12 +6,12 @@ use App\Models\ProductoAplicacion;
 use App\Models\TipoAplicacion;
 use Illuminate\Support\Facades\DB;
 
-class ReporteProductosService{
-
+class ReporteProductosService
+{
     public function generar(): array
     {
         $rankingProductos = ProductoAplicacion::withCount('aplicaciones')
-            ->having('aplicaciones_count', '>', 0)
+            ->whereHas('aplicaciones')
             ->orderByDesc('aplicaciones_count')
             ->take(10)
             ->get(['id', 'nombre', 'tipo', 'concentracion']);
@@ -24,7 +24,7 @@ class ReporteProductosService{
             ->get();
 
         $distribucionTiposAplicacion = TipoAplicacion::withCount('aplicaciones')
-            ->having('aplicaciones_count', '>', 0)
+            ->whereHas('aplicaciones')
             ->orderByDesc('aplicaciones_count')
             ->get(['id', 'nombre']);
 

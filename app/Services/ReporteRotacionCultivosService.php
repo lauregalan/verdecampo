@@ -11,7 +11,7 @@ class ReporteRotacionCultivosService
     public function generar(): array
     {
         $frecuenciaCultivos = Cultivo::withCount('campanias')
-            ->having('campanias_count', '>', 0)
+            ->whereHas('campanias')
             ->orderByDesc('campanias_count')
             ->get(['id', 'tipo', 'variedad', 'campanias_count']);
 
@@ -22,7 +22,6 @@ class ReporteRotacionCultivosService
             ->with('cultivoAntecesor:id,tipo,variedad')
             ->take(5)
             ->get();
-
 
         $lotes = Lote::with(['campanias' => function ($query) {
             $query->orderBy('fecha_inicio', 'asc')->with('cultivo');
@@ -39,7 +38,7 @@ class ReporteRotacionCultivosService
             $campaniaAnteriorNombre = null;
 
             foreach ($campanias as $campania) {
-                if (!$campania->cultivo) {
+                if (! $campania->cultivo) {
                     continue;
                 }
 
@@ -52,7 +51,6 @@ class ReporteRotacionCultivosService
                     'cultivo' => $nombreCultivo,
                     'fecha_inicio' => $campania->fecha_inicio,
                 ];
-
 
                 if ($cultivoAnteriorId === $cultivoActual->id) {
                     $alertasRepeticion[] = [
@@ -67,11 +65,11 @@ class ReporteRotacionCultivosService
                 $campaniaAnteriorNombre = $campania->nombre;
             }
 
-            if (!empty($historial)) {
+            if (! empty($historial)) {
                 $rotacionPorLote[] = [
                     'lote_id' => $lote->id,
                     'lote_nombre' => $lote->nombre,
-                    'historial' => $historial
+                    'historial' => $historial,
                 ];
             }
         }
