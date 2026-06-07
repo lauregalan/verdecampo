@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import Body from "@/components/ui/Tabs/Body";
-import { Mail, Plus, Search, X } from "lucide-react";
+import { Mail, Plus, Search, X, FileSpreadsheet } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -375,19 +375,30 @@ export default function UserManagment({ header }: UserManagmentProps) {
                     </button>
                 </div>
 
-                <InputGroup className="max-w-full">
-                    <InputGroupInput
-                        placeholder="Buscar por nombre, email o rol..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                    <InputGroupAddon>
-                        <Search />
-                    </InputGroupAddon>
-                    <InputGroupAddon align="inline-end">
-                        {filteredUsers.length} results
-                    </InputGroupAddon>
-                </InputGroup>
+                <div className="flex gap-2 items-center">
+                    <InputGroup className="flex-1">
+                        <InputGroupInput
+                            placeholder="Buscar por nombre, email o rol..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <InputGroupAddon>
+                            <Search />
+                        </InputGroupAddon>
+                        <InputGroupAddon align="inline-end">
+                            {filteredUsers.length} results
+                        </InputGroupAddon>
+                    </InputGroup>
+
+                    <a
+                        href="/usuarios/exportar/excel"
+                        className="inline-flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 font-semibold text-white shadow-sm transition-all hover:bg-green-800 hover:shadow-md active:scale-95 whitespace-nowrap"
+                        title="Exportar a Excel"
+                    >
+                        <FileSpreadsheet size={20} strokeWidth={2.5} />
+                        Exportar
+                    </a>
+                </div>
 
                 <ScrollArea className="min-h-0 flex-1 w-full rounded-lg border border-black/10 bg-white/70 pr-1 lg:pr-3">
                     <DataTable

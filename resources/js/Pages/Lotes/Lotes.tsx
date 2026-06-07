@@ -21,6 +21,9 @@ import {
 } from "@/components/ui/select";
 import ModalFormularioLote from "@/components/Modals/ModalFormularioLote";
 import LoteCard from "./LoteCard";
+
+import { Plus, FileSpreadsheet } from "lucide-react";
+
 import {
     Campania,
     CampaniaDB,
@@ -126,6 +129,7 @@ export default function Lotes() {
         | undefined;
     const isProductor = authUser?.roles?.includes("Productor") ?? false;
 
+
     const filtrosIniciales = useMemo(() => {
         if (typeof window === "undefined") {
             return {
@@ -148,6 +152,7 @@ export default function Lotes() {
             cultivoId: parsePositiveInteger(searchParams.get("cultivoId")),
         };
     }, []);
+
 
     const [lotes, setLotes] = useState<Lote[]>([]);
     const [showFormulario, setShowFormulario] = useState(false);
@@ -614,6 +619,7 @@ export default function Lotes() {
         <Body>
             <Head title="Gestion de Lotes" />
 
+
             <div className="flex h-full min-h-0 flex-col p-8 font-sans">
                 <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -662,8 +668,7 @@ export default function Lotes() {
                         ].map((item) => (
                             <article
                                 key={item.label}
-                                className="rounded-2xl border border-stone-200 bg-[#FCFBF8] p-5 shadow-sm"
-                            >
+                                className="rounded-2xl border border-stone-200 bg-[#FCFBF8] p-5 shadow-sm">
                                 <div className="text-sm font-semibold text-stone-500">
                                     {item.label}
                                 </div>

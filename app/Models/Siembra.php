@@ -16,6 +16,11 @@ class Siembra extends Model
         'observaciones',
     ];
 
+    protected $casts = [
+        'fecha_siembra' => 'date',
+    ];
+
+    // Relaciones---------
     public function campania()
     {
         return $this->belongsTo(Campania::class);

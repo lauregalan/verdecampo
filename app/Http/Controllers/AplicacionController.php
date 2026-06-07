@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AplicacionesExport;
 use App\Http\Requests\AplicacionRequest;
 use App\Services\AplicacionService;
 use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AplicacionController extends Controller
 {
-    public function __construct(private AplicacionService $aplicacionService)
-    {
-    }
+    public function __construct(private AplicacionService $aplicacionService) {}
 
     public function index(): JsonResponse
     {
@@ -47,5 +47,11 @@ class AplicacionController extends Controller
     public function getByLote(int $loteId): JsonResponse
     {
         return response()->json($this->aplicacionService->getByLote($loteId));
+    /**
+     * Exportar aplicaciones a Excel
+     */
+    public function exportToExcel()
+    {
+        return Excel::download(new AplicacionesExport, 'aplicaciones_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }

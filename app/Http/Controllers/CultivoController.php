@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CultivosExport;
 use App\Http\Requests\CultivoRequest;
 use App\Models\Cultivo;
 use App\Services\CultivoService;
 use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CultivoController extends Controller
 {
@@ -46,5 +48,11 @@ class CultivoController extends Controller
     public function getByLote(int $loteId): JsonResponse
     {
         return response()->json($this->cultivoService->getByLote($loteId));
+    /**
+     * Exportar cultivos a Excel
+     */
+    public function exportToExcel()
+    {
+        return Excel::download(new CultivosExport, 'cultivos_'.date('Y-m-d_H-i-s').'.xlsx');
     }
 }
