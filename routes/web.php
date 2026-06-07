@@ -1,9 +1,15 @@
 <?php
 
 use App\Http\Controllers\AceptarInvitacionController;
+use App\Http\Controllers\AplicacionController;
+use App\Http\Controllers\CampaniaController;
+use App\Http\Controllers\CosechaController;
+use App\Http\Controllers\CultivoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LoteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SiembraController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +50,10 @@ Route::get('/lotes/crear/{campoId}', function (int $campoId) {
 Route::get('/usuarios', function () {
     return Inertia::render('Usuarios/GestionarUsuarios');
 })->middleware(['auth', 'verified'])->name('gestionarUsuarios');
+
+Route::get('/usuarios/exportar/excel', [UserController::class, 'exportToExcel'])
+    ->middleware(['auth', 'verified'])
+    ->name('usuarios.exportar.excel');
 
 Route::get('/lotes', function () {
     return Inertia::render('Lotes/Lotes');
@@ -133,5 +143,15 @@ Route::get('/tipos', function () {
 Route::get('/siembras', function () {
     return Inertia::render('Siembras/Siembras');
 })->middleware(['auth', 'verified'])->name('gestionarSiembras');
+
+// Rutas de exportación a Excel
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/lotes/exportar/excel', [LoteController::class, 'exportToExcel'])->name('lotes.exportar.excel');
+    Route::get('/cultivos/exportar/excel', [CultivoController::class, 'exportToExcel'])->name('cultivos.exportar.excel');
+    Route::get('/campanias/exportar/excel', [CampaniaController::class, 'exportToExcel'])->name('campanias.exportar.excel');
+    Route::get('/aplicaciones/exportar/excel', [AplicacionController::class, 'exportToExcel'])->name('aplicaciones.exportar.excel');
+    Route::get('/cosechas/exportar/excel', [CosechaController::class, 'exportToExcel'])->name('cosechas.exportar.excel');
+    Route::get('/siembras/exportar/excel', [SiembraController::class, 'exportToExcel'])->name('siembras.exportar.excel');
+});
 
 require __DIR__.'/auth.php';

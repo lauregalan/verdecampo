@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CampaniasExport;
 use App\Http\Requests\CampaniaRequest;
 use App\Models\Campania;
 use App\Services\CampaniaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CampaniaController extends Controller
 {
@@ -49,6 +51,14 @@ class CampaniaController extends Controller
         return response()->json($this->campaniaService->getLotes($campania));
     }
 
+    /**
+     * Exportar campañas a Excel
+     */
+    public function exportToExcel()
+    {
+        return Excel::download(new CampaniasExport, 'campanias_'.date('Y-m-d_H-i-s').'.xlsx');
+    }
+
     public function asignarLotes(Request $request, Campania $campania): JsonResponse
     {
 
@@ -69,7 +79,4 @@ class CampaniaController extends Controller
 
         return response()->json(['message' => 'Lote removido correctamente']);
     }
-
-
 }
-
