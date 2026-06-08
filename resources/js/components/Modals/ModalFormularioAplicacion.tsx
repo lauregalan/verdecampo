@@ -4,6 +4,7 @@ import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
 import api from "@/lib/api";
+import CalendarDatePicker from "@/components/ui/date-picker";
 import type {
     AplicacionDraft,
     AplicacionRecord,
@@ -31,6 +32,12 @@ interface FormState {
     observaciones: string;
 }
 
+interface CampaniaOption extends CatalogOption {
+    fecha_inicio: string | null;
+    fecha_fin: string | null;
+    estado?: string;
+}
+
 const EMPTY_FORM: FormState = {
     producto_aplicacion_id: "",
     tipo_aplicacion_id: "",
@@ -55,7 +62,7 @@ export default function ModalFormularioAplicacion({
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
     const [productos, setProductos] = useState<CatalogOption[]>([]);
     const [tipos, setTipos] = useState<CatalogOption[]>([]);
-    const [campanias, setCampanias] = useState<CatalogOption[]>([]);
+    const [campanias, setCampanias] = useState<CampaniaOption[]>([]);
     const [lotes, setLotes] = useState<LoteOption[]>([]);
     const [loadingCatalogs, setLoadingCatalogs] = useState(false);
     const [loadingLotes, setLoadingLotes] = useState(false);
@@ -66,6 +73,25 @@ export default function ModalFormularioAplicacion({
         () => Number(form.campania_id) || null,
         [form.campania_id],
     );
+
+    const selectedCampania = useMemo(
+        () =>
+            selectedCampaniaId
+                ? (campanias.find(
+                      (campania) => campania.id === selectedCampaniaId,
+                  ) ?? null)
+                : null,
+        [campanias, selectedCampaniaId],
+    );
+
+    const minFechaAplicacion = selectedCampania?.fecha_inicio
+        ? normalizeDateInput(selectedCampania.fecha_inicio)
+        : undefined;
+    const maxFechaAplicacion = selectedCampania?.fecha_fin
+        ? normalizeDateInput(selectedCampania.fecha_fin)
+        : undefined;
+    const selectedCampaniaIsNotActive =
+        Boolean(selectedCampania) && selectedCampania?.estado !== "En Curso";
 
     useEffect(() => {
         if (!show) return;
@@ -138,7 +164,7 @@ export default function ModalFormularioAplicacion({
                 );
                 setCampanias(
                     Array.isArray(campaniasData)
-                        ? (campaniasData as CatalogOption[])
+                        ? (campaniasData as CampaniaOption[])
                         : [],
                 );
             } catch (err) {
@@ -236,6 +262,33 @@ export default function ModalFormularioAplicacion({
         if (error) setError(null);
     };
 
+    const updateCampania = (value: string) => {
+        const campania = campanias.find(
+            (item) => String(item.id) === value,
+        );
+        const minFecha = campania?.fecha_inicio
+            ? normalizeDateInput(campania.fecha_inicio)
+            : null;
+        const maxFecha = campania?.fecha_fin
+            ? normalizeDateInput(campania.fecha_fin)
+            : null;
+
+        setForm((current) => {
+            const fechaFueraDeRango =
+                current.fecha &&
+                ((minFecha && current.fecha < minFecha) ||
+                    (maxFecha && current.fecha > maxFecha));
+
+            return {
+                ...current,
+                campania_id: value,
+                lote_id: "",
+                fecha: fechaFueraDeRango ? "" : current.fecha,
+            };
+        });
+        if (error) setError(null);
+    };
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -261,6 +314,24 @@ export default function ModalFormularioAplicacion({
 
         if (Number(form.precio_labor) < 0) {
             setError("El precio de labor no puede ser negativo.");
+            return;
+        }
+
+        if (selectedCampaniaIsNotActive) {
+            setError("Solo se pueden registrar aplicaciones en campanias en curso.");
+            return;
+        }
+
+        if (selectedCampaniaId && lotes.length === 0) {
+            setError("La campania seleccionada no tiene lotes asociados.");
+            return;
+        }
+
+        if (
+            (minFechaAplicacion && form.fecha < minFechaAplicacion) ||
+            (maxFechaAplicacion && form.fecha > maxFechaAplicacion)
+        ) {
+            setError("La fecha debe estar dentro del rango de la campania.");
             return;
         }
 
@@ -397,10 +468,7 @@ export default function ModalFormularioAplicacion({
                                 id="aplicacion-campania"
                                 value={form.campania_id}
                                 onChange={(event) =>
-                                    updateField(
-                                        "campania_id",
-                                        event.target.value,
-                                    )
+                                    updateCampania(event.target.value)
                                 }
                                 className="mt-1 w-full rounded-md border border-green-700 px-3 py-2 text-sm shadow-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
                                 disabled={loadingCatalogs}
@@ -413,9 +481,17 @@ export default function ModalFormularioAplicacion({
                                         value={String(campania.id)}
                                     >
                                         {campania.nombre}
+                                        {campania.estado
+                                            ? ` - ${campania.estado}`
+                                            : ""}
                                     </option>
                                 ))}
                             </select>
+                            {selectedCampaniaIsNotActive && (
+                                <p className="mt-1 text-xs text-amber-600">
+                                    Selecciona una campania en curso para poder registrar aplicaciones.
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -438,7 +514,9 @@ export default function ModalFormularioAplicacion({
                                         ? "Primero seleccioná una campaña"
                                         : loadingLotes
                                           ? "Cargando lotes..."
-                                          : "Seleccioná un lote"}
+                                          : lotes.length === 0
+                                            ? "No hay lotes en esta campania"
+                                            : "Seleccioná un lote"}
                                 </option>
                                 {lotes.map((lote) => (
                                     <option
@@ -504,15 +582,13 @@ export default function ModalFormularioAplicacion({
                                 htmlFor="aplicacion-fecha"
                                 value="Fecha *"
                             />
-                            <TextInput
-                                id="aplicacion-fecha"
-                                type="date"
+                            <CalendarDatePicker
                                 value={form.fecha}
-                                onChange={(event) =>
-                                    updateField("fecha", event.target.value)
-                                }
-                                className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
-                                required
+                                minDate={minFechaAplicacion}
+                                maxDate={maxFechaAplicacion}
+                                disabled={!selectedCampania}
+                                disabledLabel="Primero selecciona una campania"
+                                onChange={(value) => updateField("fecha", value)}
                             />
                         </div>
 

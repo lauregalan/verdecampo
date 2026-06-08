@@ -2,6 +2,7 @@ import {
     CalendarDays,
     ChevronRight,
     ChevronUp,
+    Users,
     FileText,
     GroupIcon,
     LayoutDashboard,
@@ -75,20 +76,24 @@ export default function AppSidebar() {
                     </SidebarGroupLabel>
 
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={currentPath.startsWith("/dashboard")}
-                                className="hover:bg-[#1a4030] hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
-                            >
-                                <Link href="/dashboard">
-                                    <LayoutDashboard size={18} />
-                                    <span className="font-medium">
-                                        Dashboard
-                                    </span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        {hasProductorRole && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={currentPath.startsWith(
+                                        "/dashboard",
+                                    )}
+                                    className="hover:bg-[#1a4030] hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
+                                >
+                                    <Link href="/dashboard">
+                                        <LayoutDashboard size={18} />
+                                        <span className="font-medium">
+                                            Dashboard
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
 
                         {hasProductorRole && (
                             <SidebarMenuItem>
@@ -100,7 +105,7 @@ export default function AppSidebar() {
                                     className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                                 >
                                     <Link href="/usuarios">
-                                        <GroupIcon size={18} />
+                                        <Users size={18} />
                                         <span className="font-medium">
                                             Gestion Usuarios
                                         </span>
@@ -160,7 +165,7 @@ export default function AppSidebar() {
                                 isActive={currentPath.startsWith("/campania")}
                                 className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
-                                <Link href="/campania">
+                                <Link href="/campanias">
                                     <CalendarDays size={18} />
                                     <span className="font-medium">
                                         Campañas
@@ -261,7 +266,7 @@ export default function AppSidebar() {
                                 className="hover:bg-white/10 hover:text-white text-green-50 w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200"
                             >
                                 <Link href="/siembras">
-                                    <Sprout size={18} />
+                                    <Tractor size={18} />
                                     <span className="font-medium">
                                         Siembras
                                     </span>

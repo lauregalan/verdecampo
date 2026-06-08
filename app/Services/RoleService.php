@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
 class RoleService
@@ -24,6 +25,11 @@ class RoleService
 
     public function modificarRoles(User $user, array $roles)
     {
-        $user->syncRoles($roles);
+        if(Auth::id()==$user->id){
+            abort(403,'El usuario no puede modificarse sus propio rol');
+        }
+        else{
+            $user->syncRoles($roles);
+        }
     }
 }

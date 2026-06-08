@@ -1,13 +1,17 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
 import TextInput from "@/components/TextInput";
+import CalendarDatePicker from "@/components/ui/date-picker";
 import { X } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/Pages/Aplicaciones/utils";
 
 interface Campania {
     id: number;
     nombre: string;
+    fecha_inicio?: string | null;
+    fecha_fin?: string | null;
 }
 
 interface Lote {
@@ -63,6 +67,16 @@ export default function ModalFormularioCosecha({
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
+    const selectedCampania = useMemo(
+        () =>
+            form.campania_id
+                ? (campanias.find(
+                      (campania) => campania.id === form.campania_id,
+                  ) ?? null)
+                : null,
+        [campanias, form.campania_id],
+    );
+
     // Cargar campañas al abrir
     useEffect(() => {
         if (!show) return;
@@ -114,6 +128,20 @@ export default function ModalFormularioCosecha({
     const handleGuardar = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
+
+        if (!form.campania_id || !form.lote_id || !form.rinde || !form.humedad) {
+            setError("Completa todos los campos obligatorios.");
+            return;
+        }
+        if (
+            form.fecha &&
+            selectedCampania?.fecha_inicio &&
+            form.fecha < selectedCampania.fecha_inicio.slice(0, 10)
+        ) {
+            setError("La fecha de cosecha no puede ser anterior al inicio de la campania.");
+            return;
+        }
+
         setSaving(true);
         try {
             const payload = {
@@ -133,15 +161,16 @@ export default function ModalFormularioCosecha({
             }
 
             if (!response.ok) {
-                const body = await response.json().catch(() => ({}));
-                throw new Error(body?.message ?? "Error al guardar");
+                throw new Error(
+                    await getApiErrorMessage(response, "Error al guardar"),
+                );
             }
 
             const data = await response.json();
             onSaved(data);
             handleClose();
-        } catch (err: any) {
-            setError(err.message ?? "Error inesperado");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error inesperado");
         } finally {
             setSaving(false);
         }
@@ -197,6 +226,11 @@ export default function ModalFormularioCosecha({
                                 </option>
                             ))}
                         </select>
+                        {campanias.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea una campania para registrar cosechas.
+                            </p>
+                        )}
                     </div>
 
                     {/* Lote */}
@@ -229,17 +263,28 @@ export default function ModalFormularioCosecha({
                                 </option>
                             ))}
                         </select>
+                        {form.campania_id && !loadingLotes && lotes.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Esta campania no tiene lotes asignados.
+                            </p>
+                        )}
                     </div>
 
                     {/* Fecha */}
                     <div>
                         <InputLabel value="Fecha de cosecha" />
-                        <TextInput
-                            type="date"
+                        <CalendarDatePicker
                             value={form.fecha}
-                            onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                            className="mt-1 w-full border-gray-300 focus:border-green-700 focus:ring-green-700"
+                            minDate={selectedCampania?.fecha_inicio?.slice(0, 10)}
+                            maxDate={selectedCampania?.fecha_fin?.slice(0, 10)}
+                            disableOutOfRange={false}
+                            onChange={(value) => setForm({ ...form, fecha: value })}
                         />
+                        {selectedCampania?.fecha_inicio && (
+                            <p className="mt-1 text-xs text-stone-500">
+                                La fecha no puede ser anterior al inicio de la campania seleccionada.
+                            </p>
+                        )}
                     </div>
 
                     {/* Rinde y Humedad en fila */}

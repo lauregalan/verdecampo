@@ -286,13 +286,25 @@ export default function UserManagment({ header }: UserManagmentProps) {
             headerClassName: "w-[150px]",
             cell: (user) => {
                 const primaryRole = user.roles[0] ?? "Sin rol";
+                const isCurrentUser = authUser?.id === user.id;
                 return (
                     <Badge
-                        className={`${getRoleBadgeClass(primaryRole)} cursor-pointer transition-opacity hover:opacity-80`}
+                        className={`${getRoleBadgeClass(primaryRole)} ${
+                            isCurrentUser
+                                ? "cursor-not-allowed opacity-70"
+                                : "cursor-pointer transition-opacity hover:opacity-80"
+                        }`}
                         onClick={() => {
-                            setSelectedRole(primaryRole);
-                            setSelectedUserId(user.id.toString());
+                            if (!isCurrentUser) {
+                                setSelectedRole(primaryRole);
+                                setSelectedUserId(user.id.toString());
+                            }
                         }}
+                        title={
+                            isCurrentUser
+                                ? "No puedes cambiar tu propio rol"
+                                : ""
+                        }
                     >
                         {primaryRole}
                     </Badge>
@@ -414,6 +426,7 @@ export default function UserManagment({ header }: UserManagmentProps) {
                 onSelectRole={(role) => setSelectedRole(role)}
                 userId={selectedUserId ?? ""}
                 onRoleUpdated={reloadUsers}
+                isCurrentUser={authUser?.id?.toString() === selectedUserId}
             />
 
             {/* Invite Collaborator Modal */}

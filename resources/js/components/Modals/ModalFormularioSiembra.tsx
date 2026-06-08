@@ -1,13 +1,16 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modals/Modal";
 import InputLabel from "@/components/InputLabel";
-import TextInput from "@/components/TextInput";
+import CalendarDatePicker from "@/components/ui/date-picker";
 import { X, Sprout } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/Pages/Aplicaciones/utils";
 
 interface Campania {
     id: number;
     nombre: string;
+    fecha_inicio?: string | null;
+    fecha_fin?: string | null;
 }
 
 interface Lote {
@@ -64,6 +67,15 @@ export default function ModalFormularioSiembra({
     const [loadingLotes, setLoadingLotes] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const selectedCampania = useMemo(
+        () =>
+            campaniaId
+                ? (campanias.find((campania) => campania.id === campaniaId) ??
+                  null)
+                : null,
+        [campanias, campaniaId],
+    );
 
     // Cargar campañas y cultivos al abrir
     useEffect(() => {
@@ -145,6 +157,13 @@ export default function ModalFormularioSiembra({
             setError("Por favor completá todos los campos obligatorios.");
             return;
         }
+        if (
+            selectedCampania?.fecha_fin &&
+            fecha > selectedCampania.fecha_fin.slice(0, 10)
+        ) {
+            setError("La fecha de siembra no puede ser posterior al fin de la campania.");
+            return;
+        }
 
         const payload = {
             campania_id: Number(campaniaId),
@@ -168,13 +187,24 @@ export default function ModalFormularioSiembra({
                 response = await api.post("/api/siembras", payload);
             }
 
-            if (!response.ok) throw new Error();
+            if (!response.ok) {
+                throw new Error(
+                    await getApiErrorMessage(
+                        response,
+                        "Error al guardar la siembra. Intentá nuevamente.",
+                    ),
+                );
+            }
             const data = await response.json();
             onSaved(data);
             resetForm();
             onClose();
-        } catch {
-            setError("Error al guardar la siembra. Intentá nuevamente.");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Error al guardar la siembra. Intentá nuevamente.",
+            );
         } finally {
             setSubmitting(false);
         }
@@ -237,6 +267,11 @@ export default function ModalFormularioSiembra({
                                 </option>
                             ))}
                         </select>
+                        {campanias.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea una campania para registrar siembras.
+                            </p>
+                        )}
                     </div>
 
                     {/* Lote (solo lotes de la campaña) */}
@@ -295,18 +330,28 @@ export default function ModalFormularioSiembra({
                                 </option>
                             ))}
                         </select>
+                        {cultivos.length === 0 && (
+                            <p className="mt-1 text-xs text-amber-600">
+                                Primero crea un cultivo para registrar siembras.
+                            </p>
+                        )}
                     </div>
 
                     {/* Fecha */}
                     <div>
                         <InputLabel value="Fecha de siembra *" />
-                        <TextInput
-                            type="date"
+                        <CalendarDatePicker
                             value={fecha}
-                            onChange={(e) => setFecha(e.target.value)}
-                            className="mt-1 w-full border-green-700 focus:border-green-800 focus:ring-green-800"
-                            required
+                            minDate={selectedCampania?.fecha_inicio?.slice(0, 10)}
+                            maxDate={selectedCampania?.fecha_fin?.slice(0, 10)}
+                            disableOutOfRange={false}
+                            onChange={setFecha}
                         />
+                        {selectedCampania?.fecha_fin && (
+                            <p className="mt-1 text-xs text-stone-500">
+                                La fecha no puede superar el fin de la campania seleccionada.
+                            </p>
+                        )}
                     </div>
 
                     {/* Observaciones */}

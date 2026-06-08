@@ -39,4 +39,12 @@ class AplicacionService
     {
         Aplicacion::findOrFail($id)->delete();
     }
+
+    public function getByLote(int $loteId): Collection
+    {
+        return Aplicacion::with(['productoAplicacion', 'tipoAplicacion', 'campania', 'lote'])
+            ->where('lote_id', $loteId)
+            ->orderByDesc('fecha')
+            ->get();
+    }
 }

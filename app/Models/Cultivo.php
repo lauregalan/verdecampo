@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cultivo extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'tipo',
         'variedad',
@@ -22,6 +26,6 @@ class Cultivo extends Model
 
     public function cultivoAntecesor(): BelongsTo
     {
-        return $this->belongsTo(Cultivo::class, 'cultivo_antecesor_id');
+        return $this->belongsTo(Cultivo::class, 'cultivo_antecesor_id')->withTrashed();
     }
 }

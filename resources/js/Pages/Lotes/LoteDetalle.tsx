@@ -6,18 +6,24 @@ import {
     ChartColumnBig,
     Droplets,
     Fingerprint,
-    Layers,
     Timer,
 } from "lucide-react";
 import { CircleMarker, MapContainer, TileLayer } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import api from "@/lib/api";
+import ModalFormularioLote from "./ModalFormularioLote";
+import { LoteCard } from "./types";
+import {
+    estimarRendimientoLote,
+    getCultivoProfile,
+    getSiembraActiva,
+    type RendimientoLoteEstimado,
+} from "@/lib/rendimiento";
 
 interface LoteDetallePageProps {
     loteId: number | string;
@@ -34,6 +40,17 @@ interface BackendLote {
     campo_id: number;
     ph: number;
     napa: number;
+    siembras?: any[];
+    cosechas?: any[];
+}
+
+interface CultivoActual {
+    id: number;
+    tipo: string;
+    variedad: string;
+    fecha_siembra: string;
+    dias_transcurridos: number;
+    dias_a_cosecha: number;
 }
 
 const estadoBadgeColors: Record<string, string> = {
@@ -45,9 +62,86 @@ const estadoBadgeColors: Record<string, string> = {
 
 export default function LoteDetalle() {
     const { loteId } = usePage().props as unknown as LoteDetallePageProps;
+    const returnTo = useMemo(() => {
+        if (typeof window === "undefined") {
+            return "/lotes";
+        }
+
+        const nextUrl = new URLSearchParams(window.location.search).get(
+            "returnTo",
+        );
+
+        return nextUrl && nextUrl.startsWith("/") ? nextUrl : "/lotes";
+    }, []);
     const [lote, setLote] = useState<BackendLote | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [cultivoActual, setCultivoActual] = useState<CultivoActual | null>(null);
+    const [rendimientoEstimado, setRendimientoEstimado] =
+        useState<RendimientoLoteEstimado | null>(null);
+    const [showEditarModal, setShowEditarModal] = useState(false);
+
+    const loadCultivoActual = (loteData: BackendLote) => {
+        const siembraActiva = getSiembraActiva(loteData.siembras || []);
+
+        if (!siembraActiva) {
+            setCultivoActual(null);
+            return;
+        }
+
+        const fechaSiembra = new Date(siembraActiva.fecha_siembra);
+        const diasTranscurridos = Math.floor(
+            (new Date().getTime() - fechaSiembra.getTime()) /
+                (1000 * 60 * 60 * 24),
+        );
+        const diasCiclo = getCultivoProfile(siembraActiva.cultivo?.tipo).cycleDays;
+
+        setCultivoActual({
+            id: siembraActiva.cultivo?.id || 0,
+            tipo: siembraActiva.cultivo?.tipo || "Desconocido",
+            variedad: siembraActiva.cultivo?.variedad || "Desconocida",
+            fecha_siembra: siembraActiva.fecha_siembra,
+            dias_transcurridos: diasTranscurridos,
+            dias_a_cosecha: Math.max(0, diasCiclo - diasTranscurridos),
+        });
+    };
+
+    const calcularRendimientoEstimado = (loteData: BackendLote) => {
+        setRendimientoEstimado(estimarRendimientoLote(loteData));
+    };
+
+    const handleEditarLote = (loteActualizado: LoteCard) => {
+        if (!lote) return;
+
+        const loteActualizadoLocal: BackendLote = {
+            ...lote,
+            nombre: loteActualizado.name,
+            estado: loteActualizado.status,
+            latitud: loteActualizado.latitude,
+            longitud: loteActualizado.longitude,
+            hectareas: loteActualizado.hectareas,
+            caracteristicas: loteActualizado.caracteristicas,
+            ph: loteActualizado.ph,
+            napa: loteActualizado.napa,
+        };
+
+        setLote(loteActualizadoLocal);
+        calcularRendimientoEstimado(loteActualizadoLocal);
+    };
+
+    const loteToForm = (loteData: BackendLote): LoteCard => ({
+        id: loteData.id,
+        campo_id: loteData.campo_id,
+        name: loteData.nombre,
+        status: loteData.estado,
+        latitude: Number(loteData.latitud),
+        longitude: Number(loteData.longitud),
+        hectareas: loteData.hectareas,
+        caracteristicas: loteData.caracteristicas,
+        ph: loteData.ph,
+        napa: loteData.napa,
+        polygon: [],
+    });
 
     useEffect(() => {
         const controller = new AbortController();
@@ -69,6 +163,9 @@ export default function LoteDetalle() {
                 const payload = (await response.json()) as BackendLote;
                 setLote(payload);
                 setError(null);
+
+                loadCultivoActual(payload);
+                calcularRendimientoEstimado(payload);
             } catch (err) {
                 if ((err as Error).name === "AbortError") return;
                 setLote(null);
@@ -107,7 +204,7 @@ export default function LoteDetalle() {
                             {error ?? "Lote no disponible"}
                         </p>
                         <Link
-                            href="/lotes"
+                            href={returnTo}
                             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#1d4ed8] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                         >
                             <ArrowLeft size={16} />
@@ -138,16 +235,15 @@ export default function LoteDetalle() {
         <Body>
             <Head title={`Detalle - ${lote.nombre}`} />
 
-            <div className="flex h-full w-full flex-col overflow-hidden p-4 font-sans md:p-6">
-                {/* Header */}
-                <div className="flex mx-auto mb-4 w-full max-w-8xl shrink-0 justify-start">
+            <div className="flex h-full w-full flex-col overflow-y-auto p-4 font-sans md:p-6">
+                <div className="mx-auto mb-4 flex w-full max-w-8xl shrink-0 justify-start">
                     <div className="flex flex-col gap-6">
                         <Button
                             variant="outline"
                             asChild
-                            className="gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900 max-w-[160px]"
+                            className="max-w-[160px] gap-2 border-stone-300 bg-[#fdf8f0] text-stone-700 hover:bg-stone-200 hover:text-stone-900"
                         >
-                            <Link href="/lotes">
+                            <Link href={returnTo}>
                                 <ArrowLeft size={16} />
                                 Volver a Lotes
                             </Link>
@@ -161,34 +257,37 @@ export default function LoteDetalle() {
                             </Badge>
                             <div className="flex flex-col">
                                 <div className="flex flex-row gap-2">
+                                    <Button onClick={() => setShowEditarModal(true)}>
+                                        Editar
+                                    </Button>
                                     <Button asChild variant="default">
-                                        <Link href={`/lotes/${lote.id}`}>
-                                            <Layers size={16} />
-                                            Ver campañas
+                                        <Link href={`/campanias?loteId=${lote.id}`}>
+                                            Ver campanias
                                         </Link>
                                     </Button>
-                                    <Button className="bg-stone-200 text-stone-400 hover:bg-stone-200 cursor-not-allowed">
-                                        Ver mapas
+                                    <Button asChild variant="outline">
+                                        <Link href={`/aplicaciones?loteId=${lote.id}`}>
+                                            Ver aplicaciones
+                                        </Link>
                                     </Button>
-                                    <Button className="bg-stone-200 text-stone-400 hover:bg-stone-200 cursor-not-allowed">
-                                        Ver informes
+                                    <Button asChild variant="outline">
+                                        <Link href={`/siembras?loteId=${lote.id}`}>
+                                            Ver siembras
+                                        </Link>
                                     </Button>
-                                    <Button>Ver cultivos</Button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Main grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    {/* Map */}
-                    <Card className="lg:col-span-3 h-full w-full mx-auto max-w-6xl min-h-[400px] md:min-h-[500px] lg:min-h-[60vh] flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm">
-                        <div className="relative h-[100%] w-full shrink-0 border-b border-stone-200">
+                <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-5">
+                    <Card className="mx-auto h-full min-h-[360px] w-full max-w-6xl flex-col overflow-hidden rounded-xl border-stone-300 bg-[#FCFBF8] shadow-sm md:min-h-[480px] lg:col-span-3 lg:min-h-[62vh]">
+                        <div className="relative h-full w-full shrink-0 border-b border-stone-200">
                             <MapContainer
                                 center={centroLote}
                                 zoom={13}
-                                scrollWheelZoom={true}
+                                scrollWheelZoom
                                 className="z-[10] h-full w-full"
                             >
                                 <TileLayer
@@ -211,103 +310,130 @@ export default function LoteDetalle() {
                         </div>
                     </Card>
 
-                    {/* Right panel */}
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 w-full">
-                        {/* Info principal */}
-                        <Card className="col-span-2 flex min-h-[220px] max-h-[230px] flex-col justify-between border-stone-200 bg-[#FCFBF8] p-6 shadow-sm">
-                            <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                    <div className="grid w-full grid-cols-1 gap-3 lg:col-span-2 lg:auto-rows-min xl:grid-cols-2">
+                        <Card className="flex flex-col justify-between border-stone-200 bg-[#FCFBF8] p-4 shadow-sm xl:col-span-2">
+                            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                                 <div>
-                                    <h2 className="text-2xl font-black uppercase tracking-tight text-stone-900">
+                                    <h2 className="text-lg font-black uppercase tracking-tight text-stone-900">
                                         {lote.nombre}
                                     </h2>
-                                    <p className="text-sm font-medium text-stone-500">
+                                    <p className="text-xs font-medium text-stone-500">
                                         Superficie:{" "}
                                         <span className="font-bold text-stone-800">
-                                            {lote.hectareas.toLocaleString(
-                                                "es-AR",
-                                            )}{" "}
-                                            Ha
+                                            {lote.hectareas.toLocaleString("es-AR")} Ha
                                         </span>
                                     </p>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="hidden text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                                >
-                                    Cambiar nombre
-                                </Button>
-                            </div>
-
-                            <div className="hidden mt-6 flex-col gap-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                    Último cultivo registrado
-                                </label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="Ej: Soja 2025"
-                                        className="border-stone-200 bg-white focus:border-emerald-500 focus:ring-emerald-500"
-                                    />
-                                    <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
-                                        Guardar
-                                    </Button>
-                                </div>
                             </div>
                         </Card>
 
-                        {/* Cultivo actual */}
                         <Card className="flex flex-col justify-start border-stone-100 bg-white/60 p-0 shadow-sm transition-colors hover:bg-white">
-                            <CardHeader className="border-b border-stone-100 p-6 pb-4">
-                                <h2 className="text-xl font-bold uppercase tracking-tight text-stone-700">
+                            <CardHeader className="border-b border-stone-100 p-4 pb-3">
+                                <h2 className="text-base font-bold uppercase tracking-tight text-stone-700">
                                     Cultivo actual
                                 </h2>
                             </CardHeader>
-                            <CardContent className="flex flex-col gap-3 p-6 pt-4">
-                                <span className="text-2xl font-black uppercase text-stone-800">
-                                    —
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <Fingerprint className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Variedad:{" "}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Activity className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Estado:{" "}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Timer className="size-4 text-stone-500" />
-                                    <span className="text-sm text-stone-700">
-                                        Días a cosecha:{" "}
-                                    </span>
-                                </div>
+                            <CardContent className="flex flex-col gap-2 p-4 pt-3">
+                                {cultivoActual ? (
+                                    <>
+                                        <span className="text-lg font-black uppercase text-stone-800">
+                                            {cultivoActual.tipo} {cultivoActual.variedad}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <Fingerprint className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Fecha de siembra:{" "}
+                                                {new Date(
+                                                    cultivoActual.fecha_siembra,
+                                                ).toLocaleDateString("es-AR")}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Activity className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Dias transcurridos:{" "}
+                                                {cultivoActual.dias_transcurridos}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Timer className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Dias a cosecha:{" "}
+                                                {cultivoActual.dias_a_cosecha}
+                                            </span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-lg font-black uppercase text-stone-800">
+                                            —
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <Fingerprint className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Variedad: Sin informacion
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Activity className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Estado: Sin cultivo activo
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Timer className="size-4 text-stone-500" />
+                                            <span className="text-xs text-stone-700">
+                                                Dias a cosecha: N/A
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
 
-                        {/* Rendimiento estimado */}
-                        <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
+                        <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-3 shadow-sm transition-colors hover:bg-white">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-stone-800">
-                                    Rendimiento Estimado
+                                <h3 className="text-base font-bold text-stone-800">
+                                    Rendimiento Ultima Cosecha
                                 </h3>
-                                <ChartColumnBig className="size-6 text-yellow-600 transition-colors group-hover:text-yellow-700" />
+                                <ChartColumnBig className="size-5 text-yellow-600 transition-colors group-hover:text-yellow-700" />
                             </div>
-                            <div className="mt-4">
-                                <p className="text-sm text-stone-500">
-                                    Proyección de Cosecha:
+                            <div className="mt-3 space-y-1.5">
+                                <p className="text-xs text-stone-500">
+                                    Rinde por hectarea:
                                 </p>
-                                <span className="text-xl font-bold text-emerald-700">
-                                    — kg/Ha
+                                <span className="text-lg font-bold text-emerald-700">
+                                    {rendimientoEstimado
+                                        ? `${rendimientoEstimado.kg_por_hectarea.toLocaleString()} kg/Ha`
+                                        : "— kg/Ha"}
                                 </span>
+                                <p className="text-xs text-stone-500">
+                                    Total cosechado:{" "}
+                                    <span className="font-semibold text-stone-700">
+                                        {rendimientoEstimado
+                                            ? `${rendimientoEstimado.kg_total.toLocaleString()} kg`
+                                            : "—"}
+                                    </span>
+                                </p>
+                                <p className="text-xs text-stone-500">
+                                    Confianza:{" "}
+                                    <span className="font-semibold text-stone-700">
+                                        {rendimientoEstimado
+                                            ? `${rendimientoEstimado.confianza}%`
+                                            : "—"}
+                                    </span>
+                                </p>
+                                {rendimientoEstimado?.progreso !== null && (
+                                    <p className="text-xs text-stone-500">
+                                        Avance del cultivo:{" "}
+                                        <span className="font-semibold text-stone-700">
+                                            {rendimientoEstimado?.progreso}%
+                                        </span>
+                                    </p>
+                                )}
                             </div>
-                            <div className="mt-4 h-20 w-full rounded-md bg-stone-100 p-2">
-                                <svg
-                                    viewBox="0 0 100 50"
-                                    className="h-full w-full"
-                                >
+                            <div className="mt-3 h-12 w-full rounded-md bg-stone-100 p-2">
+                                <svg viewBox="0 0 100 50" className="h-full w-full">
                                     <polyline
                                         fill="none"
                                         stroke="#10B981"
@@ -323,58 +449,67 @@ export default function LoteDetalle() {
                                     />
                                 </svg>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="mt-4 w-full justify-center text-stone-400 hover:bg-transparent cursor-not-allowed"
-                            >
-                                Ver informes detallados
-                            </Button>
                         </Card>
 
-                        {/* Historial de Suelo */}
-                        <Card className="col-span-2 group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-4 shadow-sm transition-colors hover:bg-white">
+                        <Card className="group relative flex flex-col justify-between rounded-xl border border-stone-100 bg-white/60 p-3 shadow-sm transition-colors hover:bg-white xl:col-span-2">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-stone-800">
-                                    Características del Suelo
+                                <h3 className="text-base font-bold text-stone-800">
+                                    Caracteristicas del Suelo
                                 </h3>
-                                <Droplets className="size-6 text-blue-600 transition-colors group-hover:text-blue-700" />
+                                <Droplets className="size-5 text-blue-600 transition-colors group-hover:text-blue-700" />
                             </div>
-                            <div className="mt-4 flex flex-col gap-2">
-                                <p className="text-sm text-stone-500">
+                            <div className="mt-3 flex flex-col gap-1.5">
+                                <p className="text-xs text-stone-500">
                                     pH:{" "}
                                     <span className="font-bold text-stone-700">
                                         {lote.ph ?? "—"}
                                     </span>
                                 </p>
-                                <p className="text-sm text-stone-500">
+                                <p className="text-xs text-stone-500">
                                     Profundidad de napa:{" "}
                                     <span className="font-bold text-stone-700">
-                                        {lote.napa != null
-                                            ? `${lote.napa} m`
-                                            : "—"}
+                                        {lote.napa != null ? `${lote.napa} m` : "—"}
                                     </span>
                                 </p>
                                 {lote.caracteristicas && (
-                                    <p className="text-sm text-stone-500">
-                                        Características:{" "}
-                                        <span className="font-bold text-stone-700">
+                                    <p className="break-words text-xs leading-relaxed text-stone-500">
+                                        Caracteristicas:{" "}
+                                        <span className="font-bold text-stone-700 [overflow-wrap:anywhere]">
                                             {lote.caracteristicas}
                                         </span>
                                     </p>
                                 )}
+                                {rendimientoEstimado && (
+                                    <div className="mt-1 grid grid-cols-2 gap-1.5 text-[11px] text-stone-500">
+                                        <span>
+                                            pH x{rendimientoEstimado.factor_ph}
+                                        </span>
+                                        <span>
+                                            Napa x{rendimientoEstimado.factor_napa}
+                                        </span>
+                                        <span>
+                                            Suelo x{rendimientoEstimado.factor_caracteristicas}
+                                        </span>
+                                        <span>
+                                            Estado x{rendimientoEstimado.factor_estado}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="hidden mt-4 w-full justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                            >
-                                Ver detalle del suelo
-                            </Button>
                         </Card>
                     </div>
                 </div>
             </div>
+
+            {lote && (
+                <ModalFormularioLote
+                    show={showEditarModal}
+                    onClose={() => setShowEditarModal(false)}
+                    campoId={lote.campo_id.toString()}
+                    onSubmit={handleEditarLote}
+                    initialData={loteToForm(lote)}
+                />
+            )}
         </Body>
     );
 }

@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Campania extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'campo_id',
         'nombre',
@@ -25,12 +28,13 @@ class Campania extends Model
     public function lotes()
     {
         return $this->belongsToMany(Lote::class, 'campania_lote')
+            ->withTrashed()
             ->withTimestamps();
     }
 
     public function cultivo(): BelongsTo
     {
-        return $this->belongsTo(Cultivo::class);
+        return $this->belongsTo(Cultivo::class)->withTrashed();
     }
 
     public function cosechas(): HasMany

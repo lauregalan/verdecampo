@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Siembra extends Model
 {
-    //
     protected $table = 'siembras';
 
     protected $fillable = [
@@ -29,35 +28,16 @@ class Siembra extends Model
 
     public function lote()
     {
-        return $this->belongsTo(Lote::class);
+        return $this->belongsTo(Lote::class)->withTrashed();
     }
 
     public function cultivo()
     {
-        return $this->belongsTo(Cultivo::class);
+        return $this->belongsTo(Cultivo::class)->withTrashed();
     }
-
-    // Attribute: último cultivo que tuvo el lote ---
-    /*public function getUltimoCultivoAttribute()
-    {
-        return Attribute::make(
-            get: function () {
-                //Busca la siembra anterior a esta en el mismo lote
-                $siembraAnterior = Siembra::where('lote_id', $this->lote_id)
-                    ->where('id', '<', $this->id)
-                    ->orderBy('fecha_siembra')
-                    ->with('cultivo')
-                    ->first();
-
-                    return $siembraAnterior?->cultivo?->nombre ?? 'Sin antecesor';
-
-            }
-        );
-    }*/
 
     public function getUltimoCultivoAttribute()
     {
-
         $siembraAnterior = Siembra::where('lote_id', $this->lote_id)
             ->where('fecha_siembra', '<', $this->fecha_siembra)
             ->orderBy('fecha_siembra', 'desc')

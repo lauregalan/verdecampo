@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lote extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $table = 'lotes';
 
     protected $fillable = [
@@ -27,7 +31,7 @@ class Lote extends Model
 
     public function campo()
     {
-        return $this->belongsTo(Campo::class, 'campo_id', 'id');
+        return $this->belongsTo(Campo::class, 'campo_id', 'id')->withTrashed();
     }
 
     public function campanias()

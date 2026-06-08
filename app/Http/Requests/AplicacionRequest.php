@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Campania;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class AplicacionRequest extends FormRequest
 {
@@ -17,7 +20,18 @@ class AplicacionRequest extends FormRequest
         return [
             'producto_aplicacion_id' => ['required', 'integer', 'exists:productos_aplicaciones,id'],
             'tipo_aplicacion_id' => ['required', 'integer', 'exists:tipos_aplicaciones,id'],
-            'campania_id' => ['required', 'integer', 'exists:campanias,id'],
+            'campania_id' => [
+                'required',
+                'integer',
+                'exists:campanias,id',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $campania = Campania::find($value);
+
+                    if (in_array($campania?->estado, ['Planificada', 'Finalizada', 'Cancelada'], true)) {
+                        $fail('Solo se pueden registrar aplicaciones en campanias en curso.');
+                    }
+                },
+            ],
             'lote_id' => [
                 'required',
                 'integer',
@@ -33,6 +47,50 @@ class AplicacionRequest extends FormRequest
             'moneda_precio_labor' => ['required', 'string', 'max:10'],
             'observaciones' => ['nullable', 'string'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $campaniaId = $this->integer('campania_id');
+            $fechaInput = $this->input('fecha');
+
+            if ($campaniaId <= 0 || ! is_string($fechaInput)) {
+                return;
+            }
+
+            try {
+                $fecha = Carbon::parse($fechaInput)->startOfDay();
+            } catch (\Throwable) {
+                return;
+            }
+
+            $campania = Campania::find($campaniaId);
+
+            if (! $campania) {
+                return;
+            }
+
+            if (
+                $campania->fecha_inicio &&
+                $fecha->lt(Carbon::parse($campania->fecha_inicio)->startOfDay())
+            ) {
+                $validator->errors()->add(
+                    'fecha',
+                    'La fecha de aplicacion no puede ser anterior al inicio de la campania.'
+                );
+            }
+
+            if (
+                $campania->fecha_fin &&
+                $fecha->gt(Carbon::parse($campania->fecha_fin)->startOfDay())
+            ) {
+                $validator->errors()->add(
+                    'fecha',
+                    'La fecha de aplicacion no puede ser posterior al fin de la campania.'
+                );
+            }
+        });
     }
 
     public function messages(): array

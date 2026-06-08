@@ -44,6 +44,11 @@ class AplicacionController extends Controller
         return response()->json(null, 204);
     }
 
+    public function getByLote(int $loteId): JsonResponse
+    {
+        return response()->json($this->aplicacionService->getByLote($loteId));
+    }
+
     /**
      * Exportar aplicaciones a Excel
      */

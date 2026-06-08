@@ -17,6 +17,7 @@ interface UserModalProps {
     onSelectRole: (role: string) => void;
     userId: string;
     onRoleUpdated?: () => Promise<void> | void;
+    isCurrentUser?: boolean;
 }
 
 export default function UserModal({
@@ -28,6 +29,7 @@ export default function UserModal({
     onSelectRole,
     userId,
     onRoleUpdated,
+    isCurrentUser = false,
 }: UserModalProps) {
     const [userRole, setUserRole] = useState("Sin rol");
     const [loading, setLoading] = useState(false);
@@ -93,7 +95,7 @@ export default function UserModal({
             <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-900">
-                        Informacion del rol
+                        Información del rol
                     </h2>
                     <button
                         onClick={onClose}
@@ -102,6 +104,14 @@ export default function UserModal({
                         <X className="h-5 w-5" />
                     </button>
                 </div>
+
+                {isCurrentUser && (
+                    <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                        <p className="text-sm font-semibold text-yellow-800">
+                            ⚠ No puedes cambiar tu propio rol
+                        </p>
+                    </div>
+                )}
 
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -135,7 +145,9 @@ export default function UserModal({
 
                                     <button
                                         onClick={() => onSelectRole(role.name)}
-                                        className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
+                                        disabled={isCurrentUser}
+                                        className={`rounded-md border px-2 py-1 text-xs ${ isCurrentUser ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed" : "border-gray-200 text-gray-700 hover:bg-gray-100"
+                                        }`}
                                     >
                                         Seleccionar
                                     </button>
@@ -148,7 +160,7 @@ export default function UserModal({
                         <button
                             type="button"
                             onClick={handleApply}
-                            disabled={isApplyDisabled}
+                            disabled={isApplyDisabled || isCurrentUser}
                             className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
                         >
                             {loading ? (

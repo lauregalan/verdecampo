@@ -1,38 +1,30 @@
 <?php
 
-namespace Tests\Feature\Auth;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class RegistrationTest extends TestCase
-{
-    use RefreshDatabase;
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    public function test_registration_screen_can_be_rendered(): void
-    {
-        $response = $this->get('/register');
+test('registration screen can be rendered', function () {
+    $response = $this->get('/register');
 
-        $response->assertStatus(200);
-    }
+    $response->assertStatus(200);
+});
 
-    public function test_new_users_can_register(): void
-    {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+test('new users can register', function () {
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertGuest();
+    $response->assertRedirect(route('login', absolute: false));
+    $response->assertSessionHas('status', 'Registro enviado. Un productor debe activar tu cuenta y asignarte un rol antes de que puedas ingresar.');
 
-        $user = User::where('email', 'test@example.com')->first();
+    $user = User::where('email', 'test@example.com')->first();
 
-        $this->assertNotNull($user);
-        $this->assertNotNull($user->last_login_at);
-        $this->assertTrue($user->created_at->equalTo($user->last_login_at));
-    }
-}
+    expect($user)->not->toBeNull();
+    expect($user->active)->toBeFalse();
+    expect($user->last_login_at)->toBeNull();
+});

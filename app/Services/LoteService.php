@@ -8,12 +8,12 @@ class LoteService
 {
     public function getAllByCampo(int $id_campo)
     {
-        return Lote::with('campo')->where('campo_id', $id_campo)->get();
+        return Lote::with(['campo', 'siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->where('campo_id', $id_campo)->get();
     }
 
     public function getById(int $id)
     {
-        return Lote::find($id);
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->find($id);
     }
 
     public function getAllByCampania(int $id_campania)
@@ -30,7 +30,7 @@ class LoteService
 
     public function update(int $id, array $data)
     {
-        $lote = Lote::find($id);
+        $lote = Lote::findOrFail($id);
         $lote->update($data);
 
         return $lote;
@@ -38,7 +38,7 @@ class LoteService
 
     public function delete(int $id)
     {
-        $lote = Lote::find($id);
+        $lote = Lote::findOrFail($id);
         $lote->delete();
 
         return $lote;
@@ -46,11 +46,11 @@ class LoteService
 
     public function getByName(string $nombre)
     {
-        return Lote::where('nombre', 'like', '%'.$nombre.'%')->get();
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->where('nombre', 'like', '%'.$nombre.'%')->get();
     }
 
     public function getAll()
     {
-        return Lote::with(['siembras.cultivo', 'siembras.campania'])->get();
+        return Lote::with(['siembras.cultivo', 'siembras.campania', 'cosechas.campania'])->get();
     }
 }

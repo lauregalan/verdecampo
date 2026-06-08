@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Modal from "@/components/Modals/Modal";
 import ModalConfirmacion from "@/components/Modals/ModalConfirmacion";
 import ModalFormularioAplicacion from "@/components/Modals/ModalFormularioAplicacion";
+import ItemCard from "@/components/ui/ItemCard";
 import api from "@/lib/api";
 import type {
     AplicacionDraft,
@@ -102,110 +103,42 @@ function AplicacionCard({
     isProductor: boolean;
 }) {
     return (
-        <article className="group flex h-full flex-col rounded-3xl border border-stone-200/80 bg-[#FCFBF8]/78 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-400">
-                        Aplicación
-                    </p>
-                    <h3 className="mt-2 line-clamp-2 text-xl font-black tracking-tight text-stone-900">
-                        {aplicacion.producto}
-                    </h3>
-                    <p className="mt-2 text-sm text-stone-500">
-                        Campaña:{" "}
-                        <span className="font-semibold text-stone-800">
-                            {aplicacion.campania}
-                        </span>
-                    </p>
-                </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
-                    {aplicacion.tipo}
-                </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-stone-50/80 p-4 ring-1 ring-black/5">
-                    <div className="flex items-center gap-2 text-stone-500">
-                        <Package size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">
-                            Dosis
-                        </span>
-                    </div>
-                    <div className="mt-2 text-sm font-semibold text-stone-900">
-                        {aplicacion.cantidad.toLocaleString("es-AR")}{" "}
-                        {aplicacion.unidad}
-                    </div>
-                </div>
-                <div className="rounded-2xl bg-stone-50/80 p-4 ring-1 ring-black/5">
-                    <div className="flex items-center gap-2 text-stone-500">
-                        <CalendarDays size={16} />
-                        <span className="text-xs font-bold uppercase tracking-wide">
-                            Fecha
-                        </span>
-                    </div>
-                    <div className="mt-2 text-sm font-semibold text-stone-900">
-                        {formatDate(aplicacion.fecha)}
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-stone-200/80 bg-[#f7f2e9]/78 px-4 py-3 backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-3">
-                    <div>
-                        <div className="text-xs font-bold uppercase tracking-wide text-stone-500">
-                            Lote asociado
-                        </div>
-                        <div className="mt-1 text-sm font-semibold text-stone-900">
-                            {aplicacion.lote}
-                        </div>
-                    </div>
-                    <Layers className="size-5 text-stone-400" />
-                </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-stone-200/80 bg-white/55 px-4 py-3 backdrop-blur-sm">
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-stone-500">
-                        Costo de labor
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-stone-900">
-                        {formatMoney(aplicacion.precioLabor, aplicacion.moneda)}
-                    </div>
-                </div>
-                <DollarSign className="size-5 text-stone-400" />
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-2 border-t border-stone-200 pt-4">
-                <button
-                    type="button"
-                    onClick={onView}
-                    className="inline-flex items-center gap-2 rounded-full border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
-                >
-                    <Eye size={16} />
-                    Ver
-                </button>
-                {isProductor && (
-                    <button
-                        type="button"
-                        onClick={onEdit}
-                        className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                    >
-                        <Pencil size={16} />
-                        Editar
-                    </button>
-                )}
-                {isProductor && (
-                    <button
-                        type="button"
-                        onClick={onDelete}
-                        className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
-                    >
-                        <Trash2 size={16} />
-                        Eliminar
-                    </button>
-                )}
-            </div>
-        </article>
+        <ItemCard
+            eyebrow="Aplicación"
+            title={aplicacion.producto}
+            subtitle={`Campaña: ${aplicacion.campania}`}
+            badge={{
+                label: aplicacion.tipo,
+                className: "bg-emerald-100 text-emerald-700 ring-emerald-200"
+            }}
+            stats={[
+                {
+                    icon: <Package size={16} />,
+                    label: "Dosis",
+                    value: `${aplicacion.cantidad.toLocaleString("es-AR")} ${aplicacion.unidad}`
+                },
+                {
+                    icon: <CalendarDays size={16} />,
+                    label: "Fecha",
+                    value: formatDate(aplicacion.fecha)
+                }
+            ]}
+            footers={[
+                {
+                    label: "Lote asociado",
+                    value: aplicacion.lote,
+                    icon: <Layers className="size-5 text-stone-400" />
+                },
+                {
+                    label: "Costo de labor",
+                    value: formatMoney(aplicacion.precioLabor, aplicacion.moneda),
+                    icon: <DollarSign className="size-5 text-stone-400" />
+                }
+            ]}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete}
+        />
     );
 }
 
