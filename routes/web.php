@@ -8,6 +8,7 @@ use App\Http\Controllers\CultivoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\SiembraController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
@@ -82,6 +83,35 @@ Route::get('/campanias', function () {
 Route::get('/cosechas', function () {
     return Inertia::render('Cosechas/Cosechas');
 })->middleware(['auth', 'verified'])->name('cosechas');
+
+Route::get('/reportes', function () {
+    return Inertia::render('Reportes/Reportes');
+})->middleware(['auth', 'verified'])->name('reportes');
+
+Route::get('/reportes/productividad-campanias.pdf', [ReporteController::class, 'productividadCampanias'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.productividad-campanias');
+
+Route::get('/reportes/aplicaciones.pdf', [ReporteController::class, 'aplicaciones'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.aplicaciones');
+
+Route::get('/reportes/rendimiento-lotes.pdf', [ReporteController::class, 'rendimientoLotes'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.rendimiento-lotes');
+
+Route::get('/reportes/salud-agronomica.pdf', [ReporteController::class, 'saludAgronomica'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.salud-agronomica');
+
+Route::get('/reportes/productos.pdf', [ReporteController::class, 'productos'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.productos');
+
+Route::get('/reportes/rotacion-cultivos.pdf', [ReporteController::class, 'rotacionCultivos'])
+    ->middleware(['auth', 'verified'])
+    ->name('reportes.rotacion-cultivos');
+
 
 Route::get('/campania', function () {
     return Redirect('/campanias');

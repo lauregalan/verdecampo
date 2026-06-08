@@ -48,6 +48,8 @@ class CultivoController extends Controller
     public function getByLote(int $loteId): JsonResponse
     {
         return response()->json($this->cultivoService->getByLote($loteId));
+    }
+
     /**
      * Exportar cultivos a Excel
      */
