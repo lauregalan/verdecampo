@@ -3,6 +3,16 @@
  * Works with Laravel Sanctum for SPA authentication
  */
 
+const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "");
+
+const resolveBackendUrl = (url: string): string => {
+    if (!backendBaseUrl) {
+        return url;
+    }
+
+    return new URL(url, backendBaseUrl).toString();
+};
+
 /**
  * Get XSRF token from cookies
  */
@@ -54,10 +64,10 @@ export const apiFetch = async (
     const fetchOptions: RequestInit = {
         ...options,
         headers,
-        credentials: "same-origin", // Include cookies for same-origin requests
+        credentials: "include",
     };
 
-    return fetch(url, fetchOptions);
+    return fetch(resolveBackendUrl(url), fetchOptions);
 };
 
 /**
@@ -98,8 +108,8 @@ export const api = {
  */
 export const initCsrfCookie = async (): Promise<void> => {
     try {
-        await fetch("/sanctum/csrf-cookie", {
-            credentials: "same-origin",
+        await fetch(resolveBackendUrl("/sanctum/csrf-cookie"), {
+            credentials: "include",
         });
     } catch (error) {
         console.error("Failed to initialize CSRF cookie:", error);

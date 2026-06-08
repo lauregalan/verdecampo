@@ -1,6 +1,12 @@
 import axios from "axios";
 window.axios = axios;
 
+const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "");
+
+if (backendBaseUrl) {
+    window.axios.defaults.baseURL = backendBaseUrl;
+}
+
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 window.axios.defaults.withCredentials = true;
 
